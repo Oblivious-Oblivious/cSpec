@@ -67,13 +67,13 @@ static int status_of_test = FAILING;
  * @param test_result_message -> The outcome returned from the test
  **/
 static double total_time_taken_for_tests = 0;
-hashmapT *describes_hashmap;
-stackT *describes_stack;
+hashmap *describes_hashmap;
+stack *describes_stack;
 
-stringT *test_result_message;
-stringT *name_of_tested_proc;
-stringT *name_of_describe;
-stringT *display_tab;
+string *test_result_message;
+string *name_of_tested_proc;
+string *name_of_describe;
+string *display_tab;
 
 /**
  * @macro: BLOCK
@@ -110,11 +110,11 @@ stringT *display_tab;
  * @param proc -> The proc to extend to
  **/
 #define describe(object_name, proc) BLOCK( \
-    name_of_describe = new_stringT(object_name); \
+    name_of_describe = new_string(object_name); \
     \
-    vectorT *vector_of_tests = new_vectorT(); \
-    vector_add(vector_of_tests, new_vectorT()); \
-    vector_add(vector_of_tests, new_vectorT()); \
+    vector *vector_of_tests = new_vector(); \
+    vector_add(vector_of_tests, new_vector()); \
+    vector_add(vector_of_tests, new_vector()); \
     \
     hashmap_add(describes_hashmap, string_get(name_of_describe), vector_of_tests); \
     /* string_add_str(display_tab, "    "); */ \
@@ -134,7 +134,7 @@ stringT *display_tab;
 #define it(proc_name, proc) BLOCK( \
     /* printf("IT BLOCK INSIDE %s\n", string_get(name_of_describe)); */ \
 	status_of_test = FAILING; \
-    name_of_tested_proc = new_stringT(proc_name); \
+    name_of_tested_proc = new_string(proc_name); \
     \
     double start_test_timer = get_timer(); \
     proc; \
@@ -143,13 +143,13 @@ stringT *display_tab;
 	number_of_tests++; \
 	if(!(status_of_test)) { \
 		number_of_failing_tests++; \
-        stringT *new_test_message = string_dup(test_result_message); \
+        string *new_test_message = string_dup(test_result_message); \
         vector_add(vector_get(hashmap_get(describes_hashmap, \
         string_get(name_of_describe)), 1), new_test_message); \
         \
 	} \
     else { \
-        stringT *new_test_message = string_dup(test_result_message); \
+        string *new_test_message = string_dup(test_result_message); \
         vector_add(vector_get(hashmap_get(describes_hashmap, \
         string_get(name_of_describe)), 0), new_test_message); \
     } \
@@ -157,11 +157,11 @@ stringT *display_tab;
 )
 
 /**
- * @func: print_stringT
+ * @func: print_string
  * @desc: Handle iterating through vector elements for printing test messages
  * @param element -> The vector element to print
  **/
-static void print_stringT(stringT *element) {
+static void print_string(string *element) {
     printf("%s\n", string_get(element));
 }
 
@@ -171,7 +171,7 @@ static void print_stringT(stringT *element) {
  * @param vector_of_tests -> The vector of vectors of tests
  **/
 #define print_passing_tests(vector_of_tests) BLOCK( \
-    vector_map(vector_get(vector_of_tests, 0), print_stringT); \
+    vector_map(vector_get(vector_of_tests, 0), print_string); \
 )
 
 /**
@@ -180,7 +180,7 @@ static void print_stringT(stringT *element) {
  * @param vector_of_tests -> The vector of vectors of tests
  **/
 #define print_failing_tests(vector_of_tests) BLOCK( \
-    vector_map(vector_get(vector_of_tests, 1), print_stringT); \
+    vector_map(vector_get(vector_of_tests, 1), print_string); \
 )
 
 /**
@@ -189,23 +189,22 @@ static void print_stringT(stringT *element) {
  * @param vector -> Either passing failing or both
  **/
 #define report_test_results(vector) BLOCK( \
-    hashmap *map = (hashmap*)describes_hashmap->value; \
-    for(size_t i = 0; i < map->alloced; i++) { \
-        if(map->data[i].in_use != 0) { \
+    for(size_t i = 0; i < describes_hashmap->alloced; i++) { \
+        if(describes_hashmap->data[i].in_use != 0) { \
             printf("\033[38;5;207m%s\033[0m\n", \
-            (&map->data[i])->key); \
+            (&describes_hashmap->data[i])->key); \
             \
             if(vector == "passing") { \
-                print_passing_tests((&map->data[i])->data); \
+                print_passing_tests((&describes_hashmap->data[i])->data); \
                 printf("\n"); \
             } \
             else if(vector == "failing") { \
-                print_failing_tests((&map->data[i])->data); \
+                print_failing_tests((&describes_hashmap->data[i])->data); \
             } \
             else if(vector == "both") { \
-                print_passing_tests((&map->data[i])->data); \
+                print_passing_tests((&describes_hashmap->data[i])->data); \
                 printf("\n"); \
-                print_failing_tests((&map->data[i])->data); \
+                print_failing_tests((&describes_hashmap->data[i])->data); \
             } \
         } \
     } \
@@ -235,7 +234,7 @@ static void print_stringT(stringT *element) {
  **/
 #define check(test) BLOCK( \
 	number_of_asserts++; \
-    test_result_message = new_stringT(""); \
+    test_result_message = new_string(""); \
 	if(!(test)) { \
         status_of_test = FAILING; \
         string_add_str(test_result_message, string_get(display_tab)); \
@@ -268,7 +267,7 @@ static void print_stringT(stringT *element) {
  **/
 #define fail(message) BLOCK( \
 	number_of_asserts++; \
-    test_result_message = new_stringT(""); \
+    test_result_message = new_string(""); \
     status_of_test = FAILING; \
     string_add_str(test_result_message, string_get(display_tab)); \
     string_add_str(test_result_message, "\033[1;31m✗\033[0m it "); \
@@ -294,7 +293,7 @@ static void print_stringT(stringT *element) {
  **/
 #define assert(test, message) BLOCK( \
 	number_of_asserts++; \
-    test_result_message = new_stringT(""); \
+    test_result_message = new_string(""); \
 	if(!(test)) { \
         status_of_test = FAILING; \
         string_add_str(test_result_message, string_get(display_tab)); \
@@ -328,7 +327,7 @@ static void print_stringT(stringT *element) {
  **/
 #define assert_int_equality(expected, actual) BLOCK( \
 	number_of_asserts++; \
-    test_result_message = new_stringT(""); \
+    test_result_message = new_string(""); \
 	int temp_expected = (expected); \
 	int temp_actual_value = (actual); \
 	if(temp_expected != temp_actual_value) { \
@@ -368,7 +367,7 @@ static void print_stringT(stringT *element) {
  **/
 #define assert_double_equality(expected, actual) BLOCK( \
 	number_of_asserts++; \
-    test_result_message = new_stringT(""); \
+    test_result_message = new_string(""); \
 	double temp_expected = (expected); \
 	double temp_actual_value = (actual); \
 	if(fabs(temp_expected - temp_actual_value) > FLOAT_COMPARISON_ACCURACY) { \
@@ -410,7 +409,7 @@ static void print_stringT(stringT *element) {
 	const char *temp_expected = expected; \
 	const char *temp_actual_value = actual; \
 	number_of_asserts++; \
-    test_result_message = new_stringT(""); \
+    test_result_message = new_string(""); \
 	if(!temp_expected) temp_expected = "NULL"; \
 	if(!temp_actual_value) temp_actual_value = "NULL"; \
 	if(strcmp(temp_expected, temp_actual_value)) { \
@@ -447,16 +446,14 @@ static void print_stringT(stringT *element) {
  * @desc: Allocates memory for vectors to save test results in
  **/
 static void setup_test_data() {
-    extern garbage_collector *gc;
-    gc = new_garbage_collector(4096);
-    describes_hashmap = new_hashmapT();
-    describes_stack = new_stackT();
-    display_tab = new_stringT("    ");
+    describes_hashmap = new_hashmap();
+    describes_stack = new_stack();
+    display_tab = new_string("    ");
 }
 
 /**
  * @func: get_timer
- * @desc: A cross platform timer function for profiling
+ * @desc: A cross platform timer function for profiling value
  * @return The time in nanoseconds
  **/
 static unsigned long long get_timer() {
