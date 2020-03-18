@@ -43,7 +43,7 @@
     #error "Unknown OS"
 #endif
 
-#include "../cDataLib/headers/_data_structures.h"
+#include "../../cSuite.h"
 
 /**
  * @param PASSING -> Set for passing tests
