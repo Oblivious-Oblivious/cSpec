@@ -1,6 +1,8 @@
 #ifndef __CSPEC_H_
 #define __CSPEC_H_
 
+#ifdef __UNIT_TEST
+
 #if defined(_WIN32)
     #include <Windows.h>
     #if defined(_MSC_VER) && _MSC_VER < 1900
@@ -66,13 +68,13 @@ static int __status_of_test = __FAILING;
  * @param __test_result_message -> The outcome returned from the test
  **/
 static double __total_time_taken_for_tests = 0;
-hashmap *__describes_hashmap;
-stack *__describes_stack;
+static hashmap *__describes_hashmap;
+static stack *__describes_stack;
 
-string *__test_result_message;
-string *__name_of_tested_proc;
-string *__name_of_describe;
-string *__display_tab;
+static string *__test_result_message;
+static string *__name_of_tested_proc;
+static string *__name_of_describe;
+static string *__display_tab;
 
 /**
  * @macro: before
@@ -483,5 +485,7 @@ static unsigned long long __get_timer() {
         return (unsigned long long)((1e9 * now.QuadPart) / win_frequency.QuadPart);
     #endif
 }
+
+#endif
 
 #endif
