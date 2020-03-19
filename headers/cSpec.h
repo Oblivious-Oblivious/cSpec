@@ -49,8 +49,8 @@
  * @param PASSING -> Set for passing tests
  * @param FAILING -> Set for failing tests
  **/
-#define PASSING 1
-#define FAILING 0
+#define PASSING true
+#define FAILING false
 
 #define MAXIMUM_LENGTH_OF_RESULT_MESSAGE 1024
 #define FLOAT_COMPARISON_ACCURACY 1E-12
@@ -74,16 +74,6 @@ string *test_result_message;
 string *name_of_tested_proc;
 string *name_of_describe;
 string *display_tab;
-
-/**
- * @macro: BLOCK
- * @desc: Expands to a do while loop that runs once
- *      Usefull for executing naked blocks
- * @param block -> The block of code to run
- **/
-#define BLOCK(block) do { \
-    block \
-} while(0)
 
 /**
  * @macro: before
