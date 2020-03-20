@@ -68,13 +68,13 @@ static int __status_of_test = __FAILING;
  * @param __test_result_message -> The outcome returned from the test
  **/
 static double __total_time_taken_for_tests = 0;
-static hashmap *__describes_hashmap;
-static stack *__describes_stack;
+static hashmap *__describes_hashmap = NULL;
+static stack *__describes_stack = NULL;
 
-static string *__test_result_message;
-static string *__name_of_tested_proc;
-static string *__name_of_describe;
-static string *__display_tab;
+static string *__test_result_message = NULL;
+static string *__name_of_tested_proc = NULL;
+static string *__name_of_describe = NULL;
+static string *__display_tab = NULL;
 
 /**
  * @macro: before
@@ -101,11 +101,11 @@ static string *__display_tab;
  * @param proc -> The proc to extend to
  **/
 #define describe(object_name, proc) BLOCK( \
-    __name_of_describe = new_string(object_name); \
+    __name_of_describe = new_persistent_string(object_name); \
     \
-    vector *vector_of_tests = new_vector(); \
-    vector_add(vector_of_tests, new_vector()); \
-    vector_add(vector_of_tests, new_vector()); \
+    vector *vector_of_tests = new_persistent_vector(); \
+    vector_add(vector_of_tests, new_persistent_vector()); \
+    vector_add(vector_of_tests, new_persistent_vector()); \
     \
     hashmap_add(__describes_hashmap, string_get(__name_of_describe), vector_of_tests); \
     /* string_add_str(__display_tab, "    "); */ \
@@ -123,9 +123,8 @@ static string *__display_tab;
  * @param proc -> The actual test code
  **/
 #define it(proc_name, proc) BLOCK( \
-    /* printf("IT BLOCK INSIDE %s\n", string_get(__name_of_describe)); */ \
 	__status_of_test = __FAILING; \
-    __name_of_tested_proc = new_string(proc_name); \
+    __name_of_tested_proc = new_persistent_string(proc_name); \
     \
     double start_test_timer = __get_timer(); \
     proc; \
@@ -225,7 +224,7 @@ static void __print_string(string *element) {
  **/
 #define check(test) BLOCK( \
 	__number_of_asserts++; \
-    __test_result_message = new_string(""); \
+    __test_result_message = new_persistent_string(""); \
 	if(!(test)) { \
         __status_of_test = __FAILING; \
         string_add_str(__test_result_message, string_get(__display_tab)); \
@@ -258,7 +257,7 @@ static void __print_string(string *element) {
  **/
 #define fail(message) BLOCK( \
 	__number_of_asserts++; \
-    __test_result_message = new_string(""); \
+    __test_result_message = new_persistent_string(""); \
     __status_of_test = __FAILING; \
     string_add_str(__test_result_message, string_get(__display_tab)); \
     string_add_str(__test_result_message, "\033[1;31m✗\033[0m it "); \
@@ -284,7 +283,7 @@ static void __print_string(string *element) {
  **/
 #define assert(test, message) BLOCK( \
 	__number_of_asserts++; \
-    __test_result_message = new_string(""); \
+    __test_result_message = new_persistent_string(""); \
 	if(!(test)) { \
         __status_of_test = __FAILING; \
         string_add_str(__test_result_message, string_get(__display_tab)); \
@@ -318,7 +317,7 @@ static void __print_string(string *element) {
  **/
 #define assert_int_equality(expected, actual) BLOCK( \
 	__number_of_asserts++; \
-    __test_result_message = new_string(""); \
+    __test_result_message = new_persistent_string(""); \
 	int temp_expected = (expected); \
 	int temp_actual_value = (actual); \
 	if(temp_expected != temp_actual_value) { \
@@ -358,7 +357,7 @@ static void __print_string(string *element) {
  **/
 #define assert_double_equality(expected, actual) BLOCK( \
 	__number_of_asserts++; \
-    __test_result_message = new_string(""); \
+    __test_result_message = new_persistent_string(""); \
 	double temp_expected = (expected); \
 	double temp_actual_value = (actual); \
 	if(__fabs(temp_expected - temp_actual_value) > __FLOAT_COMPARISON_ACCURACY) { \
@@ -400,7 +399,7 @@ static void __print_string(string *element) {
 	const char *temp_expected = expected; \
 	const char *temp_actual_value = actual; \
 	__number_of_asserts++; \
-    __test_result_message = new_string(""); \
+    __test_result_message = new_persistent_string(""); \
 	if(!temp_expected) temp_expected = "NULL"; \
 	if(!temp_actual_value) temp_actual_value = "NULL"; \
 	if(strcmp(temp_expected, temp_actual_value)) { \
@@ -437,9 +436,9 @@ static void __print_string(string *element) {
  * @desc: Allocates memory for vectors to save test results in
  **/
 static void setup_test_data() {
-    __describes_hashmap = new_hashmap();
-    __describes_stack = new_stack();
-    __display_tab = new_string("    ");
+    __describes_hashmap = new_persistent_hashmap();
+    __describes_stack = new_persistent_stack();
+    __display_tab = new_persistent_string("    ");
 }
 
 /**
