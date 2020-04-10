@@ -1,0 +1,96 @@
+
+Module `cDataLib`
+    `cSpec functions`
+        ✓ it succeeds `assert_that`
+        ✗ it fails `assert_that`
+            simple.spec.c:15:
+                |> `1 isnot 1` should be true
+
+        ✓ it succeeds `nassert_that`
+        ✗ it fails `nassert_that`
+            simple.spec.c:22:
+                |> `2 is 2` should not be true
+
+        ✓ it succeeds `assert_that_int`
+        ✗ it fails `assert_that_int`
+            simple.spec.c:29:
+                |> `3` expected but got `2`
+
+        ✓ it succeeds `nassert_that_int`
+        ✗ it fails `nassert_that_int`
+            simple.spec.c:36:
+                |> expected that `4` would differ from `4` but they are the same
+
+        ✓ it succeeds `assert_that_double`
+        ✗ it fails `assert_that_double`
+            simple.spec.c:43:
+                |> `4.2` expected but got `3.2`
+
+        - it SKIP THAT TEST
+        ✓ it succeeds `nassert_that_double`
+        ✗ it fails `nassert_that_double`
+            simple.spec.c:54:
+                |> expected that `6.6` would differ from `6.6` but they are the same
+
+        ✓ it succeeds `assert_that_string`
+        ✗ it fails `assert_that_string`
+            simple.spec.c:61:
+                |> `nottestme` expected but got `testme`
+
+        ✓ it succeeds `nassert_that_string`
+        ✗ it fails `nassert_that_string`
+            simple.spec.c:68:
+                |> expected that `ok str` would differ from `ok str` but they are the same
+
+
+Module `second`
+    `DESC 1`
+        ✓ it before on desc 1
+        ✓ it does on 1
+    `DESC 2`
+        ✓ it does on 2
+    `DESC 3`
+        ✓ it does on 3
+
+Module `another_third`
+    `Generic type assertions`
+        ✓ it succeeds generic int assertion
+        ✗ it fails generic int assertion
+            simple.spec.c:106:
+                |> `3` expected but got `2`
+
+        ✓ it succeeds generic int nassertion
+        ✗ it fails generic int nassertion
+            simple.spec.c:113:
+                |> expected that `4` would differ from `4` but they are the same
+
+        ✓ it succeeds generic double assertion
+        ✗ it fails generic double assertion
+            simple.spec.c:120:
+                |> `4.2` expected but got `3.2`
+
+        ✓ it succeeds generic double nassertion
+        ✗ it fails generic double nassertion
+            simple.spec.c:127:
+                |> expected that `6.6` would differ from `6.6` but they are the same
+
+        ✗ it fails generic int with double assertion
+            simple.spec.c:131:
+                |> `2.2` expected but got `2`
+
+        ✗ it fails generic double with int assertion
+            simple.spec.c:134:
+                |> `3` expected but got `3.3`
+
+        ✓ it succeeds generic int with double nassertion
+        ✓ it succeeds generic double with int nassertion
+        ✓ it succeeds generic string assertion
+        ✗ it fails generic string assertion
+            simple.spec.c:148:
+                |> `nottestme` expected but got `testme`
+
+        ✓ it succeeds generic string nassertion
+        ✗ it fails generic string nassertion
+            simple.spec.c:155:
+                |> expected that `ok str` would differ from `ok str` but they are the same
+
