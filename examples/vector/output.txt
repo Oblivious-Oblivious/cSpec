@@ -1,0 +1,7 @@
+
+Module `vector_spec`
+    `vector`
+        ✓ it creates a new vector
+        ✓ it adds exactly three elements to the vector
+        ✓ it peeks the second element of the vector
+        ✓ it removes the second element of the vector
