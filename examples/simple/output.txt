@@ -9,7 +9,7 @@ Module `cDataLib`
         ✓ it succeeds `nassert_that`
         ✗ it fails `nassert_that`
             simple.spec.c:22:
-                |> `2 is 2` should not be true
+                |> `2 is 2` should be false
 
         ✓ it succeeds `assert_that_int`
         ✗ it fails `assert_that_int`

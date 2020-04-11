@@ -1,0 +1,16 @@
+#include "prime_factors.h"
+
+vector *factors_of(int remainder) {
+    vector *factors = new_vector();
+    
+    int divisor = 2;
+
+    while(remainder > 1) {
+        while(remainder % divisor == 0) {
+            vector_add(factors, divisor);
+            remainder /= divisor;
+        }
+        divisor++;
+    }
+    return factors;
+}

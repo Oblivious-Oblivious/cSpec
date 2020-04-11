@@ -107,9 +107,11 @@ static size_t _get_timer(void) {
 /***** DATA STRUCTURES *****/
 
 /** @param bool -> A 'big' enough size to hold both 1 and 0 **/
-typedef unsigned char bool;
-#define true 1
-#define false 0
+#ifndef bool
+    typedef unsigned char bool;
+    #define true 1
+    #define false 0
+#endif
 
 /**
  * @func: _lambda
@@ -1019,7 +1021,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         _string_add_str(_cspec->test_result_message, #test); \
         _string_add_str(_cspec->test_result_message, "`"); \
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE)); \
-        _string_add_str(_cspec->test_result_message, " should not be true\n"); \
+        _string_add_str(_cspec->test_result_message, " should be false\n"); \
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->RESET)); \
         \
         \
@@ -1033,7 +1035,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         _string_add_str(_cspec->assert_result, "`"); \
         _string_add_str(_cspec->assert_result, #test); \
         _string_add_str(_cspec->assert_result, "`"); \
-        _string_add_str(_cspec->assert_result, " should not be true\n"); \
+        _string_add_str(_cspec->assert_result, " should be false\n"); \
         _vector_add(_cspec->list_of_asserts, _cspec->assert_result); \
     } \
 )
@@ -1057,12 +1059,12 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
     _cspec->assert_result = _new_string(""); \
     _cspec->current_actual = _new_string(""); \
     _cspec->current_expected = _new_string(""); \
-    _string_add_int(_cspec->current_actual, actual); \
-    _string_add_int(_cspec->current_expected, expected); \
-    \
     /* Convert for comparison */ \
     int expected_ = (expected); \
     int actual_ = (actual); \
+    _string_add_int(_cspec->current_actual, actual_); \
+    _string_add_int(_cspec->current_expected, expected_); \
+    \
 	if(expected_ != actual_) { \
         _cspec->status_of_test = _FAILING; \
         _write_position_in_file(); \
@@ -1086,12 +1088,12 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
     _cspec->assert_result = _new_string(""); \
     _cspec->current_actual = _new_string(""); \
     _cspec->current_expected = _new_string(""); \
-    _string_add_int(_cspec->current_actual, actual); \
-    _string_add_int(_cspec->current_expected, expected); \
-    \
     /* Convert for comparison */ \
     int expected_ = (expected); \
     int actual_ = (actual); \
+    _string_add_int(_cspec->current_actual, actual); \
+    _string_add_int(_cspec->current_expected, expected); \
+    \
 	if(expected_ == actual_) { \
 		_cspec->status_of_test = _FAILING; \
         _write_position_in_file(); \
