@@ -582,7 +582,36 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 
 
 
-/***** GLOBALS *****/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***** INTERFACE *****/
 
 /**
  * @param _PASSING -> Set for passing tests
@@ -603,14 +632,6 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
     __VA_ARGS__ \
 } while(0)
 
-/** Abs for floats **/
-#define _fabs(value) ((value < 0) ? (-value) : (value))
-
-
-
-
-/***** INTERFACE *****/
-
 #define is ==
 #define isnot !=
 #define not !
@@ -621,7 +642,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 
 /**
  * @macro: spec
- * @desc: Call the main automation function if defined
+ * @desc: Call the main automation function
  **/
 #define spec(...) \
     int main(int argc, char **argv) { \
@@ -646,7 +667,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         && !__streql(type_of_tests, "skipped") \
         && !__streql(type_of_tests, "all")) { \
             printf("\n\033[1;31mInput a type of test to log passing|failing|skipped|all\033[0m\n\n"); \
-            return; /* Exit the function */\
+            return; /* Exit the function */ \
         } \
         \
         \
@@ -1050,26 +1071,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
     /* Intermediate block of code delaying expansion */ \
     _cspec->current_file = __FILE__; \
     _cspec->current_line = __LINE__; \
-    \
-    /* Actual assert code */ \
-    __assert_that_int(inner); \
-)
-#define __assert_that_int(actual, expected) _BLOCK( \
-    _cspec->position_in_file = _new_string(""); \
-    _cspec->assert_result = _new_string(""); \
-    _cspec->current_actual = _new_string(""); \
-    _cspec->current_expected = _new_string(""); \
-    /* Convert for comparison */ \
-    int expected_ = (expected); \
-    int actual_ = (actual); \
-    _string_add_int(_cspec->current_actual, actual_); \
-    _string_add_int(_cspec->current_expected, expected_); \
-    \
-	if(expected_ != actual_) { \
-        _cspec->status_of_test = _FAILING; \
-        _write_position_in_file(); \
-        _write_assert_actual_expected(); \
-    } \
+    _call_assert_that_int(inner); \
 )
 
 /**
@@ -1081,24 +1083,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 #define nassert_that_int(inner) _BLOCK( \
     _cspec->current_file = __FILE__; \
     _cspec->current_line = __LINE__; \
-    __nassert_that_int(inner); \
-)
-#define __nassert_that_int(actual, expected) _BLOCK( \
-    _cspec->position_in_file = _new_string(""); \
-    _cspec->assert_result = _new_string(""); \
-    _cspec->current_actual = _new_string(""); \
-    _cspec->current_expected = _new_string(""); \
-    /* Convert for comparison */ \
-    int expected_ = (expected); \
-    int actual_ = (actual); \
-    _string_add_int(_cspec->current_actual, actual); \
-    _string_add_int(_cspec->current_expected, expected); \
-    \
-	if(expected_ == actual_) { \
-		_cspec->status_of_test = _FAILING; \
-        _write_position_in_file(); \
-        _write_nassert_actual_expected(); \
-    } \
+    _call_nassert_that_int(inner); \
 )
 
 /**
@@ -1110,24 +1095,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 #define assert_that_double(inner) _BLOCK( \
     _cspec->current_file = __FILE__; \
     _cspec->current_line = __LINE__; \
-    __assert_that_double(inner); \
-)
-#define __assert_that_double(actual, expected) _BLOCK( \
-    _cspec->position_in_file = _new_string(""); \
-    _cspec->assert_result = _new_string(""); \
-    _cspec->current_actual = _new_string(""); \
-    _cspec->current_expected = _new_string(""); \
-    _string_add_double_precision(_cspec->current_actual, actual); \
-    _string_add_double_precision(_cspec->current_expected, expected); \
-    \
-    /* Calculate the margin to which the difference
-        is too big so the test fails */ \
-    double diff = (actual) - (expected); \
-	if(_fabs(diff) > 1E-12) { \
-        _cspec->status_of_test = _FAILING; \
-        _write_position_in_file(); \
-        _write_assert_actual_expected(); \
-    } \
+    _call_assert_that_double(inner); \
 )
 
 /**
@@ -1139,24 +1107,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 #define nassert_that_double(inner) _BLOCK( \
     _cspec->current_file = __FILE__; \
     _cspec->current_line = __LINE__; \
-    __nassert_that_double(inner); \
-)
-#define __nassert_that_double(actual, expected) _BLOCK( \
-    _cspec->position_in_file = _new_string(""); \
-    _cspec->assert_result = _new_string(""); \
-    _cspec->current_actual = _new_string(""); \
-    _cspec->current_expected = _new_string(""); \
-    _string_add_double_precision(_cspec->current_actual, actual); \
-    _string_add_double_precision(_cspec->current_expected, expected); \
-    \
-    /* Calculate the margin to which the difference
-        is too big so the test fails */ \
-    double diff = (actual) - (expected); \
-	if(!(_fabs(diff) > 1E-12)) { \
-		_cspec->status_of_test = _FAILING; \
-        _write_position_in_file(); \
-        _write_nassert_actual_expected(); \
-    } \
+    _call_nassert_that_double(inner); \
 )
 
 /**
@@ -1168,18 +1119,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 #define assert_that_string(inner) _BLOCK( \
     _cspec->current_file = __FILE__; \
     _cspec->current_line = __LINE__; \
-    __assert_that_string(inner); \
-)
-#define __assert_that_string(actual, expected) _BLOCK( \
-    _cspec->position_in_file = _new_string(""); \
-    _cspec->assert_result = _new_string(""); \
-    _cspec->current_expected = _new_string(expected); \
-    _cspec->current_actual = _new_string(actual); \
-	if(!(__streql((expected), (actual)))) { \
-        _cspec->status_of_test = _FAILING; \
-        _write_position_in_file(); \
-        _write_assert_actual_expected(); \
-    } \
+    _call_assert_that_string(inner); \
 )
 
 /**
@@ -1191,18 +1131,33 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 #define nassert_that_string(inner) _BLOCK( \
     _cspec->current_file = __FILE__; \
     _cspec->current_line = __LINE__; \
-    __nassert_that_string(inner); \
+    _call_nassert_that_string(inner); \
 )
-#define __nassert_that_string(actual, expected) _BLOCK( \
-    _cspec->position_in_file = _new_string(""); \
-    _cspec->assert_result = _new_string(""); \
-    _cspec->current_expected = _new_string(expected); \
-    _cspec->current_actual = _new_string(actual); \
-	if(__streql((expected), (actual))) { \
-		_cspec->status_of_test = _FAILING; \
-        _write_position_in_file(); \
-        _write_nassert_actual_expected(); \
-    } \
+
+/**
+ * @macro: assert_that_value
+ * @desc: Generic assertion between 2 values
+ * @param actual -> The value given by the user
+ * @param expected -> The value to test against
+ **/
+#define assert_that_value(inner) __assert_that_value(inner)
+#define __assert_that_value(actual, expected) _BLOCK( \
+    _cspec->current_file = __FILE__; \
+    _cspec->current_line = __LINE__; \
+    _get_typed_assertion(actual, expected); \
+)
+
+/**
+ * @macro: nassert_that_value
+ * @desc: Generic `not` assertion between 2 values
+ * @param actual -> The value given by the user
+ * @param expected -> The value to test against
+ **/
+#define nassert_that_value(inner) __nassert_that_value(inner)
+#define __nassert_that_value(actual, expected) _BLOCK( \
+    _cspec->current_file = __FILE__; \
+    _cspec->current_line = __LINE__; \
+    _get_typed_nassertion(actual, expected); \
 )
 
 #ifdef _C11
@@ -1248,44 +1203,10 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
     /* If C11 is not available, throw error messages
         when generic assertions are called */
     #define _get_typed_assertion(actual, expected) \
-        _error_assertion_not_supported(actual, expected)
+        _error_assertion_not_supported()
     #define _get_typed_nassertion(actual, expected) \
-        _error_assertion_not_supported(actual, expected)
+        _error_assertion_not_supported()
 #endif
-
-/**
- * @macro: assert_that_value
- * @desc: Generic assertion between 2 values
- * @param actual -> The value given by the user
- * @param expected -> The value to test against
- **/
-#define assert_that_value(inner) __assert_that_value(inner)
-#define __assert_that_value(actual, expected) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _get_typed_assertion(actual, expected); \
-)
-
-/**
- * @macro: nassert_that_value
- * @desc: Generic `not` assertion between 2 values
- * @param actual -> The value given by the user
- * @param expected -> The value to test against
- **/
-#define nassert_that_value(inner) __nassert_that_value(inner)
-#define __nassert_that_value(actual, expected) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _get_typed_nassertion(actual, expected); \
-)
-
-/**
- * @macro: _error_assertion_not_supported
- * @desc: Throw an error message
- **/
-#define _error_assertion_not_supported(actual, expected) _BLOCK( \
-    printf("Error. Generic assertions not supported for this compiler.\n"); \
-)
 
 /**
  * @macro: export_test_results
@@ -1329,171 +1250,27 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
     } \
 )
 
-/**
- * @macro: _report_time_taken_for_tests
- * @desc: Report the number of tests and time taken while testing
- **/
-#define _report_time_taken_for_tests() _BLOCK( \
-    printf("\n%s● %d tests\n%s✓ %d passing\n%s✗ %d failing\n%s- %d skipped\n", \
-    _string_get(_cspec->YELLOW), \
-    _cspec->number_of_tests, \
-    _string_get(_cspec->GREEN), \
-    _cspec->number_of_passing_tests, \
-    _string_get(_cspec->RED), \
-    _cspec->number_of_failing_tests, \
-    _string_get(_cspec->GRAY), \
-    _cspec->number_of_skipped_tests, \
-    _string_get(_cspec->RESET)); \
-    \
-    /* Print in seconds if the time is more than 100ms */ \
-    if(_cspec->total_time_taken_for_tests > 100000000) { \
-        printf("%s★ Finished in %.5f seconds%s\n", \
-        _string_get(_cspec->CYAN), \
-        _cspec->total_time_taken_for_tests / 1000000000.0, \
-        _string_get(_cspec->RESET)); \
-    } \
-    /* Else print in miliseconds */ \
-    else {\
-        printf("%s★ Finished in %.5f ms%s\n", \
-        _string_get(_cspec->CYAN), \
-        _cspec->total_time_taken_for_tests / 1000000.0, \
-        _string_get(_cspec->RESET)); \
-    } \
-)
 
 
 
 
-/***** DEFINITIONS *****/
 
-/**
- * @macro: _write_position_in_file
- * @desc: Setup file position and line number for the current assert
- **/
-#define _write_position_in_file() _BLOCK( \
-    _string_add_str(_cspec->position_in_file, _cspec->current_file); \
-    _string_add_str(_cspec->position_in_file, ":"); \
-    _string_add_int(_cspec->position_in_file, _cspec->current_line); \
-    _string_add_str(_cspec->position_in_file, ":\n"); \
-)
 
-/**
- * @func: _write_assert_actual_expected
- * @desc: Setup the assert description for printing and exporting
- **/
-#define _write_assert_actual_expected() _BLOCK( \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab)); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE)); \
-    _string_add_str(_cspec->test_result_message, "    "); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->position_in_file)); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab)); \
-    _string_add_str(_cspec->test_result_message, "        |> "); \
-    _string_add_str(_cspec->test_result_message, "`"); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->current_expected)); \
-    _string_add_str(_cspec->test_result_message, "` expected but got "); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->RED)); \
-    _string_add_str(_cspec->test_result_message, "`"); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->current_actual)); \
-    _string_add_str(_cspec->test_result_message, "`\n"); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->RESET)); \
-    \
-    \
-    \
-    \
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab)); \
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->position_in_file)); \
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab)); \
-    _string_add_str(_cspec->assert_result, "        |> "); \
-    _string_add_str(_cspec->assert_result, "`"); \
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->current_expected)); \
-    _string_add_str(_cspec->assert_result, "` expected but got "); \
-    _string_add_str(_cspec->assert_result, "`"); \
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->current_actual)); \
-    _string_add_str(_cspec->assert_result, "`\n"); \
-    _vector_add(_cspec->list_of_asserts, _cspec->assert_result); \
-)
 
-/**
- * @func: _write_nassert_actual_expected
- * @desc: Setup the `not` assert description for printing and exporting
- **/
-#define _write_nassert_actual_expected() _BLOCK( \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab)); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE)); \
-    _string_add_str(_cspec->test_result_message, "    "); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->position_in_file)); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab)); \
-    _string_add_str(_cspec->test_result_message, "        |> "); \
-    _string_add_str(_cspec->test_result_message, "expected that `"); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->current_expected)); \
-    _string_add_str(_cspec->test_result_message, "` would differ from "); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->RED)); \
-    _string_add_str(_cspec->test_result_message, "`"); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->current_actual)); \
-    _string_add_str(_cspec->test_result_message, "`"); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE)); \
-    _string_add_str(_cspec->test_result_message, " but they are the same\n"); \
-    _string_add_str(_cspec->test_result_message, _string_get(_cspec->RESET)); \
-    \
-    \
-    \
-    \
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab)); \
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->position_in_file)); \
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab)); \
-    _string_add_str(_cspec->assert_result, "        |> "); \
-    _string_add_str(_cspec->assert_result, "expected that `"); \
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->current_expected)); \
-    _string_add_str(_cspec->assert_result, "` would differ from "); \
-    _string_add_str(_cspec->assert_result, "`"); \
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->current_actual)); \
-    _string_add_str(_cspec->assert_result, "`"); \
-    _string_add_str(_cspec->assert_result, " but they are the same\n"); \
-    _vector_add(_cspec->list_of_asserts, _cspec->assert_result); \
-)
 
-/**
- * @macro: _insert_it_block_in_list_of_its
- * @desc: Inserts the it block in its designated vector index
- **/
-#define _insert_it_block_in_list_of_its() _BLOCK( \
-    /* Setup the it block vector */ \
-    _vector *it_block = _new_vector(); \
-    _vector_add(it_block, _cspec->list_of_asserts); \
-    _vector_add(it_block, _cspec->name_of_tested_proc); \
-    _vector_add(it_block, _cspec->status_of_test); \
-    \
-    if(_cspec->in_context_block) { \
-        /* Insert in a context block */ \
-        if(_vector_length(_cspec->list_of_describes) > 1) { \
-            /* Stupid indexing for finding the correct nested blocks */ \
-            _vector *desc_block = _vector_get(_cspec->list_of_describes, \
-            -(_vector_length(_cspec->list_of_describes) - _cspec->inner_nest - 1)); \
-            _vector *list_of_cons = _vector_get(desc_block, 1); \
-            _vector *con_block = _vector_get(list_of_cons, \
-            _vector_length(list_of_cons) - 1); \
-            _vector *list_of_con_its = _vector_get(con_block, 0); \
-            _vector_add(list_of_con_its, it_block); \
-        }\
-        else { \
-            _vector *desc_block = _vector_get(_cspec->list_of_describes, \
-            _vector_length(_cspec->list_of_describes) - 1); \
-            _vector *list_of_cons = _vector_get(desc_block, 1); \
-            _vector *con_block = _vector_get(list_of_cons, \
-            _vector_length(list_of_cons) - 1); \
-            _vector *list_of_con_its = _vector_get(con_block, 0); \
-            _vector_add(list_of_con_its, it_block); \
-        } \
-    } \
-    else { \
-        /* Insert in a describe block */ \
-        _vector *desc_block = _vector_get(_cspec->list_of_describes, \
-        _vector_length(_cspec->list_of_describes) - 1 - _cspec->outer_nest); \
-        _vector *list_of_desc_its = _vector_get(desc_block, 0); \
-        _vector_add(list_of_desc_its, it_block); \
-    } \
-    /* it([asserts], name, status) */ \
-)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1501,63 +1278,306 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 /***** STATIC FUNCTIONS *****/
 
 /**
+ * @func: _fabs
+ * @desc: Abs for floats
+ * @param value -> The value to get `abs` for
+ * @return Absolute value
+ **/
+static double _fabs(double value) {
+    return value < 0 ? (-value) : (value);
+}
+
+/**
+ * @func: _error_assertion_not_supported
+ * @desc: Throw an error message
+ **/
+static void _error_assertion_not_supported(void) {
+    printf("Error. Generic assertions not supported for this compiler.\n");
+}
+
+/**
+ * @func: _write_position_in_file
+ * @desc: Setup file position and line number for the current assert
+ **/
+static void _write_position_in_file(void) {
+    _string_add_str(_cspec->position_in_file, _cspec->current_file);
+    _string_add_str(_cspec->position_in_file, ":");
+    _string_add_int(_cspec->position_in_file, _cspec->current_line);
+    _string_add_str(_cspec->position_in_file, ":\n");
+}
+
+/**
+ * @func: _write_assert_actual_expected
+ * @desc: Setup the assert description for printing and exporting
+ **/
+static void _write_assert_actual_expected(void) {
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab));
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE));
+    _string_add_str(_cspec->test_result_message, "    ");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->position_in_file));
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab));
+    _string_add_str(_cspec->test_result_message, "        |> ");
+    _string_add_str(_cspec->test_result_message, "`");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->current_expected));
+    _string_add_str(_cspec->test_result_message, "` expected but got ");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->RED));
+    _string_add_str(_cspec->test_result_message, "`");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->current_actual));
+    _string_add_str(_cspec->test_result_message, "`\n");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->RESET));
+/****************************************************************************/
+    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab));
+    _string_add_str(_cspec->assert_result, _string_get(_cspec->position_in_file));
+    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab));
+    _string_add_str(_cspec->assert_result, "        |> ");
+    _string_add_str(_cspec->assert_result, "`");
+    _string_add_str(_cspec->assert_result, _string_get(_cspec->current_expected));
+    _string_add_str(_cspec->assert_result, "` expected but got ");
+    _string_add_str(_cspec->assert_result, "`");
+    _string_add_str(_cspec->assert_result, _string_get(_cspec->current_actual));
+    _string_add_str(_cspec->assert_result, "`\n");
+    _vector_add(_cspec->list_of_asserts, _cspec->assert_result);
+}
+
+/**
+ * @func: _write_nassert_actual_expected
+ * @desc: Setup the `not` assert description for printing and exporting
+ **/
+static void _write_nassert_actual_expected(void) {
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab));
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE));
+    _string_add_str(_cspec->test_result_message, "    ");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->position_in_file));
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab));
+    _string_add_str(_cspec->test_result_message, "        |> ");
+    _string_add_str(_cspec->test_result_message, "expected that `");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->current_expected));
+    _string_add_str(_cspec->test_result_message, "` would differ from ");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->RED));
+    _string_add_str(_cspec->test_result_message, "`");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->current_actual));
+    _string_add_str(_cspec->test_result_message, "`");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE));
+    _string_add_str(_cspec->test_result_message, " but they are the same\n");
+    _string_add_str(_cspec->test_result_message, _string_get(_cspec->RESET));
+/****************************************************************************/
+    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab));
+    _string_add_str(_cspec->assert_result, _string_get(_cspec->position_in_file));
+    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab));
+    _string_add_str(_cspec->assert_result, "        |> ");
+    _string_add_str(_cspec->assert_result, "expected that `");
+    _string_add_str(_cspec->assert_result, _string_get(_cspec->current_expected));
+    _string_add_str(_cspec->assert_result, "` would differ from ");
+    _string_add_str(_cspec->assert_result, "`");
+    _string_add_str(_cspec->assert_result, _string_get(_cspec->current_actual));
+    _string_add_str(_cspec->assert_result, "`");
+    _string_add_str(_cspec->assert_result, " but they are the same\n");
+    _vector_add(_cspec->list_of_asserts, _cspec->assert_result);
+}
+
+/**
  * @func: _call_assert_that_int
- * @desc: A function indirection for calling an assertion macro
+ * @desc: Assert that the expected integer is equal to the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_assert_that_int(int actual, int expected) {
-    __assert_that_int(actual, expected);
+    _cspec->position_in_file = _new_string("");
+    _cspec->assert_result = _new_string("");
+    _cspec->current_actual = _new_string("");
+    _cspec->current_expected = _new_string("");
+
+    _string_add_int(_cspec->current_actual, actual);
+    _string_add_int(_cspec->current_expected, expected);
+
+	if(expected != actual) {
+        _cspec->status_of_test = _FAILING;
+        _write_position_in_file();
+        _write_assert_actual_expected();
+    }
 }
 
 /**
  * @func: _call_assert_that_double
- * @desc: A function indirection for calling an assertion macro
+ * @desc: Assert that the expected double is different than the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_assert_that_double(double actual, double expected) {
-    __assert_that_double(actual, expected);
+    _cspec->position_in_file = _new_string("");
+    _cspec->assert_result = _new_string("");
+    _cspec->current_actual = _new_string("");
+    _cspec->current_expected = _new_string("");
+    _string_add_double_precision(_cspec->current_actual, actual);
+    _string_add_double_precision(_cspec->current_expected, expected);
+
+    /* Calculate the margin to which the difference
+        is too big so the test fails */
+    double diff = actual - expected;
+	if(_fabs(diff) > 1E-12) {
+        _cspec->status_of_test = _FAILING;
+        _write_position_in_file();
+        _write_assert_actual_expected();
+    }
 }
 
 /**
  * @func: _call_assert_that_string
- * @desc: A function indirection for calling an assertion macro
+ * @desc: Assert that the expected string is equal to the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_assert_that_string(char *actual, char *expected) {
-    __assert_that_string(actual, expected);
+    _cspec->position_in_file = _new_string("");
+    _cspec->assert_result = _new_string("");
+    _cspec->current_expected = _new_string(expected);
+    _cspec->current_actual = _new_string(actual);
+
+	if(!(__streql(expected, actual))) {
+        _cspec->status_of_test = _FAILING;
+        _write_position_in_file();
+        _write_assert_actual_expected();
+    }
 }
 
 /**
  * @func: _call_nassert_that_int
- * @desc: A function indirection for calling an assertion macro
+ * @desc: Assert that the expected integer is different than the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_nassert_that_int(int actual, int expected) {
-    __nassert_that_int(actual, expected);
+    _cspec->position_in_file = _new_string("");
+    _cspec->assert_result = _new_string("");
+    _cspec->current_actual = _new_string("");
+    _cspec->current_expected = _new_string("");
+
+    _string_add_int(_cspec->current_actual, actual);
+    _string_add_int(_cspec->current_expected, expected);
+
+	if(expected == actual) {
+		_cspec->status_of_test = _FAILING;
+        _write_position_in_file();
+        _write_nassert_actual_expected();
+    }
 }
 
 /**
  * @func: _call_nassert_that_double
- * @desc: A function indirection for calling an assertion macro
+ * @desc: Assert that the expected double is different than the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_nassert_that_double(double actual, double expected) {
-    __nassert_that_double(actual, expected);
+    _cspec->position_in_file = _new_string("");
+    _cspec->assert_result = _new_string("");
+    _cspec->current_actual = _new_string("");
+    _cspec->current_expected = _new_string("");
+    _string_add_double_precision(_cspec->current_actual, actual);
+    _string_add_double_precision(_cspec->current_expected, expected);
+
+    /* Calculate the margin to which the difference
+        is too big so the test fails */
+    double diff = actual - expected;
+	if(!(_fabs(diff) > 1E-12)) {
+		_cspec->status_of_test = _FAILING;
+        _write_position_in_file();
+        _write_nassert_actual_expected();
+    }
 }
 
 /**
  * @func: _call_nassert_that_string
- * @desc: A function indirection for calling an assertion macro
+ * @desc: Assert that the expected string is different than the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_nassert_that_string(char *actual, char *expected) {
-    __nassert_that_string(actual, expected);
+    _cspec->position_in_file = _new_string("");
+    _cspec->assert_result = _new_string("");
+    _cspec->current_expected = _new_string(expected);
+    _cspec->current_actual = _new_string(actual);
+
+	if(__streql(expected, actual)) {
+		_cspec->status_of_test = _FAILING;
+        _write_position_in_file();
+        _write_nassert_actual_expected();
+    }
+}
+
+/**
+ * @func: _insert_it_block_in_list_of_its
+ * @desc: Inserts the it block in its designated vector index
+ **/
+static void _insert_it_block_in_list_of_its(void) {
+    /* Setup the it block vector */
+    _vector *it_block = _new_vector();
+    _vector_add(it_block, _cspec->list_of_asserts);
+    _vector_add(it_block, _cspec->name_of_tested_proc);
+    _vector_add(it_block, _cspec->status_of_test);
+
+    if(_cspec->in_context_block) {
+        /* Insert in a context block */
+        if(_vector_length(_cspec->list_of_describes) > 1) {
+            /* Stupid indexing for finding the correct nested blocks */
+            _vector *desc_block = _vector_get(_cspec->list_of_describes,
+                -(_vector_length(_cspec->list_of_describes) - _cspec->inner_nest - 1));
+            _vector *list_of_cons = _vector_get(desc_block, 1);
+            _vector *con_block = _vector_get(list_of_cons,
+                _vector_length(list_of_cons) - 1);
+            _vector *list_of_con_its = _vector_get(con_block, 0);
+            _vector_add(list_of_con_its, it_block);
+        }
+        else {
+            _vector *desc_block = _vector_get(_cspec->list_of_describes,
+                _vector_length(_cspec->list_of_describes) - 1);
+            _vector *list_of_cons = _vector_get(desc_block, 1);
+            _vector *con_block = _vector_get(list_of_cons,
+                _vector_length(list_of_cons) - 1);
+            _vector *list_of_con_its = _vector_get(con_block, 0);
+            _vector_add(list_of_con_its, it_block);
+        }
+    }
+    else {
+        /* Insert in a describe block */
+        _vector *desc_block = _vector_get(_cspec->list_of_describes,
+            _vector_length(_cspec->list_of_describes) - 1 - _cspec->outer_nest);
+        _vector *list_of_desc_its = _vector_get(desc_block, 0);
+        _vector_add(list_of_desc_its, it_block);
+    }
+    /* it([asserts], name, status) */
+}
+
+/**
+ * @func: _report_time_taken_for_tests
+ * @desc: Report the number of tests and time taken while testing
+ **/
+static void _report_time_taken_for_tests(void) {
+    printf("\n%s● %d tests\n%s✓ %d passing\n%s✗ %d failing\n%s- %d skipped\n",
+    _string_get(_cspec->YELLOW),
+    _cspec->number_of_tests,
+    _string_get(_cspec->GREEN),
+    _cspec->number_of_passing_tests,
+    _string_get(_cspec->RED),
+    _cspec->number_of_failing_tests,
+    _string_get(_cspec->GRAY),
+    _cspec->number_of_skipped_tests,
+    _string_get(_cspec->RESET));
+
+    /* Print in seconds if the time is more than 100ms */
+    if(_cspec->total_time_taken_for_tests > 100000000) {
+        printf("%s★ Finished in %.5f seconds%s\n",
+        _string_get(_cspec->CYAN),
+        _cspec->total_time_taken_for_tests / 1000000000.0,
+        _string_get(_cspec->RESET));
+    }
+    /* Else print in miliseconds */
+    else {
+        printf("%s★ Finished in %.5f ms%s\n",
+        _string_get(_cspec->CYAN),
+        _cspec->total_time_taken_for_tests / 1000000.0,
+        _string_get(_cspec->RESET));
+    }
 }
 
 /**
