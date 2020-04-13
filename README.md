@@ -1,8 +1,13 @@
 # cSpec - A Full Scale Testing Library
 CSpec is a lightweight, compile time unit testing library for TDD and BDD models, heavily inspired from ruby's `rspec`.
 
+![alt text][logo]
+[logo]: https://github.com/Oblivious-Oblivious/cSpec/tree/master/images/simple_example.png
+
 # Why
 `C` as a language is notorious for allowing the programmer to make critical errors on their code. With software gradually becoming more and more complicated it is pivotal that proper unit tests are developed as well as code being test driven, to ensure that production code is easy to refactor and maintain. `cSpec` provides an interface for creating both low level tests in the form of simple assertions, as well as high level integration or even acceptance tests in the form of `describes` or `contexts`. These tools will allow the programmer to encapsulate test modules that will be maintainable throughout huge projects.
+
+
 
 # Features
 - Assertion macro for test blocks
