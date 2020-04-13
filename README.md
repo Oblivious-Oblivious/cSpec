@@ -366,6 +366,26 @@ One useful use case of `assert_that_value` could be comparing floating point val
 
 ------------------------------------
 
+# Creating asserts
+When calling asserts, the main purpose is to validate some expression, to check for a true of false condition. cSpec uses a few abstractions for making assert statements look more natural.
+
+```C
+#define is ==
+#define isnot !=
+#define not !
+#define and &&
+#define or ||
+#define equals ,
+#define to
+```
+
+Using those constructs to call asserts we use the power of the C preprocessor to expand the macro like this:
+- assert_that_int(actual equals to expected) --> assert_that_int(actual, expected)
+- assert_that(value isnot 2) --> assert_that(value != 2)
+- ...
+
+------------------------------------
+
 # Implementation
 All functionality is included in a single header file `cSpec.h`. You can include the header into your test files. Production code and test code are completely separate. The library modifies a global struct of variables that are visible thoughout all tests. Variables include file names, lines of asserts, assert result strings, status of tests and more.
 
