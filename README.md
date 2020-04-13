@@ -416,7 +416,7 @@ Suppose we want to test a C project with a header and implementation file.
  *      question of life the universe and everything
  * @return The number
  **/
-int find_meaning_of_life();
+int find_meaning_of_life(void);
 
 #endif
 ```
@@ -425,7 +425,7 @@ int find_meaning_of_life();
 ```C
 #include "meaning_of_life.h"
 
-int find_meaning_of_life() {
+int find_meaning_of_life(void) {
     if(1 == 1) {
         return 42;
     }
