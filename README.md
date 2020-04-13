@@ -503,4 +503,7 @@ spec({
 gcc meaning_of_life.c life.spec.c  -O3 -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-pointer-to-int-cast
 ```
 
+**Result:**
+![](https://github.com/Oblivious-Oblivious/cSpec/blob/master/images/meaning_of_life_example.png)
+
 It is a preety satisfying DSL, very intuitive and close to high level designs.
