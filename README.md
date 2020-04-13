@@ -2,6 +2,7 @@
 CSpec is a lightweight, compile time unit testing library for TDD and BDD models, heavily inspired from ruby's `rspec`.
 
 ![alt text][logo]
+
 [logo]: https://github.com/Oblivious-Oblivious/cSpec/tree/master/images/simple_example.png
 
 # Why
