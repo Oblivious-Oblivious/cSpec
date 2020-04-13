@@ -474,4 +474,9 @@ spec({
 });
 ```
 
+**You can compile the file as such:**
+```BASH
+gcc meaning_of_life.c life.spec.c  -O3 -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-pointer-to-int-cast
+```
+
 It is a preety satisfying DSL, very intuitive and close to high level designs.
