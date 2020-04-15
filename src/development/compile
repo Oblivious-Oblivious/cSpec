@@ -1,0 +1,12 @@
+#!/bin/sh
+
+cat << EOF > cSpec.h
+#ifndef __CSPEC_H_
+#define __CSPEC_H_
+EOF
+
+cat includes.h data_structures.h interface.h asserts.h functionality.h >> cSpec.h
+cat << EOF >> cSpec.h
+
+#endif
+EOF
