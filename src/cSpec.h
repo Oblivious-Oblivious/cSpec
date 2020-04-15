@@ -1,9 +1,7 @@
 #ifndef __CSPEC_H_
 #define __CSPEC_H_
-
-/** ------------------------------------- **/
-/* Standalone header file for unit testing */
-/** ------------------------------------- **/
+#ifndef __INCLUDES_H_
+#define __INCLUDES_H_
 
 #include <stdlib.h> /* malloc, calloc, realloc, free */
 #include <signal.h> /* singal, kill */
@@ -102,8 +100,9 @@ static size_t _get_timer(void) {
     #endif
 }
 
-
-
+#endif
+#ifndef __DATA_STRUCTURES_H_
+#define __DATA_STRUCTURES_H_
 
 /***** DATA STRUCTURES *****/
 
@@ -580,39 +579,9 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
     return dup;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***** INTERFACE *****/
+#endif
+#ifndef __INTERFACE_H_
+#define __INTERFACE_H_
 
 /**
  * @param _PASSING -> Set for passing tests
@@ -1263,30 +1232,9 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         _compare_values(actual, expected, comparison_method); \
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***** STATIC FUNCTIONS *****/
+#endif
+#ifndef __FUNCTIONALITY_H_
+#define __FUNCTIONALITY_H_
 
 /**
  * @macro: _compare_values
@@ -1990,5 +1938,7 @@ static void _setup_test_data(void) {
     signal(SIGSEGV, _signal_handler);
     signal(SIGTERM, _signal_handler);
 }
+
+#endif
 
 #endif

@@ -10,3 +10,5 @@ cat << EOF >> cSpec.h
 
 #endif
 EOF
+
+mv cSpec.h ../
