@@ -993,20 +993,18 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE)); \
         _string_add_str(_cspec->test_result_message, " should be true\n"); \
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->RESET)); \
-        \
-        \
-        \
-        \
+/*************************************************************************/ \
         /* Craft the string builder for text output (miss the color codes) */ \
-        _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab)); \
-        _string_add_str(_cspec->assert_result, _string_get(_cspec->position_in_file)); \
-        _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab)); \
-        _string_add_str(_cspec->assert_result, "        |> "); \
-        _string_add_str(_cspec->assert_result, "`"); \
+        _string_add_str(_cspec->assert_result, "|> `"); \
         _string_add_str(_cspec->assert_result, #test); \
         _string_add_str(_cspec->assert_result, "`"); \
         _string_add_str(_cspec->assert_result, " should be true\n"); \
-        _vector_add(_cspec->list_of_asserts, _cspec->assert_result); \
+/****************************************************************************/ \
+        _vector *list_of_strings = _new_vector(); \
+        _vector_add(list_of_strings, _string_get(_cspec->position_in_file)); \
+        _vector_add(list_of_strings, _string_get(_cspec->assert_result)); \
+/****************************************************************************/ \
+        _vector_add(_cspec->list_of_asserts, list_of_strings); \
     } \
     \
     /* assert(string_builder) */ \
@@ -1044,20 +1042,18 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE)); \
         _string_add_str(_cspec->test_result_message, " should be false\n"); \
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->RESET)); \
-        \
-        \
-        \
-        \
+/*************************************************************************/ \
         /* Craft the string builder for text output (miss the color codes) */ \
-        _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab)); \
-        _string_add_str(_cspec->assert_result, _string_get(_cspec->position_in_file)); \
-        _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab)); \
-        _string_add_str(_cspec->assert_result, "        |> "); \
-        _string_add_str(_cspec->assert_result, "`"); \
+        _string_add_str(_cspec->assert_result, "|> `"); \
         _string_add_str(_cspec->assert_result, #test); \
         _string_add_str(_cspec->assert_result, "`"); \
         _string_add_str(_cspec->assert_result, " should be false\n"); \
-        _vector_add(_cspec->list_of_asserts, _cspec->assert_result); \
+/****************************************************************************/ \
+        _vector *list_of_strings = _new_vector(); \
+        _vector_add(list_of_strings, _string_get(_cspec->position_in_file)); \
+        _vector_add(list_of_strings, _string_get(_cspec->assert_result)); \
+/****************************************************************************/ \
+        _vector_add(_cspec->list_of_asserts, list_of_strings); \
     } \
 )
 
@@ -1278,6 +1274,35 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 /***** STATIC FUNCTIONS *****/
 
 /**
+ * @macro: _compare_values
+ * @desc: Runs the actual assertion between 2 values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @param func -> The assert function according to data type
+ **/
+#define _compare_values(actual, expected, func) _BLOCK( \
+    if(func(actual, expected)) { \
+        _cspec->status_of_test = _FAILING; \
+        _write_position_in_file(); \
+        _write_assert_actual_expected(); \
+    } \
+)
+
+/**
+ * @macro: _to_string_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @param func -> The `string add` function according to data type
+ **/
+#define _to_string_write(actual, expected, func) _BLOCK( \
+    _cspec->current_actual = _new_string(""); \
+    _cspec->current_expected = _new_string(""); \
+    func(_cspec->current_actual, actual); \
+    func(_cspec->current_expected, expected); \
+)
+
+/**
  * @func: _fabs
  * @desc: Abs for floats
  * @param value -> The value to get `abs` for
@@ -1285,6 +1310,41 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
  **/
 static double _fabs(double value) {
     return value < 0 ? (-value) : (value);
+}
+
+/**
+ * @func: _int_comparison
+ * @desc: A function that compares integers for assertions
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @return a boolean
+ **/
+static bool _int_comparison(int actual, int expected) {
+    return actual == expected;
+}
+
+/**
+ * @func: _double_comparison
+ * @desc: A function that compares doubles for assertions
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @return a boolean
+ **/
+static bool _double_comparison(double actual, double expected) {
+    /* Calculate the margin to which the difference
+        is too big so the test fails */
+    return _fabs(actual - expected) > 1E-12;
+}
+
+/**
+ * @func: _string_comparison
+ * @desc: A function that compares char pointers for assertions
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @return a boolean
+ **/
+static bool _string_comparison(char *actual, char *expected) {
+    return __streql(expected, actual);
 }
 
 /**
@@ -1300,6 +1360,7 @@ static void _error_assertion_not_supported(void) {
  * @desc: Setup file position and line number for the current assert
  **/
 static void _write_position_in_file(void) {
+    _cspec->position_in_file = _new_string("");
     _string_add_str(_cspec->position_in_file, _cspec->current_file);
     _string_add_str(_cspec->position_in_file, ":");
     _string_add_int(_cspec->position_in_file, _cspec->current_line);
@@ -1311,6 +1372,7 @@ static void _write_position_in_file(void) {
  * @desc: Setup the assert description for printing and exporting
  **/
 static void _write_assert_actual_expected(void) {
+    _cspec->assert_result = _new_string("");
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab));
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE));
     _string_add_str(_cspec->test_result_message, "    ");
@@ -1326,17 +1388,18 @@ static void _write_assert_actual_expected(void) {
     _string_add_str(_cspec->test_result_message, "`\n");
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->RESET));
 /****************************************************************************/
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab));
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->position_in_file));
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab));
-    _string_add_str(_cspec->assert_result, "        |> ");
-    _string_add_str(_cspec->assert_result, "`");
+    _string_add_str(_cspec->assert_result, "|> `");
     _string_add_str(_cspec->assert_result, _string_get(_cspec->current_expected));
     _string_add_str(_cspec->assert_result, "` expected but got ");
     _string_add_str(_cspec->assert_result, "`");
     _string_add_str(_cspec->assert_result, _string_get(_cspec->current_actual));
     _string_add_str(_cspec->assert_result, "`\n");
-    _vector_add(_cspec->list_of_asserts, _cspec->assert_result);
+/****************************************************************************/
+    _vector *list_of_strings = _new_vector();
+    _vector_add(list_of_strings, _string_get(_cspec->position_in_file));
+    _vector_add(list_of_strings, _string_get(_cspec->assert_result));
+/****************************************************************************/
+    _vector_add(_cspec->list_of_asserts, list_of_strings);
 }
 
 /**
@@ -1344,6 +1407,7 @@ static void _write_assert_actual_expected(void) {
  * @desc: Setup the `not` assert description for printing and exporting
  **/
 static void _write_nassert_actual_expected(void) {
+    _cspec->assert_result = _new_string("");
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab));
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE));
     _string_add_str(_cspec->test_result_message, "    ");
@@ -1361,18 +1425,19 @@ static void _write_nassert_actual_expected(void) {
     _string_add_str(_cspec->test_result_message, " but they are the same\n");
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->RESET));
 /****************************************************************************/
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab));
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->position_in_file));
-    _string_add_str(_cspec->assert_result, _string_get(_cspec->display_tab));
-    _string_add_str(_cspec->assert_result, "        |> ");
-    _string_add_str(_cspec->assert_result, "expected that `");
+    _string_add_str(_cspec->assert_result, "|> expected that `");
     _string_add_str(_cspec->assert_result, _string_get(_cspec->current_expected));
     _string_add_str(_cspec->assert_result, "` would differ from ");
     _string_add_str(_cspec->assert_result, "`");
     _string_add_str(_cspec->assert_result, _string_get(_cspec->current_actual));
     _string_add_str(_cspec->assert_result, "`");
     _string_add_str(_cspec->assert_result, " but they are the same\n");
-    _vector_add(_cspec->list_of_asserts, _cspec->assert_result);
+/****************************************************************************/
+    _vector *list_of_strings = _new_vector();
+    _vector_add(list_of_strings, _string_get(_cspec->position_in_file));
+    _vector_add(list_of_strings, _string_get(_cspec->assert_result));
+/****************************************************************************/
+    _vector_add(_cspec->list_of_asserts, list_of_strings);
 }
 
 /**
@@ -1382,19 +1447,8 @@ static void _write_nassert_actual_expected(void) {
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_assert_that_int(int actual, int expected) {
-    _cspec->position_in_file = _new_string("");
-    _cspec->assert_result = _new_string("");
-    _cspec->current_actual = _new_string("");
-    _cspec->current_expected = _new_string("");
-
-    _string_add_int(_cspec->current_actual, actual);
-    _string_add_int(_cspec->current_expected, expected);
-
-	if(expected != actual) {
-        _cspec->status_of_test = _FAILING;
-        _write_position_in_file();
-        _write_assert_actual_expected();
-    }
+    _to_string_write(actual, expected, _string_add_int);
+    _compare_values(actual, expected, !_int_comparison);
 }
 
 /**
@@ -1404,21 +1458,8 @@ static void _call_assert_that_int(int actual, int expected) {
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_assert_that_double(double actual, double expected) {
-    _cspec->position_in_file = _new_string("");
-    _cspec->assert_result = _new_string("");
-    _cspec->current_actual = _new_string("");
-    _cspec->current_expected = _new_string("");
-    _string_add_double_precision(_cspec->current_actual, actual);
-    _string_add_double_precision(_cspec->current_expected, expected);
-
-    /* Calculate the margin to which the difference
-        is too big so the test fails */
-    double diff = actual - expected;
-	if(_fabs(diff) > 1E-12) {
-        _cspec->status_of_test = _FAILING;
-        _write_position_in_file();
-        _write_assert_actual_expected();
-    }
+    _to_string_write(actual, expected, _string_add_double_precision);
+    _compare_values(actual, expected, !_double_comparison);
 }
 
 /**
@@ -1428,16 +1469,8 @@ static void _call_assert_that_double(double actual, double expected) {
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_assert_that_string(char *actual, char *expected) {
-    _cspec->position_in_file = _new_string("");
-    _cspec->assert_result = _new_string("");
-    _cspec->current_expected = _new_string(expected);
-    _cspec->current_actual = _new_string(actual);
-
-	if(!(__streql(expected, actual))) {
-        _cspec->status_of_test = _FAILING;
-        _write_position_in_file();
-        _write_assert_actual_expected();
-    }
+    _to_string_write(actual, expected, _string_add_str);
+    _compare_values(actual, expected, !_string_comparison);
 }
 
 /**
@@ -1447,19 +1480,8 @@ static void _call_assert_that_string(char *actual, char *expected) {
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_nassert_that_int(int actual, int expected) {
-    _cspec->position_in_file = _new_string("");
-    _cspec->assert_result = _new_string("");
-    _cspec->current_actual = _new_string("");
-    _cspec->current_expected = _new_string("");
-
-    _string_add_int(_cspec->current_actual, actual);
-    _string_add_int(_cspec->current_expected, expected);
-
-	if(expected == actual) {
-		_cspec->status_of_test = _FAILING;
-        _write_position_in_file();
-        _write_nassert_actual_expected();
-    }
+    _to_string_write(actual, expected, _string_add_int);
+	_compare_values(actual, expected, _int_comparison);
 }
 
 /**
@@ -1469,21 +1491,8 @@ static void _call_nassert_that_int(int actual, int expected) {
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_nassert_that_double(double actual, double expected) {
-    _cspec->position_in_file = _new_string("");
-    _cspec->assert_result = _new_string("");
-    _cspec->current_actual = _new_string("");
-    _cspec->current_expected = _new_string("");
-    _string_add_double_precision(_cspec->current_actual, actual);
-    _string_add_double_precision(_cspec->current_expected, expected);
-
-    /* Calculate the margin to which the difference
-        is too big so the test fails */
-    double diff = actual - expected;
-	if(!(_fabs(diff) > 1E-12)) {
-		_cspec->status_of_test = _FAILING;
-        _write_position_in_file();
-        _write_nassert_actual_expected();
-    }
+    _to_string_write(actual, expected, _string_add_double_precision);
+    _compare_values(actual, expected, _double_comparison);
 }
 
 /**
@@ -1493,16 +1502,8 @@ static void _call_nassert_that_double(double actual, double expected) {
  * @param expected -> The value `actual` is tested against
  **/
 static void _call_nassert_that_string(char *actual, char *expected) {
-    _cspec->position_in_file = _new_string("");
-    _cspec->assert_result = _new_string("");
-    _cspec->current_expected = _new_string(expected);
-    _cspec->current_actual = _new_string(actual);
-
-	if(__streql(expected, actual)) {
-		_cspec->status_of_test = _FAILING;
-        _write_position_in_file();
-        _write_nassert_actual_expected();
-    }
+    _to_string_write(actual, expected, _string_add_str);
+    _compare_values(actual, expected, _string_comparison);
 }
 
 /**
@@ -1585,10 +1586,11 @@ static void _report_time_taken_for_tests(void) {
  * @desc: Writes asserts to an output file
  * @param assert -> The assert string to export
  **/
-static void _fprintf_asserts(_string *assert) {
-    fprintf(_cspec->fd, "%s    %s\n",
+static void _fprintf_asserts(_vector *assert) {
+    fprintf(_cspec->fd, "%s            %s                %s\n",
     _string_get(_cspec->display_tab),
-    _string_get(assert));
+    _vector_get(assert, 0),
+    _vector_get(assert, 1));
 }
 
 /**
