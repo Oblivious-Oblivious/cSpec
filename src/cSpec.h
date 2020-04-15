@@ -1743,10 +1743,9 @@ static void _xml_write_its(_vector *it_block) {
         if(__streql(_string_get(_cspec->type_of_export_tests), "failing")
         || __streql(_string_get(_cspec->type_of_export_tests), "all")) {
             /* Write failing tests */
-            fprintf(_cspec->fd, "            %s<it name=\"%s\" status=\"failing\" time=\"%g ms\">\n",
+            fprintf(_cspec->fd, "            %s<it name=\"%s\", status=\"failing\">\n",
             _string_get(_cspec->display_tab),
-            _string_get(_vector_get(it_block, 1)),
-            -99.99);
+            _string_get(_vector_get(it_block, 1)));
             _vector *asserts = _vector_get(it_block, 0);
 
             /* Call to print the asserts iteratevely for the current it block */
@@ -1759,20 +1758,18 @@ static void _xml_write_its(_vector *it_block) {
         if(__streql(_string_get(_cspec->type_of_export_tests), "skipped")
         || __streql(_string_get(_cspec->type_of_export_tests), "all")) {
             /* Write skipped tests */
-            fprintf(_cspec->fd, "            %s<it name=\"%s\" status=\"skipped\" time=\"%g ms\" />\n",
+            fprintf(_cspec->fd, "            %s<xit name=\"%s\", status=\"skipped\" />\n",
             _string_get(_cspec->display_tab),
-            _string_get(_vector_get(it_block, 1)),
-            -99.99);
+            _string_get(_vector_get(it_block, 1)));
         }
     }
     else if(((int)_vector_get(it_block, 2) == _PASSING)) {
         /* Write passing tests */
         if(__streql(_string_get(_cspec->type_of_export_tests), "passing")
         || __streql(_string_get(_cspec->type_of_export_tests), "all")) {
-            fprintf(_cspec->fd, "            %s<it name=\"%s\" status=\"passing\" time=\"%g ms\" />\n",
+            fprintf(_cspec->fd, "            %s<it name=\"%s\", status=\"passing\" />\n",
             _string_get(_cspec->display_tab),
-            _string_get(_vector_get(it_block, 1)),
-            -99.99);
+            _string_get(_vector_get(it_block, 1)));
         }
     }
 }
@@ -1800,12 +1797,8 @@ static void _xml_write_cons(_vector *con) {
  * @param desc -> The current describe block to iterate against
  **/
 static void _xml_write_describes(_vector *desc) {
-    fprintf(_cspec->fd, "        <describe name=\"%s\", failures=\"%d\" skipped=\"%d\" tests=\"%d\" time=\"%g ms\">\n",
-    _string_get(_vector_get(desc, 2)),
-    -99,
-    -99,
-    -99,
-    -99.99);
+    fprintf(_cspec->fd, "        <describe name=\"%s\">\n",
+    _string_get(_vector_get(desc, 2)));
 
     /* Iterate over the it blocks under the describe block */
     _vector *its = _vector_get(desc, 0);
@@ -1827,12 +1820,11 @@ static void _xml_write_modules(_vector *mod) {
     struct tm tm = *localtime(&t);
 
     _string_delete(_cspec->display_tab);
-    fprintf(_cspec->fd, "    <module name=\"%s\", failures=\"%d\" skipped=\"%d\" tests=\"%d\" time=\"%g ms\" timestamp=\"%d-%02d-%02d %02d:%02d:%02d\">\n",
+    fprintf(_cspec->fd, "    <module name=\"%s\", failures=\"%d\", skipped=\"%d\", tests=\"%d\", timestamp=\"%d-%02d-%02d %02d:%02d:%02d\">\n",
     _string_get(_vector_get(mod, 1)),
     _cspec->number_of_failing_tests,
     _cspec->number_of_skipped_tests,
     _cspec->number_of_tests,
-    -99.99,
     tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
     _vector *descs = _vector_get(mod, 0);
 
