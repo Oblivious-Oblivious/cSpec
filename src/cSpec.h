@@ -1274,6 +1274,20 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 /***** STATIC FUNCTIONS *****/
 
 /**
+ * @macro: define_assert
+ * @desc: Defines a compile time assertion for extended data types
+ * @param name_of_assert -> The name of the new assertion
+ * @param data_type_token -> The data type of the input variables
+ * @param to_string_method -> Custom way to write data type as a string
+ * @param comparison_method -> Custom way of comparing new data types for asserts
+ **/
+#define define_assert(name_of_assert, data_type_token, to_string_method, comparison_method) \
+    static void _call_#name_of_assert(data_type_token actual, data_type_token expected) { \
+        _to_string_write(actual, expected, to_string_method); \
+        _compare_values(actual, expected, comparison_method); \
+    }
+
+/**
  * @macro: _compare_values
  * @desc: Runs the actual assertion between 2 values
  * @param actual -> The value passed by the user
