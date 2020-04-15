@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modules duration="-99.99">
+    <module name="cDataLib", failures="16" skipped="1" tests="38" time="-99.99 ms" timestamp="2020-04-15 21:24:16">
+        <describe name="cSpec functions", failures="-99" skipped="-99" tests="-99" time="-99.99 ms">
+            <it name="succeeds `assert_that`" status="passing" time="-99.99 ms" />
+            <it name="fails `assert_that`" status="failing" time="-99.99 ms">
+                <failure>
+                    <position line="simple.spec.c:15:" />
+                    <error message="|> `1 isnot 1` should be true" />
+                </failure>
+            <it/>
+            <it name="succeeds `nassert_that`" status="passing" time="-99.99 ms" />
+            <it name="fails `nassert_that`" status="failing" time="-99.99 ms">
+                <failure>
+                    <position line="simple.spec.c:22:" />
+                    <error message="|> `2 is 2` should be false" />
+                </failure>
+            <it/>
+            <it name="succeeds `assert_that_int`" status="passing" time="-99.99 ms" />
+            <it name="fails `assert_that_int`" status="failing" time="-99.99 ms">
+                <failure>
+                    <position line="simple.spec.c:29:" />
+                    <error message="|> `3` expected but got `2" />
+                </failure>
+            <it/>
+            <it name="succeeds `nassert_that_int`" status="passing" time="-99.99 ms" />
+            <it name="fails `nassert_that_int`" status="failing" time="-99.99 ms">
+                <failure>
+                    <position line="simple.spec.c:36:" />
+                    <error message="|> `4` expected but got `4" />
+                </failure>
+            <it/>
+            <it name="succeeds `assert_that_double`" status="failing" time="-99.99 ms">
+                <failure>
+                    <position line="simple.spec.c:40:" />
+                    <error message="|> `3.2` expected but got `3.2" />
+                </failure>
+            <it/>
+            <it name="fails `assert_that_double`" status="passing" time="-99.99 ms" />
+            <it name="SKIP THAT TEST" status="skipped" time="-99.99 ms" />
+            <it name="succeeds `nassert_that_double`" status="failing" time="-99.99 ms">
+                <failure>
+                    <position line="simple.spec.c:51:" />
+                    <error message="|> `7.7` expected but got `6.6" />
+                </failure>
+            <it/>
+            <it name="fails `nassert_that_double`" status="passing" time="-99.99 ms" />
+            <it name="succeeds `assert_that_string`" status="passing" time="-99.99 ms" />
+            <it name="fails `assert_that_string`" status="failing" time="-99.99 ms">
+                <failure>
+                    <position line="simple.spec.c:61:" />
+                    <error message="|> `nottestme` expected but got `testme" />
+                </failure>
+            <it/>
+            <it name="succeeds `nassert_that_string`" status="passing" time="-99.99 ms" />
+            <it name="fails `nassert_that_string`" status="failing" time="-99.99 ms">
+                <failure>
+                    <position line="simple.spec.c:68:" />
+                    <error message="|> `ok str` expected but got `ok str" />
+                </failure>
+            <it/>
+        </describe>
+    </module>
+    <module name="second", failures="16" skipped="1" tests="38" time="-99.99 ms" timestamp="2020-04-15 21:24:16">
+        <describe name="DESC 1", failures="-99" skipped="-99" tests="-99" time="-99.99 ms">
+            <it name="before on desc 1" status="passing" time="-99.99 ms" />
+            <it name="does on 1" status="passing" time="-99.99 ms" />
+        </describe>
+        <describe name="DESC 2", failures="-99" skipped="-99" tests="-99" time="-99.99 ms">
+            <it name="does on 2" status="passing" time="-99.99 ms" />
+        </describe>
+        <describe name="DESC 3", failures="-99" skipped="-99" tests="-99" time="-99.99 ms">
+            <it name="does on 3" status="passing" time="-99.99 ms" />
+        </describe>
+    </module>
+    <module name="another_third", failures="16" skipped="1" tests="38" time="-99.99 ms" timestamp="2020-04-15 21:24:16">
+        <describe name="Generic type assertions", failures="-99" skipped="-99" tests="-99" time="-99.99 ms">
+            <context name="when using generic asserts">
+                <it name="succeeds generic int assertion" status="passing" time="-99.99 ms" />
+                <it name="fails generic int assertion" status="failing" time="-99.99 ms">
+                    <failure>
+                        <position line="simple.spec.c:107:" />
+                        <error message="|> `3` expected but got `2" />
+                    </failure>
+                <it/>
+                <it name="succeeds generic int nassertion" status="passing" time="-99.99 ms" />
+                <it name="fails generic int nassertion" status="failing" time="-99.99 ms">
+                    <failure>
+                        <position line="simple.spec.c:114:" />
+                        <error message="|> `4` expected but got `4" />
+                    </failure>
+                <it/>
+                <it name="succeeds generic double assertion" status="failing" time="-99.99 ms">
+                    <failure>
+                        <position line="simple.spec.c:118:" />
+                        <error message="|> `3.2` expected but got `3.2" />
+                    </failure>
+                <it/>
+                <it name="fails generic double assertion" status="passing" time="-99.99 ms" />
+                <it name="succeeds generic double nassertion" status="failing" time="-99.99 ms">
+                    <failure>
+                        <position line="simple.spec.c:125:" />
+                        <error message="|> `7.7` expected but got `6.6" />
+                    </failure>
+                <it/>
+                <it name="fails generic double nassertion" status="passing" time="-99.99 ms" />
+                <it name="fails generic int with double assertion" status="passing" time="-99.99 ms" />
+                <it name="fails generic double with int assertion" status="passing" time="-99.99 ms" />
+                <it name="succeeds generic int with double nassertion" status="failing" time="-99.99 ms">
+                    <failure>
+                        <position line="simple.spec.c:139:" />
+                        <error message="|> `2.2` expected but got `2" />
+                    </failure>
+                <it/>
+                <it name="succeeds generic double with int nassertion" status="failing" time="-99.99 ms">
+                    <failure>
+                        <position line="simple.spec.c:142:" />
+                        <error message="|> `3` expected but got `3.3" />
+                    </failure>
+                <it/>
+                <it name="succeeds generic string assertion" status="passing" time="-99.99 ms" />
+                <it name="fails generic string assertion" status="failing" time="-99.99 ms">
+                    <failure>
+                        <position line="simple.spec.c:149:" />
+                        <error message="|> `nottestme` expected but got `testme" />
+                    </failure>
+                <it/>
+                <it name="succeeds generic string nassertion" status="passing" time="-99.99 ms" />
+                <it name="fails generic string nassertion" status="failing" time="-99.99 ms">
+                    <failure>
+                        <position line="simple.spec.c:156:" />
+                        <error message="|> `ok str` expected but got `ok str" />
+                    </failure>
+                <it/>
+            </context>
+            <context name="when we are finished">
+                <it name="does nothing" status="passing" time="-99.99 ms" />
+            </context>
+        </describe>
+    </module>
+</modules>

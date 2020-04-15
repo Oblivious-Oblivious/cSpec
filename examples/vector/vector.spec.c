@@ -42,5 +42,5 @@ spec_suite({
 
 spec({
     run_spec_suite("all");
-    export_test_results("all", "txt");
+    export_test_results("output.txt", "all", "txt");
 });

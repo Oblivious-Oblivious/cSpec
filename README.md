@@ -274,7 +274,7 @@ The `xit` blocks simply declares that all following asserts inside the block wil
 ------------------------
 - ### ***`export_test_results`***
 ```C
-#define export_test_results(vec, type) _BLOCK( \
+#define export_test_results(name vec, type) _BLOCK( \
     /* Check for valid type of test export */ \
     if(!__streql(vec, "passing") \
     && !__streql(vec, "failing") \
@@ -291,15 +291,15 @@ The `xit` blocks simply declares that all following asserts inside the block wil
     _string_delete(_cspec->display_tab); \
     _string_add_str(_cspec->display_tab, "    "); \
     if(type == "txt") { \
-        _cspec->fd = fopen("output.txt", "w+"); \
+        _cspec->fd = fopen(name, "w+"); \
         _export_to_txt(); \
     } \
     else if(type == "html") { \
-        _cspec->fd = fopen("output.html", "w+"); \
+        _cspec->fd = fopen(name, "w+"); \
         _export_to_html(); \
     } \
     else if(type == "markdown") { \
-        _cspec->fd = fopen("output.md", "w+"); \
+        _cspec->fd = fopen(name, "w+"); \
         _export_to_md(); \
     } \
     else { \
@@ -311,7 +311,7 @@ The `xit` blocks simply declares that all following asserts inside the block wil
 )
 ```
 
-Export test results gathered through running assertions and formats it to txt, html or markdown. Writes to a file named `output.txt`
+Export test results gathered through running assertions and formats it to a user specified format
 
 -------------
 

@@ -8,6 +8,7 @@
 #include <stdlib.h> /* malloc, calloc, realloc, free */
 #include <signal.h> /* singal, kill */
 #include <setjmp.h> /* jmp_buf, setjmp, longjmp */
+#include <time.h>   /* time, localtime */
 #include <stdio.h> /* FILE, fopen, fprintf, printf, snprintf */
 
 /* Find C version for declaring cross version implementations */
@@ -984,6 +985,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE)); \
         _string_add_str(_cspec->test_result_message, "    "); \
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->position_in_file)); \
+        _string_add_str(_cspec->test_result_message, "\n"); \
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab)); \
         _string_add_str(_cspec->test_result_message, "        |> "); \
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->RED)); \
@@ -998,7 +1000,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         _string_add_str(_cspec->assert_result, "|> `"); \
         _string_add_str(_cspec->assert_result, #test); \
         _string_add_str(_cspec->assert_result, "`"); \
-        _string_add_str(_cspec->assert_result, " should be true\n"); \
+        _string_add_str(_cspec->assert_result, " should be true"); \
 /****************************************************************************/ \
         _vector *list_of_strings = _new_vector(); \
         _vector_add(list_of_strings, _string_get(_cspec->position_in_file)); \
@@ -1033,6 +1035,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE)); \
         _string_add_str(_cspec->test_result_message, "    "); \
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->position_in_file)); \
+        _string_add_str(_cspec->test_result_message, "\n"); \
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab)); \
         _string_add_str(_cspec->test_result_message, "        |> "); \
         _string_add_str(_cspec->test_result_message, _string_get(_cspec->RED)); \
@@ -1047,7 +1050,7 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         _string_add_str(_cspec->assert_result, "|> `"); \
         _string_add_str(_cspec->assert_result, #test); \
         _string_add_str(_cspec->assert_result, "`"); \
-        _string_add_str(_cspec->assert_result, " should be false\n"); \
+        _string_add_str(_cspec->assert_result, " should be false"); \
 /****************************************************************************/ \
         _vector *list_of_strings = _new_vector(); \
         _vector_add(list_of_strings, _string_get(_cspec->position_in_file)); \
@@ -1208,9 +1211,9 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
  * @macro: export_test_results
  * @desc: Exports the test results to some file type
  * @param vec -> Either passing|failing|skipped|all
- * @param type -> Export type either txt|html|markdown
+ * @param type -> Export type either txt|xml|markdown
  **/
-#define export_test_results(vec, type) _BLOCK( \
+#define export_test_results(name, vec, type) _BLOCK( \
     /* Check for valid type of test export */ \
     if(!__streql(vec, "passing") \
     && !__streql(vec, "failing") \
@@ -1227,19 +1230,19 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
     _string_delete(_cspec->display_tab); \
     _string_add_str(_cspec->display_tab, "    "); \
     if(type == "txt") { \
-        _cspec->fd = fopen("output.txt", "w+"); \
+        _cspec->fd = fopen(name, "w+"); \
         _export_to_txt(); \
     } \
-    else if(type == "html") { \
-        _cspec->fd = fopen("output.html", "w+"); \
-        _export_to_html(); \
+    else if(type == "xml") { \
+        _cspec->fd = fopen(name, "w+"); \
+        _export_to_xml(); \
     } \
     else if(type == "markdown") { \
-        _cspec->fd = fopen("output.md", "w+"); \
+        _cspec->fd = fopen(name, "w+"); \
         _export_to_md(); \
     } \
     else { \
-        printf("\n%sSpecify the export type: `txt|html|markdown`%s\n\n", \
+        printf("\n%sSpecify the export type: `txt|xml|markdown`%s\n\n", \
         _string_get(_cspec->RED), \
         _string_get(_cspec->RESET)); \
         return 0; /* Exit the main function */ \
@@ -1378,7 +1381,7 @@ static void _write_position_in_file(void) {
     _string_add_str(_cspec->position_in_file, _cspec->current_file);
     _string_add_str(_cspec->position_in_file, ":");
     _string_add_int(_cspec->position_in_file, _cspec->current_line);
-    _string_add_str(_cspec->position_in_file, ":\n");
+    _string_add_str(_cspec->position_in_file, ":");
 }
 
 /**
@@ -1391,6 +1394,7 @@ static void _write_assert_actual_expected(void) {
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE));
     _string_add_str(_cspec->test_result_message, "    ");
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->position_in_file));
+    _string_add_str(_cspec->test_result_message, "\n");
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab));
     _string_add_str(_cspec->test_result_message, "        |> ");
     _string_add_str(_cspec->test_result_message, "`");
@@ -1407,7 +1411,6 @@ static void _write_assert_actual_expected(void) {
     _string_add_str(_cspec->assert_result, "` expected but got ");
     _string_add_str(_cspec->assert_result, "`");
     _string_add_str(_cspec->assert_result, _string_get(_cspec->current_actual));
-    _string_add_str(_cspec->assert_result, "`\n");
 /****************************************************************************/
     _vector *list_of_strings = _new_vector();
     _vector_add(list_of_strings, _string_get(_cspec->position_in_file));
@@ -1426,6 +1429,7 @@ static void _write_nassert_actual_expected(void) {
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->WHITE));
     _string_add_str(_cspec->test_result_message, "    ");
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->position_in_file));
+    _string_add_str(_cspec->test_result_message, "\n");
     _string_add_str(_cspec->test_result_message, _string_get(_cspec->display_tab));
     _string_add_str(_cspec->test_result_message, "        |> ");
     _string_add_str(_cspec->test_result_message, "expected that `");
@@ -1445,7 +1449,7 @@ static void _write_nassert_actual_expected(void) {
     _string_add_str(_cspec->assert_result, "`");
     _string_add_str(_cspec->assert_result, _string_get(_cspec->current_actual));
     _string_add_str(_cspec->assert_result, "`");
-    _string_add_str(_cspec->assert_result, " but they are the same\n");
+    _string_add_str(_cspec->assert_result, " but they are the same");
 /****************************************************************************/
     _vector *list_of_strings = _new_vector();
     _vector_add(list_of_strings, _string_get(_cspec->position_in_file));
@@ -1601,7 +1605,7 @@ static void _report_time_taken_for_tests(void) {
  * @param assert -> The assert string to export
  **/
 static void _fprintf_asserts(_vector *assert) {
-    fprintf(_cspec->fd, "%s            %s                %s\n",
+    fprintf(_cspec->fd, "%s            %s\n                %s\n\n",
     _string_get(_cspec->display_tab),
     _vector_get(assert, 0),
     _vector_get(assert, 1));
@@ -1708,10 +1712,146 @@ static void _export_to_txt(void) {
 }
 
 /**
- * @func: _export_to_html
- * @desc: Export test results into an html file
+ * @func: _xml_write_asserts
+ * @desc: Writes asserts to an xml file
+ * @param assert -> The assert block containing strings to print
  **/
-static void _export_to_html(void) {
+static void _xml_write_asserts(_vector *assert) {
+    fprintf(_cspec->fd, "%s                <failure>\n",
+    _string_get(_cspec->display_tab));
+    
+    fprintf(_cspec->fd, "%s                    <position line=\"%s\" />\n",
+    _string_get(_cspec->display_tab),
+    _vector_get(assert, 0));
+
+    fprintf(_cspec->fd, "%s                    <error message=\"%s\" />\n",
+    _string_get(_cspec->display_tab),
+    _vector_get(assert, 1));
+
+    fprintf(_cspec->fd, "%s                </failure>\n",
+    _string_get(_cspec->display_tab));
+}
+
+/**
+ * @func: _xml_write_its
+ * @desc: Writes it blocks to an xml file
+ * @param it_block -> The it block to iterate against
+ **/
+static void _xml_write_its(_vector *it_block) {
+    /* Check for type of test */
+    if(((int)_vector_get(it_block, 2) == _FAILING)) {
+        if(__streql(_string_get(_cspec->type_of_export_tests), "failing")
+        || __streql(_string_get(_cspec->type_of_export_tests), "all")) {
+            /* Write failing tests */
+            fprintf(_cspec->fd, "            %s<it name=\"%s\" status=\"failing\" time=\"%g ms\">\n",
+            _string_get(_cspec->display_tab),
+            _string_get(_vector_get(it_block, 1)),
+            -99.99);
+            _vector *asserts = _vector_get(it_block, 0);
+
+            /* Call to print the asserts iteratevely for the current it block */
+            _vector_map(asserts, _xml_write_asserts);
+            fprintf(_cspec->fd, "            %s<it/>\n",
+            _string_get(_cspec->display_tab));
+        }
+    }
+    else if(((int)_vector_get(it_block, 2) == _SKIPPED)) {
+        if(__streql(_string_get(_cspec->type_of_export_tests), "skipped")
+        || __streql(_string_get(_cspec->type_of_export_tests), "all")) {
+            /* Write skipped tests */
+            fprintf(_cspec->fd, "            %s<it name=\"%s\" status=\"skipped\" time=\"%g ms\" />\n",
+            _string_get(_cspec->display_tab),
+            _string_get(_vector_get(it_block, 1)),
+            -99.99);
+        }
+    }
+    else if(((int)_vector_get(it_block, 2) == _PASSING)) {
+        /* Write passing tests */
+        if(__streql(_string_get(_cspec->type_of_export_tests), "passing")
+        || __streql(_string_get(_cspec->type_of_export_tests), "all")) {
+            fprintf(_cspec->fd, "            %s<it name=\"%s\" status=\"passing\" time=\"%g ms\" />\n",
+            _string_get(_cspec->display_tab),
+            _string_get(_vector_get(it_block, 1)),
+            -99.99);
+        }
+    }
+}
+
+/**
+ * @func: _xml_write_cons
+ * @desc: Writes context blocks to an xml file
+ * @param con -> The context block to iterate against
+ **/
+static void _xml_write_cons(_vector *con) {
+    _string_add_str(_cspec->display_tab, "    ");
+    fprintf(_cspec->fd, "            <context name=\"%s\">\n",
+    _string_get(_vector_get(con, 1)));
+    _vector *its = _vector_get(con, 0);
+
+    /* Iterate over the it blocks under the context block */
+    _vector_map(its, _xml_write_its);
+    fprintf(_cspec->fd, "            </context>\n");
+    _string_skip(_cspec->display_tab, 4);
+}
+
+/**
+ * @func: _xml_write_describes
+ * @desc: Writes describe blocks to an xml file
+ * @param desc -> The current describe block to iterate against
+ **/
+static void _xml_write_describes(_vector *desc) {
+    fprintf(_cspec->fd, "        <describe name=\"%s\", failures=\"%d\" skipped=\"%d\" tests=\"%d\" time=\"%g ms\">\n",
+    _string_get(_vector_get(desc, 2)),
+    -99,
+    -99,
+    -99,
+    -99.99);
+
+    /* Iterate over the it blocks under the describe block */
+    _vector *its = _vector_get(desc, 0);
+    _vector_map(its, _xml_write_its);
+
+    /* Iterate over the context blocks under the describe block */
+    _vector *cons = _vector_get(desc, 1);
+    _vector_map(cons, _xml_write_cons);
+    fprintf(_cspec->fd, "        </describe>\n");
+}
+
+/**
+ * @func: _xml_write_modules
+ * @desc: Writes module blocks to an xml file
+ * @param mod -> The module block to iterate against
+ **/
+static void _xml_write_modules(_vector *mod) {
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    _string_delete(_cspec->display_tab);
+    fprintf(_cspec->fd, "    <module name=\"%s\", failures=\"%d\" skipped=\"%d\" tests=\"%d\" time=\"%g ms\" timestamp=\"%d-%02d-%02d %02d:%02d:%02d\">\n",
+    _string_get(_vector_get(mod, 1)),
+    _cspec->number_of_failing_tests,
+    _cspec->number_of_skipped_tests,
+    _cspec->number_of_tests,
+    -99.99,
+    tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+    _vector *descs = _vector_get(mod, 0);
+
+    /* Iterate over the describe blocks under the module block */
+    _vector_map(descs, _xml_write_describes);
+    fprintf(_cspec->fd, "    </module>\n");
+}
+
+/**
+ * @func: _export_to_xml
+ * @desc: Export test results into an xml file
+ **/
+static void _export_to_xml(void) {
+    fprintf(_cspec->fd, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+    fprintf(_cspec->fd, "<modules duration=\"%g\">\n",
+    -99.99);
+    _vector_map(_cspec->list_of_modules, _xml_write_modules);
+    fprintf(_cspec->fd, "</modules>\n");
+    fclose(_cspec->fd);
 }
 
 /**
