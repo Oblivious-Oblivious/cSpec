@@ -1,6 +1,10 @@
 #ifndef __INTERFACE_H_
 #define __INTERFACE_H_
 
+
+
+
+
 /**
  * @param _PASSING -> Set for passing tests
  * @param _FAILING -> Set for failing tests
@@ -448,79 +452,6 @@
 )
 
 /**
- * @macro: assert_that_int
- * @desc: Assert that the expected integer is equal to the result
- * @param actual -> The actual value
- * @param expected -> The expected int
- **/
-#define assert_that_int(inner) _BLOCK( \
-    /* Intermediate block of code delaying expansion */ \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_assert_that_int(inner); \
-)
-
-/**
- * @macro: nassert_that_int
- * @desc: Assert that the expected integer is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected int
- **/
-#define nassert_that_int(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_nassert_that_int(inner); \
-)
-
-/**
- * @macro: assert_that_double
- * @desc: Assert that the expected double is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected double
- **/
-#define assert_that_double(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_assert_that_double(inner); \
-)
-
-/**
- * @macro: nassert_that_double
- * @desc: Assert that the expected double is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected double
- **/
-#define nassert_that_double(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_nassert_that_double(inner); \
-)
-
-/**
- * @macro: assert_that_string
- * @desc: Assert that the expected string is equal to the result
- * @param actual -> The actual value
- * @param expected -> The expected string
- **/
-#define assert_that_string(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_assert_that_string(inner); \
-)
-
-/**
- * @macro: nassert_that_string
- * @desc: Assert that the expected string is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected string
- **/
-#define nassert_that_string(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_nassert_that_string(inner); \
-)
-
-/**
  * @macro: assert_that_value
  * @desc: Generic assertion between 2 values
  * @param actual -> The value given by the user
@@ -645,7 +576,7 @@
  * @param comparison_method -> Custom way of comparing new data types for asserts
  **/
 #define define_assert(name_of_assert, data_type_token, to_string_method, comparison_method) \
-    static void _call_#name_of_assert(data_type_token actual, data_type_token expected) { \
+    static void name_of_assert(data_type_token actual, data_type_token expected) { \
         _to_string_write(actual, expected, to_string_method); \
         _compare_values(actual, expected, comparison_method); \
     }

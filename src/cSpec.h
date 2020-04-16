@@ -1,7 +1,5 @@
 #ifndef __CSPEC_H_
 #define __CSPEC_H_
-#ifndef __INCLUDES_H_
-#define __INCLUDES_H_
 
 #include <stdlib.h> /* malloc, calloc, realloc, free */
 #include <signal.h> /* singal, kill */
@@ -100,11 +98,6 @@ static size_t _get_timer(void) {
     #endif
 }
 
-#endif
-#ifndef __DATA_STRUCTURES_H_
-#define __DATA_STRUCTURES_H_
-
-/***** DATA STRUCTURES *****/
 
 /** @param bool -> A 'big' enough size to hold both 1 and 0 **/
 #ifndef bool
@@ -579,9 +572,6 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
     return dup;
 }
 
-#endif
-#ifndef __INTERFACE_H_
-#define __INTERFACE_H_
 
 /**
  * @param _PASSING -> Set for passing tests
@@ -1030,79 +1020,6 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 )
 
 /**
- * @macro: assert_that_int
- * @desc: Assert that the expected integer is equal to the result
- * @param actual -> The actual value
- * @param expected -> The expected int
- **/
-#define assert_that_int(inner) _BLOCK( \
-    /* Intermediate block of code delaying expansion */ \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_assert_that_int(inner); \
-)
-
-/**
- * @macro: nassert_that_int
- * @desc: Assert that the expected integer is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected int
- **/
-#define nassert_that_int(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_nassert_that_int(inner); \
-)
-
-/**
- * @macro: assert_that_double
- * @desc: Assert that the expected double is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected double
- **/
-#define assert_that_double(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_assert_that_double(inner); \
-)
-
-/**
- * @macro: nassert_that_double
- * @desc: Assert that the expected double is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected double
- **/
-#define nassert_that_double(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_nassert_that_double(inner); \
-)
-
-/**
- * @macro: assert_that_string
- * @desc: Assert that the expected string is equal to the result
- * @param actual -> The actual value
- * @param expected -> The expected string
- **/
-#define assert_that_string(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_assert_that_string(inner); \
-)
-
-/**
- * @macro: nassert_that_string
- * @desc: Assert that the expected string is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected string
- **/
-#define nassert_that_string(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_nassert_that_string(inner); \
-)
-
-/**
  * @macro: assert_that_value
  * @desc: Generic assertion between 2 values
  * @param actual -> The value given by the user
@@ -1227,14 +1144,11 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
  * @param comparison_method -> Custom way of comparing new data types for asserts
  **/
 #define define_assert(name_of_assert, data_type_token, to_string_method, comparison_method) \
-    static void _call_#name_of_assert(data_type_token actual, data_type_token expected) { \
+    static void name_of_assert(data_type_token actual, data_type_token expected) { \
         _to_string_write(actual, expected, to_string_method); \
         _compare_values(actual, expected, comparison_method); \
     }
 
-#endif
-#ifndef __FUNCTIONALITY_H_
-#define __FUNCTIONALITY_H_
 
 /**
  * @macro: _compare_values
@@ -1402,72 +1316,6 @@ static void _write_nassert_actual_expected(void) {
     _vector_add(list_of_strings, _string_get(_cspec->assert_result));
 /****************************************************************************/
     _vector_add(_cspec->list_of_asserts, list_of_strings);
-}
-
-/**
- * @func: _call_assert_that_int
- * @desc: Assert that the expected integer is equal to the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_assert_that_int(int actual, int expected) {
-    _to_string_write(actual, expected, _string_add_int);
-    _compare_values(actual, expected, !_int_comparison);
-}
-
-/**
- * @func: _call_assert_that_double
- * @desc: Assert that the expected double is different than the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_assert_that_double(double actual, double expected) {
-    _to_string_write(actual, expected, _string_add_double_precision);
-    _compare_values(actual, expected, !_double_comparison);
-}
-
-/**
- * @func: _call_assert_that_string
- * @desc: Assert that the expected string is equal to the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_assert_that_string(char *actual, char *expected) {
-    _to_string_write(actual, expected, _string_add_str);
-    _compare_values(actual, expected, !_string_comparison);
-}
-
-/**
- * @func: _call_nassert_that_int
- * @desc: Assert that the expected integer is different than the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_nassert_that_int(int actual, int expected) {
-    _to_string_write(actual, expected, _string_add_int);
-	_compare_values(actual, expected, _int_comparison);
-}
-
-/**
- * @func: _call_nassert_that_double
- * @desc: Assert that the expected double is different than the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_nassert_that_double(double actual, double expected) {
-    _to_string_write(actual, expected, _string_add_double_precision);
-    _compare_values(actual, expected, _double_comparison);
-}
-
-/**
- * @func: _call_nassert_that_string
- * @desc: Assert that the expected string is different than the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_nassert_that_string(char *actual, char *expected) {
-    _to_string_write(actual, expected, _string_add_str);
-    _compare_values(actual, expected, _string_comparison);
 }
 
 /**
@@ -1785,8 +1633,16 @@ static void _xml_write_modules(_vector *mod) {
  **/
 static void _export_to_xml(void) {
     fprintf(_cspec->fd, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-    fprintf(_cspec->fd, "<modules duration=\"%g\">\n",
-    -99.99);
+    
+    if(_cspec->total_time_taken_for_tests > 100000000) {
+        fprintf(_cspec->fd, "<modules duration=\"%.5f seconds\">\n",
+        _cspec->total_time_taken_for_tests / 1000000000.0);
+    }
+    else {
+        fprintf(_cspec->fd, "<modules duration=\"%.5f ms\">\n",
+        _cspec->total_time_taken_for_tests / 1000000.0);
+    }
+    
     _vector_map(_cspec->list_of_modules, _xml_write_modules);
     fprintf(_cspec->fd, "</modules>\n");
     fclose(_cspec->fd);
@@ -1939,6 +1795,11 @@ static void _setup_test_data(void) {
     signal(SIGTERM, _signal_handler);
 }
 
-#endif
+
+/* Get asserts */
+#include "assert_modules/int_assert.h"
+#include "assert_modules/double_assert.h"
+#include "assert_modules/charptr_assert.h"
+
 
 #endif

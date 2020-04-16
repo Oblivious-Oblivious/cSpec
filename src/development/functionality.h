@@ -1,6 +1,10 @@
 #ifndef __FUNCTIONALITY_H_
 #define __FUNCTIONALITY_H_
 
+#include "includes.h"
+#include "interface.h"
+#include "data_structures.h"
+
 /**
  * @macro: _compare_values
  * @desc: Runs the actual assertion between 2 values
@@ -167,72 +171,6 @@ static void _write_nassert_actual_expected(void) {
     _vector_add(list_of_strings, _string_get(_cspec->assert_result));
 /****************************************************************************/
     _vector_add(_cspec->list_of_asserts, list_of_strings);
-}
-
-/**
- * @func: _call_assert_that_int
- * @desc: Assert that the expected integer is equal to the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_assert_that_int(int actual, int expected) {
-    _to_string_write(actual, expected, _string_add_int);
-    _compare_values(actual, expected, !_int_comparison);
-}
-
-/**
- * @func: _call_assert_that_double
- * @desc: Assert that the expected double is different than the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_assert_that_double(double actual, double expected) {
-    _to_string_write(actual, expected, _string_add_double_precision);
-    _compare_values(actual, expected, !_double_comparison);
-}
-
-/**
- * @func: _call_assert_that_string
- * @desc: Assert that the expected string is equal to the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_assert_that_string(char *actual, char *expected) {
-    _to_string_write(actual, expected, _string_add_str);
-    _compare_values(actual, expected, !_string_comparison);
-}
-
-/**
- * @func: _call_nassert_that_int
- * @desc: Assert that the expected integer is different than the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_nassert_that_int(int actual, int expected) {
-    _to_string_write(actual, expected, _string_add_int);
-	_compare_values(actual, expected, _int_comparison);
-}
-
-/**
- * @func: _call_nassert_that_double
- * @desc: Assert that the expected double is different than the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_nassert_that_double(double actual, double expected) {
-    _to_string_write(actual, expected, _string_add_double_precision);
-    _compare_values(actual, expected, _double_comparison);
-}
-
-/**
- * @func: _call_nassert_that_string
- * @desc: Assert that the expected string is different than the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-static void _call_nassert_that_string(char *actual, char *expected) {
-    _to_string_write(actual, expected, _string_add_str);
-    _compare_values(actual, expected, _string_comparison);
 }
 
 /**
@@ -550,8 +488,16 @@ static void _xml_write_modules(_vector *mod) {
  **/
 static void _export_to_xml(void) {
     fprintf(_cspec->fd, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-    fprintf(_cspec->fd, "<modules duration=\"%g\">\n",
-    -99.99);
+    
+    if(_cspec->total_time_taken_for_tests > 100000000) {
+        fprintf(_cspec->fd, "<modules duration=\"%.5f seconds\">\n",
+        _cspec->total_time_taken_for_tests / 1000000000.0);
+    }
+    else {
+        fprintf(_cspec->fd, "<modules duration=\"%.5f ms\">\n",
+        _cspec->total_time_taken_for_tests / 1000000.0);
+    }
+    
     _vector_map(_cspec->list_of_modules, _xml_write_modules);
     fprintf(_cspec->fd, "</modules>\n");
     fclose(_cspec->fd);

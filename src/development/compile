@@ -5,10 +5,15 @@ cat << EOF > cSpec.h
 #define __CSPEC_H_
 EOF
 
-cat includes.h data_structures.h interface.h asserts.h functionality.h >> cSpec.h
+for value in includes.h data_structures.h interface.h functionality.h asserts.h
+do
+    tail -n +7 $value | head -n -1 >> cSpec.h
+done
+
 cat << EOF >> cSpec.h
 
 #endif
 EOF
 
 mv cSpec.h ../
+cp assert_modules -r ../

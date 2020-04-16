@@ -1,7 +1,9 @@
 #ifndef __DATA_STRUCTURES_H_
 #define __DATA_STRUCTURES_H_
 
-/***** DATA STRUCTURES *****/
+#include "includes.h"
+
+
 
 /** @param bool -> A 'big' enough size to hold both 1 and 0 **/
 #ifndef bool
