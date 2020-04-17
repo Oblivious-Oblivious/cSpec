@@ -6,6 +6,42 @@
 
 
 /**
+ * @macro: _to_string_double_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ **/
+#define _to_string_double_write(actual, expected) _BLOCK( \
+    _cspec->current_actual = _new_string(""); \
+    _cspec->current_expected = _new_string(""); \
+    _string_add_double_precision(_cspec->current_actual, actual); \
+    _string_add_double_precision(_cspec->current_expected, expected); \
+)
+
+/**
+ * @func: _fabs
+ * @desc: Abs for floats
+ * @param value -> The value to get `abs` for
+ * @return Absolute value
+ **/
+static double _fabs(double value) {
+    return value < 0 ? (-value) : (value);
+}
+
+/**
+ * @func: _double_comparison
+ * @desc: A function that compares doubles for assertions
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @return a boolean
+ **/
+static bool _double_comparison(double actual, double expected) {
+    /* Calculate the margin to which the difference
+        is too big so the test fails */
+    return _fabs(actual - expected) > 1E-12;
+}
+
+/**
  * @func: _call_assert_that_double
  * @desc: Assert that the expected double is different than the result
  * @param actual -> The value passed by the user

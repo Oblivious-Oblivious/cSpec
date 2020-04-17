@@ -95,6 +95,29 @@ module(second, {
             assert_that(1 is 1);
         });
     });
+
+    describe("Array Assertions", {
+        int a[5] = {1, 2, 3, 4, 5};
+        int b[5] = {7, 7, 7, 7, 7};
+        int c[4] = {1, 2, 3, 4};
+
+        it("succeeds `assert_that_int_array`", {
+            int my_arr[5] = {1, 2, 3, 4, 5};
+            assert_that_int_array(my_arr equals to a with length 5);
+        });
+        it("fails `assert_that_int_array`", {
+            assert_that_int_array(a equals to b with length 5);
+            assert_that_int_array(b equals to c with length 5);
+        });
+
+        it("succeeds `nassert_that_int_array`", {
+            nassert_that_int_array(a equals to c with length 5);
+        });
+        it("fails `nassert_that_int_array`", {
+            int my_arr2[5] = {7, 7, 7, 7, 7};
+            nassert_that_int_array(my_arr2 equals to b with length 5);
+        });
+    });
 });
 
 module(another_third, {

@@ -9,6 +9,7 @@ typedef struct data {
     char *s;
 } data;
 
+void setup_arrays(void);
 void debug_msg(void);
 void teardown_msg(void);
 void initializer(void);

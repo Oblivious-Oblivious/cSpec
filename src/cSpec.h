@@ -599,6 +599,8 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 #define or ||
 #define equals ,
 #define to
+#define with
+#define length ,
 
 /**
  * @macro: spec
@@ -1136,21 +1138,6 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 )
 
 /**
- * @macro: define_assert
- * @desc: Defines a compile time assertion for extended data types
- * @param name_of_assert -> The name of the new assertion
- * @param data_type_token -> The data type of the input variables
- * @param to_string_method -> Custom way to write data type as a string
- * @param comparison_method -> Custom way of comparing new data types for asserts
- **/
-#define define_assert(name_of_assert, data_type_token, to_string_method, comparison_method) \
-    static void name_of_assert(data_type_token actual, data_type_token expected) { \
-        to_string_method(actual, expected); \
-        _compare_values(actual, expected, comparison_method); \
-    }
-
-
-/**
  * @macro: _compare_values
  * @desc: Runs the actual assertion between 2 values
  * @param actual -> The value passed by the user
@@ -1166,88 +1153,41 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
 )
 
 /**
- * @macro: _to_string_int_write
- * @desc: Writes actual and expected values
+ * @macro: _compare_array_values
+ * @desc: Runs the actual assertion between 2 values
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
+ * @param func -> The assert function according to data type
+ * @param len -> The length of the array to test
  **/
-#define _to_string_int_write(actual, expected) _BLOCK( \
-    _cspec->current_actual = _new_string(""); \
-    _cspec->current_expected = _new_string(""); \
-    _string_add_int(_cspec->current_actual, actual); \
-    _string_add_int(_cspec->current_expected, expected); \
+#define _compare_array_values(actual, expected, func, len) _BLOCK( \
+    if(func(actual, expected, len)) { \
+        _cspec->status_of_test = _FAILING; \
+        _write_position_in_file(); \
+        _write_assert_actual_expected(); \
+    } \
 )
 
 /**
- * @macro: _to_string_double_write
- * @desc: Writes actual and expected values
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
+ * @macro: define_assert
+ * @desc: Defines a compile time assertion for extended data types
+ * @param name_of_assert -> The name of the new assertion
+ * @param data_type_token -> The data type of the input variables
+ * @param to_string_method -> Custom way to write data type as a string
+ * @param comparison_method -> Custom way of comparing new data types for asserts
  **/
-#define _to_string_double_write(actual, expected) _BLOCK( \
-    _cspec->current_actual = _new_string(""); \
-    _cspec->current_expected = _new_string(""); \
-    _string_add_double_precision(_cspec->current_actual, actual); \
-    _string_add_double_precision(_cspec->current_expected, expected); \
-)
+#define define_assert(name_of_assert, data_type_token, to_string_method, comparison_method) \
+    static inline void name_of_assert(data_type_token actual, data_type_token expected) { \
+        to_string_method(actual, expected); \
+        _compare_values(actual, expected, comparison_method); \
+    }
 
-/**
- * @macro: _to_string_charptr_write
- * @desc: Writes actual and expected values
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- **/
-#define _to_string_charptr_write(actual, expected) _BLOCK( \
-    _cspec->current_actual = _new_string(""); \
-    _cspec->current_expected = _new_string(""); \
-    _string_add_str(_cspec->current_actual, actual); \
-    _string_add_str(_cspec->current_expected, expected); \
-)
+#define define_assert_array(name_of_assert, data_type_token, to_string_method, comparison_method, len) \
+    static inline void name_of_assert(data_type_token actual, data_type_token expected, size_t len) { \
+        to_string_method(actual, expected, len); \
+        _compare_array_values(actual, expected, comparison_method, len); \
+    }
 
-/**
- * @func: _fabs
- * @desc: Abs for floats
- * @param value -> The value to get `abs` for
- * @return Absolute value
- **/
-static double _fabs(double value) {
-    return value < 0 ? (-value) : (value);
-}
-
-/**
- * @func: _int_comparison
- * @desc: A function that compares integers for assertions
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- * @return a boolean
- **/
-static bool _int_comparison(int actual, int expected) {
-    return actual == expected;
-}
-
-/**
- * @func: _double_comparison
- * @desc: A function that compares doubles for assertions
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- * @return a boolean
- **/
-static bool _double_comparison(double actual, double expected) {
-    /* Calculate the margin to which the difference
-        is too big so the test fails */
-    return _fabs(actual - expected) > 1E-12;
-}
-
-/**
- * @func: _string_comparison
- * @desc: A function that compares char pointers for assertions
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- * @return a boolean
- **/
-static bool _string_comparison(char *actual, char *expected) {
-    return __streql(expected, actual);
-}
 
 /**
  * @func: _error_assertion_not_supported
@@ -1822,6 +1762,30 @@ static void _setup_test_data(void) {
 
 
 /**
+ * @macro: _to_string_int_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ **/
+#define _to_string_int_write(actual, expected) _BLOCK( \
+    _cspec->current_actual = _new_string(""); \
+    _cspec->current_expected = _new_string(""); \
+    _string_add_int(_cspec->current_actual, actual); \
+    _string_add_int(_cspec->current_expected, expected); \
+)
+
+/**
+ * @func: _int_comparison
+ * @desc: A function that compares integers for assertions
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @return a boolean
+ **/
+static bool _int_comparison(int actual, int expected) {
+    return actual == expected;
+}
+
+/**
  * @func: _call_assert_that_int
  * @desc: Assert that the expected integer is equal to the result
  * @param actual -> The value passed by the user
@@ -1861,6 +1825,42 @@ define_assert(_call_nassert_that_int, int, _to_string_int_write, _int_comparison
     _call_nassert_that_int(inner); \
 )
 
+
+/**
+ * @macro: _to_string_double_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ **/
+#define _to_string_double_write(actual, expected) _BLOCK( \
+    _cspec->current_actual = _new_string(""); \
+    _cspec->current_expected = _new_string(""); \
+    _string_add_double_precision(_cspec->current_actual, actual); \
+    _string_add_double_precision(_cspec->current_expected, expected); \
+)
+
+/**
+ * @func: _fabs
+ * @desc: Abs for floats
+ * @param value -> The value to get `abs` for
+ * @return Absolute value
+ **/
+static double _fabs(double value) {
+    return value < 0 ? (-value) : (value);
+}
+
+/**
+ * @func: _double_comparison
+ * @desc: A function that compares doubles for assertions
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @return a boolean
+ **/
+static bool _double_comparison(double actual, double expected) {
+    /* Calculate the margin to which the difference
+        is too big so the test fails */
+    return _fabs(actual - expected) > 1E-12;
+}
 
 /**
  * @func: _call_assert_that_double
@@ -1904,6 +1904,28 @@ define_assert(_call_nassert_that_double, double, _to_string_double_write, _doubl
 
 
 /**
+ * @macro: _to_string_charptr_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ **/
+#define _to_string_charptr_write(actual, expected) _BLOCK( \
+    _cspec->current_actual = _new_string(actual); \
+    _cspec->current_expected = _new_string(expected); \
+)
+
+/**
+ * @func: _string_comparison
+ * @desc: A function that compares char pointers for assertions
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @return a boolean
+ **/
+static bool _string_comparison(char *actual, char *expected) {
+    return __streql(expected, actual);
+}
+
+/**
  * @func: _call_assert_that_string
  * @desc: Assert that the expected string is equal to the result
  * @param actual -> The value passed by the user
@@ -1941,6 +1963,86 @@ define_assert(_call_nassert_that_string, char*, _to_string_charptr_write, _strin
     _cspec->current_file = __FILE__; \
     _cspec->current_line = __LINE__; \
     _call_nassert_that_string(inner); \
+)
+
+
+/**
+ * @func: _to_string_int_array_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @param len -> The length of the arrays
+ **/
+static void _to_string_int_array_write(int *actual, int *expected, size_t len) {
+    _cspec->current_actual = _new_string("[");
+    _cspec->current_expected = _new_string("[");
+
+    for(int i = 0; i < len - 1; i++) {
+        _string_add_int(_cspec->current_actual, actual[i]);
+        _string_add_str(_cspec->current_actual, ", ");
+
+        _string_add_int(_cspec->current_expected, expected[i]);
+        _string_add_str(_cspec->current_expected, ", ");
+    }
+    _string_add_int(_cspec->current_actual, actual[len - 1]);
+    _string_add_str(_cspec->current_actual, "]");
+
+    _string_add_int(_cspec->current_expected, expected[len - 1]);
+    _string_add_str(_cspec->current_expected, "]");
+}
+
+/**
+ * @func: _int_array_comparison
+ * @desc: Compares two int arrays for equality in elements
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @param len -> The length of the arrays
+ * @return a boolean
+ **/
+static bool _int_array_comparison(int *actual, int *expected, size_t len) {
+    /* Check for members */
+    for(int i = 0; i < len; i++) {
+        if(actual[i] != expected[i]) return false;
+    }
+
+    /* All elements are equal */
+    return true;
+}
+
+/**
+ * @func: _call_assert_that_int_array
+ * @desc: Assertion of two int arrays
+ **/
+define_assert_array(_call_assert_that_int_array, int*, _to_string_int_array_write, !_int_array_comparison, len)
+
+/**
+ * @func: _call_nassert_that_int_array
+ * @desc: Negative assertion of two int arrays
+ **/
+define_assert_array(_call_nassert_that_int_array, int*, _to_string_int_array_write, _int_array_comparison, len)
+
+/**
+ * @macro: assert_that_int_array
+ * @desc: Assert that the expected int array equals to the the result
+ * @param actual -> The actual value
+ * @param expected -> The expected value
+ **/
+#define assert_that_int_array(inner) _BLOCK( \
+    _cspec->current_file = __FILE__; \
+    _cspec->current_line = __LINE__; \
+    _call_assert_that_int_array(inner); \
+)
+
+/**
+ * @macro: nassert_that_int_array
+ * @desc: Assert that the expected int array differs from the result
+ * @param actual -> The actual value
+ * @param expected -> The expected value
+ **/
+#define nassert_that_int_array(inner) _BLOCK( \
+    _cspec->current_file = __FILE__; \
+    _cspec->current_line = __LINE__; \
+    _call_nassert_that_int_array(inner); \
 )
 
 

@@ -6,6 +6,28 @@
 
 
 /**
+ * @macro: _to_string_charptr_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ **/
+#define _to_string_charptr_write(actual, expected) _BLOCK( \
+    _cspec->current_actual = _new_string(actual); \
+    _cspec->current_expected = _new_string(expected); \
+)
+
+/**
+ * @func: _string_comparison
+ * @desc: A function that compares char pointers for assertions
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @return a boolean
+ **/
+static bool _string_comparison(char *actual, char *expected) {
+    return __streql(expected, actual);
+}
+
+/**
  * @func: _call_assert_that_string
  * @desc: Assert that the expected string is equal to the result
  * @param actual -> The value passed by the user

@@ -6,6 +6,30 @@
 
 
 /**
+ * @macro: _to_string_int_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ **/
+#define _to_string_int_write(actual, expected) _BLOCK( \
+    _cspec->current_actual = _new_string(""); \
+    _cspec->current_expected = _new_string(""); \
+    _string_add_int(_cspec->current_actual, actual); \
+    _string_add_int(_cspec->current_expected, expected); \
+)
+
+/**
+ * @func: _int_comparison
+ * @desc: A function that compares integers for assertions
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @return a boolean
+ **/
+static bool _int_comparison(int actual, int expected) {
+    return actual == expected;
+}
+
+/**
  * @func: _call_assert_that_int
  * @desc: Assert that the expected integer is equal to the result
  * @param actual -> The value passed by the user

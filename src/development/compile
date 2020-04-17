@@ -5,7 +5,14 @@ cat << EOF > cSpec.h
 #define __CSPEC_H_
 EOF
 
-for value in includes.h data_structures.h interface.h functionality.h assert_modules/int_assert.h assert_modules/double_assert.h assert_modules/charptr_assert.h
+for value in includes.h \
+data_structures.h \
+interface.h \
+functionality.h \
+assert_modules/int_assert.h \
+assert_modules/double_assert.h \
+assert_modules/charptr_assert.h \
+assert_modules/int_array_assert.h
 do
     tail -n +7 $value | head -n -1 >> cSpec.h
 done

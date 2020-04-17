@@ -17,7 +17,7 @@ CSpec is a lightweight, compile time unit testing library for TDD and BDD models
     - `assert_that_value(actual, expected)`
 - Export options for txt, html, or markdown
     - `export_test_results(vec, type)`
-- False assertions macro calls
+- False assertions macro calls for defined data types
     - `nassert_that_*`
 
 # Basic Interface
