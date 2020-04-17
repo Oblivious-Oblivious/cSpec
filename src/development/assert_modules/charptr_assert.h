@@ -1,13 +1,17 @@
 #ifndef __CHARPTR_ASSERT_H_
 #define __CHARPTR_ASSERT_H_
 
+#include "../interface.h"
+#include "../functionality.h"
+
+
 /**
  * @func: _call_assert_that_string
  * @desc: Assert that the expected string is equal to the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-define_assert(_call_assert_that_string, char*, _string_add_str, !_string_comparison)
+define_assert(_call_assert_that_string, char*, _to_string_charptr_write, !_string_comparison)
 
 /**
  * @func: _call_nassert_that_string
@@ -15,7 +19,7 @@ define_assert(_call_assert_that_string, char*, _string_add_str, !_string_compari
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-define_assert(_call_nassert_that_string, char*, _string_add_str, _string_comparison)
+define_assert(_call_nassert_that_string, char*, _to_string_charptr_write, _string_comparison)
 
 /**
  * @macro: assert_that_string

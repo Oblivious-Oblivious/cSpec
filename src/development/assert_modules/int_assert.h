@@ -1,13 +1,17 @@
 #ifndef __INT_ASSERT_H_
 #define __INT_ASSERT_H_
 
+#include "../interface.h"
+#include "../functionality.h"
+
+
 /**
  * @func: _call_assert_that_int
  * @desc: Assert that the expected integer is equal to the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-define_assert(_call_assert_that_int, int, _string_add_int, !_int_comparison)
+define_assert(_call_assert_that_int, int, _to_string_int_write, !_int_comparison)
 
 /**
  * @func: _call_nassert_that_int
@@ -15,7 +19,7 @@ define_assert(_call_assert_that_int, int, _string_add_int, !_int_comparison)
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-define_assert(_call_nassert_that_int, int, _string_add_int, _int_comparison)
+define_assert(_call_nassert_that_int, int, _to_string_int_write, _int_comparison)
 
 /**
  * @macro: assert_that_int

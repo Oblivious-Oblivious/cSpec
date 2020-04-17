@@ -21,17 +21,42 @@
 )
 
 /**
- * @macro: _to_string_write
+ * @macro: _to_string_int_write
  * @desc: Writes actual and expected values
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
- * @param func -> The `string add` function according to data type
  **/
-#define _to_string_write(actual, expected, func) _BLOCK( \
+#define _to_string_int_write(actual, expected) _BLOCK( \
     _cspec->current_actual = _new_string(""); \
     _cspec->current_expected = _new_string(""); \
-    func(_cspec->current_actual, actual); \
-    func(_cspec->current_expected, expected); \
+    _string_add_int(_cspec->current_actual, actual); \
+    _string_add_int(_cspec->current_expected, expected); \
+)
+
+/**
+ * @macro: _to_string_double_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ **/
+#define _to_string_double_write(actual, expected) _BLOCK( \
+    _cspec->current_actual = _new_string(""); \
+    _cspec->current_expected = _new_string(""); \
+    _string_add_double_precision(_cspec->current_actual, actual); \
+    _string_add_double_precision(_cspec->current_expected, expected); \
+)
+
+/**
+ * @macro: _to_string_charptr_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ **/
+#define _to_string_charptr_write(actual, expected) _BLOCK( \
+    _cspec->current_actual = _new_string(""); \
+    _cspec->current_expected = _new_string(""); \
+    _string_add_str(_cspec->current_actual, actual); \
+    _string_add_str(_cspec->current_expected, expected); \
 )
 
 /**

@@ -577,7 +577,7 @@
  **/
 #define define_assert(name_of_assert, data_type_token, to_string_method, comparison_method) \
     static void name_of_assert(data_type_token actual, data_type_token expected) { \
-        _to_string_write(actual, expected, to_string_method); \
+        to_string_method(actual, expected); \
         _compare_values(actual, expected, comparison_method); \
     }
 

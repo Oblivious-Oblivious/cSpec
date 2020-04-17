@@ -1,13 +1,17 @@
 #ifndef __DOUBLE_ASSERT_H_
 #define __DOUBLE_ASSERT_H_
 
+#include "../interface.h"
+#include "../functionality.h"
+
+
 /**
  * @func: _call_assert_that_double
  * @desc: Assert that the expected double is different than the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-define_assert(_call_assert_that_double, double, _string_add_double_precision, !_double_comparison)
+define_assert(_call_assert_that_double, double, _to_string_double_write, !_double_comparison)
 
 /**
  * @func: _call_nassert_that_double
@@ -15,7 +19,7 @@ define_assert(_call_assert_that_double, double, _string_add_double_precision, !_
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-define_assert(_call_nassert_that_double, double, _string_add_double_precision, _double_comparison)
+define_assert(_call_nassert_that_double, double, _to_string_double_write, _double_comparison)
 
 /**
  * @macro: assert_that_double
