@@ -19,16 +19,6 @@
 )
 
 /**
- * @func: _fabs
- * @desc: Abs for floats
- * @param value -> The value to get `abs` for
- * @return Absolute value
- **/
-static double _fabs(double value) {
-    return value < 0 ? (-value) : (value);
-}
-
-/**
  * @func: _double_comparison
  * @desc: A function that compares doubles for assertions
  * @param actual -> The value passed by the user
@@ -38,7 +28,7 @@ static double _fabs(double value) {
 static bool _double_comparison(double actual, double expected) {
     /* Calculate the margin to which the difference
         is too big so the test fails */
-    return _fabs(actual - expected) > 1E-12;
+    return _fabs(actual - expected) < 1E-12;
 }
 
 /**

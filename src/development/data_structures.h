@@ -25,13 +25,13 @@ typedef void* (*_lambda)(void*);
  * @desc: A mutable string of characters used to dynamically build a string.
  * @param str -> The str char* we construct our string into
  * @param alloced -> The total sized allocated for the string
- * @param length -> The total length of the string
+ * @param len -> The total len of the string
  * @param persistance -> A flag signaling the persistence state of the string
  **/
 typedef struct _string {
     char *str;
     size_t alloced;
-    size_t length;
+    size_t len;
 } _string;
 
 /**
@@ -39,12 +39,12 @@ typedef struct _string {
  * @desc: Defines a vector data structure
  * @param items -> A void pointer array that contains the heterogenous elements of the vector
  * @param alloced -> The total capacity of the vector
- * @param length -> The total number of values
+ * @param len -> The total number of values
  **/
 typedef struct _vector {
     void **items;
     size_t alloced;
-    size_t length;
+    size_t len;
 } _vector;
 
 /**
@@ -141,6 +141,16 @@ typedef struct _cspec_data_struct {
 _cspec_data_struct *_cspec;
 
 /**
+ * @func: _fabs
+ * @desc: Abs for floats
+ * @param value -> The value to get `abs` for
+ * @return Absolute value
+ **/
+static double _fabs(double value) {
+    return value < 0 ? (-value) : (value);
+}
+
+/**
  * @func: __streql
  * @desc: Accurate equivalent of string.h 'strcmp' function
  * @param a -> The first string to compare
@@ -182,15 +192,15 @@ static void *__memmove(void *dest, const void *src, size_t n) {
  * @func: _string_ensure_space
  * @desc: Ensure there is enough space for data being added plus a NULL terminator
  * @param sb -> The string builder to use
- * @param add_len -> he length that needs to be added *not* including a NULL terminator
+ * @param add_len -> he len that needs to be added *not* including a NULL terminator
  **/
 static void _string_ensure_space(_string *sb, size_t add_len) {
     if(sb == NULL || add_len == 0) return;
 
     /* If out allocated space is big enough */
-    if(sb->alloced >= sb->length + add_len + 1) return;
+    if(sb->alloced >= sb->len + add_len + 1) return;
 
-    while(sb->alloced < sb->length + add_len + 1) {
+    while(sb->alloced < sb->len + add_len + 1) {
         /* Doubling growth strategy */
         sb->alloced <<= 1;
         if(sb->alloced == 0) {
@@ -220,11 +230,11 @@ static void _string_add_str(_string *sb, const char *str) {
     size_t len = ptr - str;
     
     _string_ensure_space(sb, len);
-    __memmove(sb->str+sb->length, str, len);
+    __memmove(sb->str+sb->len, str, len);
 
-    /* Reset length and NULL terminate */
-    sb->length += len;
-    sb->str[sb->length] = '\0';
+    /* Reset len and NULL terminate */
+    sb->len += len;
+    sb->str[sb->len] = '\0';
 }
 
 /**
@@ -239,7 +249,7 @@ static _string *_new_string(char *initial_string) {
     sb->str = malloc(32);
     *sb->str = '\0';
     sb->alloced = 32;
-    sb->length = 0;
+    sb->len = 0;
     _string_add_str(sb, initial_string);
     return sb;
 }
@@ -290,15 +300,15 @@ static char *_string_get(_string *sb) {
  * @func: _string_shorten
  * @desc: Remove data from the end of the builder
  * @param sb -> The string builder to use
- * @param len -> The new length of the string, anything after this length is removed
+ * @param len -> The new len of the string, anything after this len is removed
  **/
 static void _string_shorten(_string *sb, size_t len) {
-    if(sb == NULL || len >= sb->length) return;
+    if(sb == NULL || len >= sb->len) return;
 
-    /* Reset the length and NULL terminate, ingoring
+    /* Reset the len and NULL terminate, ingoring
         all values right to the NULL from memory */
-    sb->length = len;
-    sb->str[sb->length] = '\0';
+    sb->len = len;
+    sb->str[sb->len] = '\0';
 }
 
 /**
@@ -315,33 +325,33 @@ static void _string_delete(_string *sb) {
  * @func: _string_skip
  * @desc: Remove data from the beginning of the builder
  * @param sb -> The _string builder to use
- * @param len -> The length to remove
+ * @param len -> The len to remove
  **/
 static void _string_skip(_string *sb, size_t len) {
     if(sb == NULL || len == 0) return;
 
-    if(len >= sb->length) {
+    if(len >= sb->len) {
         /* If we choose to drop more bytes than the
             string has simply clear the string */
         _string_delete(sb);
         return;
     }
 
-    sb->length -= len;
+    sb->len -= len;
 
     /* +1 to move the NULL. */
-    __memmove(sb->str, sb->str + len, sb->length + 1);
+    __memmove(sb->str, sb->str + len, sb->len + 1);
 }
 
 /**
  * @func: _string_length
- * @desc: The length of the string contained in the builder
+ * @desc: The len of the string contained in the builder
  * @param sb -> The string builder to use
- * @return The current length of the string
+ * @return The current len of the string
  **/
 static size_t _string_length(_string *sb) {
     if(sb == NULL) return 0;
-    return sb->length;
+    return sb->len;
 }
 
 /**
@@ -400,7 +410,7 @@ static void _vector_ensure_space(_vector *v, size_t capacity) {
 static _vector *_new_vector(void) {
     _vector *v = malloc(sizeof(_vector));
     v->alloced = 32;
-    v->length = 0;
+    v->len = 0;
     v->items = malloc(sizeof(void*) * v->alloced);
     return v;
 }
@@ -413,9 +423,9 @@ static _vector *_new_vector(void) {
  **/
 static void _vector_add(_vector *v, void *item) {
     if(v == NULL) return;
-    if(v->alloced == v->length)
+    if(v->alloced == v->len)
         _vector_ensure_space(v, v->alloced * 2);
-    v->items[v->length++] = item;
+    v->items[v->len++] = item;
 }
 
 /**
@@ -427,7 +437,7 @@ static void _vector_add(_vector *v, void *item) {
  **/
 static void *_vector_get(_vector *v, size_t index) {
     if(v == NULL) return NULL;
-    if(index >= 0 && index < v->length)
+    if(index >= 0 && index < v->len)
         return v->items[index];
     return NULL;
 }
@@ -440,7 +450,7 @@ static void *_vector_get(_vector *v, size_t index) {
  **/
 static size_t _vector_length(_vector *v) {
     if(v == NULL) return 0;
-    return v->length;
+    return v->len;
 }
 
 /**

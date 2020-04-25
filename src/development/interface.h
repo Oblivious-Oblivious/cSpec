@@ -487,17 +487,17 @@
         int: _Generic((expected), \
             int: _call_assert_that_int, \
             double: _call_assert_that_double, \
-            char*: _call_assert_that_string \
+            char*: _call_assert_that_charptr \
         )(actual, expected), \
         double: _Generic((expected), \
             int: _call_assert_that_double, \
             double: _call_assert_that_double, \
-            char*: _call_assert_that_string \
+            char*: _call_assert_that_charptr \
         )(actual, expected), \
         char*: _Generic((expected), \
             int: _call_assert_that_int, \
             double: _call_assert_that_double, \
-            char*: _call_assert_that_string \
+            char*: _call_assert_that_charptr \
         )(actual, expected) \
     )
     /* Same for nassertions */
@@ -505,17 +505,17 @@
         int: _Generic((expected), \
             int: _call_nassert_that_int, \
             double: _call_nassert_that_double, \
-            char*: _call_nassert_that_string \
+            char*: _call_nassert_that_charptr \
         )(actual, expected), \
         double: _Generic((expected), \
             int: _call_nassert_that_double, \
             double: _call_nassert_that_double, \
-            char*: _call_nassert_that_string \
+            char*: _call_nassert_that_charptr \
         )(actual, expected), \
         char*: _Generic((expected), \
             int: _call_nassert_that_double, \
             double: _call_nassert_that_double, \
-            char*: _call_nassert_that_string \
+            char*: _call_nassert_that_charptr \
         )(actual, expected) \
     )
 #else

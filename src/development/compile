@@ -12,7 +12,9 @@ functionality.h \
 assert_modules/int_assert.h \
 assert_modules/double_assert.h \
 assert_modules/charptr_assert.h \
-assert_modules/int_array_assert.h
+assert_modules/int_array_assert.h \
+assert_modules/double_array_assert.h \
+assert_modules/charptr_array_assert.h
 do
     tail -n +7 $value | head -n -1 >> cSpec.h
 done

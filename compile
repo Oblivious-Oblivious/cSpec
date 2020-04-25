@@ -1,0 +1,9 @@
+#!/bin/sh
+
+cd src/development
+./compile
+cd ../../examples/simple
+make clean
+make
+./simple
+cd ../../

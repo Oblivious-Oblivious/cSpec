@@ -119,13 +119,13 @@ typedef void* (*_lambda)(void*);
  * @desc: A mutable string of characters used to dynamically build a string.
  * @param str -> The str char* we construct our string into
  * @param alloced -> The total sized allocated for the string
- * @param length -> The total length of the string
+ * @param len -> The total len of the string
  * @param persistance -> A flag signaling the persistence state of the string
  **/
 typedef struct _string {
     char *str;
     size_t alloced;
-    size_t length;
+    size_t len;
 } _string;
 
 /**
@@ -133,12 +133,12 @@ typedef struct _string {
  * @desc: Defines a vector data structure
  * @param items -> A void pointer array that contains the heterogenous elements of the vector
  * @param alloced -> The total capacity of the vector
- * @param length -> The total number of values
+ * @param len -> The total number of values
  **/
 typedef struct _vector {
     void **items;
     size_t alloced;
-    size_t length;
+    size_t len;
 } _vector;
 
 /**
@@ -235,6 +235,16 @@ typedef struct _cspec_data_struct {
 _cspec_data_struct *_cspec;
 
 /**
+ * @func: _fabs
+ * @desc: Abs for floats
+ * @param value -> The value to get `abs` for
+ * @return Absolute value
+ **/
+static double _fabs(double value) {
+    return value < 0 ? (-value) : (value);
+}
+
+/**
  * @func: __streql
  * @desc: Accurate equivalent of string.h 'strcmp' function
  * @param a -> The first string to compare
@@ -276,15 +286,15 @@ static void *__memmove(void *dest, const void *src, size_t n) {
  * @func: _string_ensure_space
  * @desc: Ensure there is enough space for data being added plus a NULL terminator
  * @param sb -> The string builder to use
- * @param add_len -> he length that needs to be added *not* including a NULL terminator
+ * @param add_len -> he len that needs to be added *not* including a NULL terminator
  **/
 static void _string_ensure_space(_string *sb, size_t add_len) {
     if(sb == NULL || add_len == 0) return;
 
     /* If out allocated space is big enough */
-    if(sb->alloced >= sb->length + add_len + 1) return;
+    if(sb->alloced >= sb->len + add_len + 1) return;
 
-    while(sb->alloced < sb->length + add_len + 1) {
+    while(sb->alloced < sb->len + add_len + 1) {
         /* Doubling growth strategy */
         sb->alloced <<= 1;
         if(sb->alloced == 0) {
@@ -314,11 +324,11 @@ static void _string_add_str(_string *sb, const char *str) {
     size_t len = ptr - str;
     
     _string_ensure_space(sb, len);
-    __memmove(sb->str+sb->length, str, len);
+    __memmove(sb->str+sb->len, str, len);
 
-    /* Reset length and NULL terminate */
-    sb->length += len;
-    sb->str[sb->length] = '\0';
+    /* Reset len and NULL terminate */
+    sb->len += len;
+    sb->str[sb->len] = '\0';
 }
 
 /**
@@ -333,7 +343,7 @@ static _string *_new_string(char *initial_string) {
     sb->str = malloc(32);
     *sb->str = '\0';
     sb->alloced = 32;
-    sb->length = 0;
+    sb->len = 0;
     _string_add_str(sb, initial_string);
     return sb;
 }
@@ -384,15 +394,15 @@ static char *_string_get(_string *sb) {
  * @func: _string_shorten
  * @desc: Remove data from the end of the builder
  * @param sb -> The string builder to use
- * @param len -> The new length of the string, anything after this length is removed
+ * @param len -> The new len of the string, anything after this len is removed
  **/
 static void _string_shorten(_string *sb, size_t len) {
-    if(sb == NULL || len >= sb->length) return;
+    if(sb == NULL || len >= sb->len) return;
 
-    /* Reset the length and NULL terminate, ingoring
+    /* Reset the len and NULL terminate, ingoring
         all values right to the NULL from memory */
-    sb->length = len;
-    sb->str[sb->length] = '\0';
+    sb->len = len;
+    sb->str[sb->len] = '\0';
 }
 
 /**
@@ -409,33 +419,33 @@ static void _string_delete(_string *sb) {
  * @func: _string_skip
  * @desc: Remove data from the beginning of the builder
  * @param sb -> The _string builder to use
- * @param len -> The length to remove
+ * @param len -> The len to remove
  **/
 static void _string_skip(_string *sb, size_t len) {
     if(sb == NULL || len == 0) return;
 
-    if(len >= sb->length) {
+    if(len >= sb->len) {
         /* If we choose to drop more bytes than the
             string has simply clear the string */
         _string_delete(sb);
         return;
     }
 
-    sb->length -= len;
+    sb->len -= len;
 
     /* +1 to move the NULL. */
-    __memmove(sb->str, sb->str + len, sb->length + 1);
+    __memmove(sb->str, sb->str + len, sb->len + 1);
 }
 
 /**
  * @func: _string_length
- * @desc: The length of the string contained in the builder
+ * @desc: The len of the string contained in the builder
  * @param sb -> The string builder to use
- * @return The current length of the string
+ * @return The current len of the string
  **/
 static size_t _string_length(_string *sb) {
     if(sb == NULL) return 0;
-    return sb->length;
+    return sb->len;
 }
 
 /**
@@ -494,7 +504,7 @@ static void _vector_ensure_space(_vector *v, size_t capacity) {
 static _vector *_new_vector(void) {
     _vector *v = malloc(sizeof(_vector));
     v->alloced = 32;
-    v->length = 0;
+    v->len = 0;
     v->items = malloc(sizeof(void*) * v->alloced);
     return v;
 }
@@ -507,9 +517,9 @@ static _vector *_new_vector(void) {
  **/
 static void _vector_add(_vector *v, void *item) {
     if(v == NULL) return;
-    if(v->alloced == v->length)
+    if(v->alloced == v->len)
         _vector_ensure_space(v, v->alloced * 2);
-    v->items[v->length++] = item;
+    v->items[v->len++] = item;
 }
 
 /**
@@ -521,7 +531,7 @@ static void _vector_add(_vector *v, void *item) {
  **/
 static void *_vector_get(_vector *v, size_t index) {
     if(v == NULL) return NULL;
-    if(index >= 0 && index < v->length)
+    if(index >= 0 && index < v->len)
         return v->items[index];
     return NULL;
 }
@@ -534,7 +544,7 @@ static void *_vector_get(_vector *v, size_t index) {
  **/
 static size_t _vector_length(_vector *v) {
     if(v == NULL) return 0;
-    return v->length;
+    return v->len;
 }
 
 /**
@@ -1055,17 +1065,17 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         int: _Generic((expected), \
             int: _call_assert_that_int, \
             double: _call_assert_that_double, \
-            char*: _call_assert_that_string \
+            char*: _call_assert_that_charptr \
         )(actual, expected), \
         double: _Generic((expected), \
             int: _call_assert_that_double, \
             double: _call_assert_that_double, \
-            char*: _call_assert_that_string \
+            char*: _call_assert_that_charptr \
         )(actual, expected), \
         char*: _Generic((expected), \
             int: _call_assert_that_int, \
             double: _call_assert_that_double, \
-            char*: _call_assert_that_string \
+            char*: _call_assert_that_charptr \
         )(actual, expected) \
     )
     /* Same for nassertions */
@@ -1073,17 +1083,17 @@ static _vector *_vector_map(_vector *v, _lambda modifier) {
         int: _Generic((expected), \
             int: _call_nassert_that_int, \
             double: _call_nassert_that_double, \
-            char*: _call_nassert_that_string \
+            char*: _call_nassert_that_charptr \
         )(actual, expected), \
         double: _Generic((expected), \
             int: _call_nassert_that_double, \
             double: _call_nassert_that_double, \
-            char*: _call_nassert_that_string \
+            char*: _call_nassert_that_charptr \
         )(actual, expected), \
         char*: _Generic((expected), \
             int: _call_nassert_that_double, \
             double: _call_nassert_that_double, \
-            char*: _call_nassert_that_string \
+            char*: _call_nassert_that_charptr \
         )(actual, expected) \
     )
 #else
@@ -1840,16 +1850,6 @@ define_assert(_call_nassert_that_int, int, _to_string_int_write, _int_comparison
 )
 
 /**
- * @func: _fabs
- * @desc: Abs for floats
- * @param value -> The value to get `abs` for
- * @return Absolute value
- **/
-static double _fabs(double value) {
-    return value < 0 ? (-value) : (value);
-}
-
-/**
  * @func: _double_comparison
  * @desc: A function that compares doubles for assertions
  * @param actual -> The value passed by the user
@@ -1859,7 +1859,7 @@ static double _fabs(double value) {
 static bool _double_comparison(double actual, double expected) {
     /* Calculate the margin to which the difference
         is too big so the test fails */
-    return _fabs(actual - expected) > 1E-12;
+    return _fabs(actual - expected) < 1E-12;
 }
 
 /**
@@ -1915,54 +1915,54 @@ define_assert(_call_nassert_that_double, double, _to_string_double_write, _doubl
 )
 
 /**
- * @func: _string_comparison
+ * @func: _charptr_comparison
  * @desc: A function that compares char pointers for assertions
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  * @return a boolean
  **/
-static bool _string_comparison(char *actual, char *expected) {
+static bool _charptr_comparison(char *actual, char *expected) {
     return __streql(expected, actual);
 }
 
 /**
- * @func: _call_assert_that_string
+ * @func: _call_assert_that_charptr
  * @desc: Assert that the expected string is equal to the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-define_assert(_call_assert_that_string, char*, _to_string_charptr_write, !_string_comparison)
+define_assert(_call_assert_that_charptr, char*, _to_string_charptr_write, !_charptr_comparison)
 
 /**
- * @func: _call_nassert_that_string
+ * @func: _call_nassert_that_charptr
  * @desc: Assert that the expected string is different than the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-define_assert(_call_nassert_that_string, char*, _to_string_charptr_write, _string_comparison)
+define_assert(_call_nassert_that_charptr, char*, _to_string_charptr_write, _charptr_comparison)
 
 /**
- * @macro: assert_that_string
+ * @macro: assert_that_charptr
  * @desc: Assert that the expected string is equal to the result
  * @param actual -> The actual value
  * @param expected -> The expected string
  **/
-#define assert_that_string(inner) _BLOCK( \
+#define assert_that_charptr(inner) _BLOCK( \
     _cspec->current_file = __FILE__; \
     _cspec->current_line = __LINE__; \
-    _call_assert_that_string(inner); \
+    _call_assert_that_charptr(inner); \
 )
 
 /**
- * @macro: nassert_that_string
+ * @macro: nassert_that_charptr
  * @desc: Assert that the expected string is different than the result
  * @param actual -> The actual value
  * @param expected -> The expected string
  **/
-#define nassert_that_string(inner) _BLOCK( \
+#define nassert_that_charptr(inner) _BLOCK( \
     _cspec->current_file = __FILE__; \
     _cspec->current_line = __LINE__; \
-    _call_nassert_that_string(inner); \
+    _call_nassert_that_charptr(inner); \
 )
 
 
@@ -2043,6 +2043,190 @@ define_assert_array(_call_nassert_that_int_array, int*, _to_string_int_array_wri
     _cspec->current_file = __FILE__; \
     _cspec->current_line = __LINE__; \
     _call_nassert_that_int_array(inner); \
+)
+
+
+/**
+ * @func: _to_string_double_array_write
+ * @desc: Writes the actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @param len -> The length of the arrays
+ **/
+static void _to_string_double_array_write(double *actual, double *expected, size_t len) {
+    _cspec->current_actual = _new_string("[");
+    _cspec->current_expected = _new_string("[");
+
+    for(int i = 0; i < len - 1; i++) {
+        _string_add_double_precision(_cspec->current_actual, actual[i]);
+        _string_add_str(_cspec->current_actual, ", ");
+
+        _string_add_double_precision(_cspec->current_expected, expected[i]);
+        _string_add_str(_cspec->current_expected, ", ");
+    }
+    _string_add_double_precision(_cspec->current_actual, actual[len - 1]);
+    _string_add_str(_cspec->current_actual, "]");
+
+    _string_add_double_precision(_cspec->current_expected, expected[len - 1]);
+    _string_add_str(_cspec->current_expected, "]");
+}
+
+/**
+ * @func: _double_array_comparison
+ * @desc: Conpares two double arrays for equality in elements
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @param len -> The length of the arrays
+ * @return a boolean
+ **/
+static bool _double_array_comparison(double *actual, double *expected, size_t len) {
+    /* Check for members */
+    for(int i = 0; i < len; i++) {
+        if(_fabs(actual[i] - expected[i]) > 1E-12) return false;
+    }
+
+    /* All elements are equal */
+    return true;
+}
+
+/**
+ * @func: _call_assert_that_double_array
+ * @desc: Assertion of two int arrays
+ **/
+define_assert_array(
+    _call_assert_that_double_array,
+    double*,
+    _to_string_double_array_write,
+    !_double_array_comparison,
+    len
+)
+
+/**
+ * @func: _call_nassert_that_double_array
+ * @desc: Negative assertion of two double arrays
+ **/
+define_assert_array(
+    _call_nassert_that_double_array,
+    double*,
+    _to_string_double_array_write,
+    _double_array_comparison,
+    len
+)
+
+/**
+ * @macro: assert_that_double_array
+ * @desc: Assert that the expected double array equals to the result
+ * @param actual -> The actual value
+ * @param expected -> The expected value
+ **/
+#define assert_that_double_array(inner) _BLOCK( \
+    _cspec->current_file = __FILE__; \
+    _cspec->current_line = __LINE__; \
+    _call_assert_that_double_array(inner); \
+)
+
+/**
+ * @macro: nassert_that_double_array
+ * @desc: Assert that the expected double array differs from the result
+ * @param actual -> The actual value
+ * @param expected -> The expected value
+ **/
+#define nassert_that_double_array(inner) _BLOCK( \
+    _cspec->current_file = __FILE__; \
+    _cspec->current_line = __LINE__; \
+    _call_nassert_that_double_array(inner); \
+)
+
+
+/**
+ * @func: _to_string_charptr_array_write
+ * @desc: Writes actual and expected values
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @param len -> The length of the arrays
+ **/
+static void _to_string_charptr_array_write(char **actual, char **expected, size_t len) {
+    _cspec->current_actual = _new_string("[");
+    _cspec->current_expected = _new_string("[");
+
+    for(int i = 0; i < len - 1; i++) {
+        _string_add_str(_cspec->current_actual, actual[i]);
+        _string_add_str(_cspec->current_actual, ", ");
+
+        _string_add_str(_cspec->current_expected, expected[i]);
+        _string_add_str(_cspec->current_expected, ", ");
+    }
+    _string_add_str(_cspec->current_actual, actual[len - 1]);
+    _string_add_str(_cspec->current_actual, "]");
+
+    _string_add_str(_cspec->current_expected, expected[len - 1]);
+    _string_add_str(_cspec->current_expected, "]");
+}
+
+/**
+ * @func: _charptr_array_comparison
+ * @desc: Compares two string arrays for equality in elements
+ * @param actual -> The value passed by the user
+ * @param expected -> The value `actual` is tested against
+ * @param len -> The length of the arrays
+ * @return a boolean
+ **/
+static bool _charptr_array_comparison(char **actual, char **expected, size_t len) {
+    /* Check for members */
+    for(int i = 0; i < len; i++) {
+        if(!__streql(actual[i], expected[i])) return false;
+    }
+
+    /* All elements are equal */
+    return true;
+}
+
+/**
+ * @func: _call_assert_that_charptr_array
+ * @desc: Assertion of two int arrays
+ **/
+define_assert_array(
+    _call_assert_that_charptr_array,
+    double*,
+    _to_string_charptr_array_write,
+    !_charptr_array_comparison,
+    len
+)
+
+/**
+ * @func: _call_nassert_that_charptr_array
+ * @desc: Negative assertion of two double arrays
+ **/
+define_assert_array(
+    _call_nassert_that_charptr_array,
+    double*,
+    _to_string_charptr_array_write,
+    _charptr_array_comparison,
+    len
+)
+
+/**
+ * @macro: assert_that_charptr_array
+ * @desc: Assert that the expected charptr array equals to the result
+ * @param actual -> The actual value
+ * @param expected -> The expected value
+ **/
+#define assert_that_charptr_array(inner) _BLOCK( \
+    _cspec->current_file = __FILE__; \
+    _cspec->current_line = __LINE__; \
+    _call_assert_that_charptr_array(inner); \
+)
+
+/**
+ * @macro: nassert_that_charptr_array
+ * @desc: Assert that the expected charptr array differs from the result
+ * @param actual -> The actual value
+ * @param expected -> The expected value
+ **/
+#define nassert_that_charptr_array(inner) _BLOCK( \
+    _cspec->current_file = __FILE__; \
+    _cspec->current_line = __LINE__; \
+    _call_nassert_that_charptr_array(inner); \
 )
 
 
