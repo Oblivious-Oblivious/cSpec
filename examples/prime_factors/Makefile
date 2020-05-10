@@ -1,8 +1,10 @@
-INCL = prime_factors.h primes.module.h vector.h
-SRC = prime_factors.c prime_factors.spec.c vector.c
+NAME = prime_factors
+
+INCL = $(NAME).h $(NAME).module.h vector.h
+SRC = $(NAME).c $(NAME).spec.c vector.c
 OBJ = $(SRC:.c=.o)
 LIBS =
-EXE = prime_factors
+EXE = $(NAME)
 
 CC = /usr/bin/gcc
 CFLAGS = -O3 -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-pointer-to-int-cast -Wno-sizeof-array-argument

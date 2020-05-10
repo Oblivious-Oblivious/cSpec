@@ -4,9 +4,9 @@ static void string_ensure_space(string *sb, size_t add_len) {
     if(sb == NULL || add_len == 0) return;
 
     /* If out allocated space is big enough */
-    if(sb->alloced >= sb->length+add_len + 1) return;
+    if(sb->alloced >= sb->len+add_len + 1) return;
 
-    while (sb->alloced < sb->length+add_len + 1) {
+    while (sb->alloced < sb->len+add_len + 1) {
         /* Doubling growth strategy */
         sb->alloced <<= 1;
         if(sb->alloced == 0) {
@@ -33,7 +33,7 @@ string *string_create(char *initial_string) {
     *sb->str = '\0';
 
     sb->alloced = string_init_capacity;
-    sb->length = 0;
+    sb->len = 0;
 
     string_add_str(sb, initial_string);
     return sb;
@@ -46,11 +46,11 @@ void string_add_str(string *sb, const char *str) {
     string_ensure_space(sb, len);
 
     /* Copy the value into memory */
-    memmove(sb->str+sb->length, str, len);
+    memmove(sb->str+sb->len, str, len);
 
     /* Reset length and NULL terminate */
-    sb->length += len;
-    sb->str[sb->length] = '\0';
+    sb->len += len;
+    sb->str[sb->len] = '\0';
 }
 
 void string_add_char(string *sb, char c) {
@@ -61,9 +61,9 @@ void string_add_char(string *sb, char c) {
 
     string_ensure_space(sb, 1);
 
-    sb->str[sb->length] = c;
-    sb->length++;
-    sb->str[sb->length] = '\0';
+    sb->str[sb->len] = c;
+    sb->len++;
+    sb->str[sb->len] = '\0';
 }
 
 void string_add_int(string *sb, int val) {
@@ -96,12 +96,12 @@ char string_get_char_at_index(string *sb, size_t index) {
 }
 
 void string_shorten(string *sb, size_t len) {
-    if(sb == NULL || len >= sb->length) return;
+    if(sb == NULL || len >= sb->len) return;
 
     /* Reset the length and NULL terminate, ingoring
         all values right to the NULL from memory */
-    sb->length = len;
-    sb->str[sb->length] = '\0';
+    sb->len = len;
+    sb->str[sb->len] = '\0';
 }
 
 void string_delete(string *sb) {
@@ -114,20 +114,20 @@ void string_delete(string *sb) {
 void string_skip(string *sb, size_t len) {
     if(sb == NULL || len == 0) return;
 
-    if(len >= sb->length) {
+    if(len >= sb->len) {
         /* If we choose to drop more bytes than the
             string has simply clear the string */
         string_delete(sb);
         return;
     }
 
-    sb->length -= len;
+    sb->len -= len;
 
     /* +1 to move the NULL. */
-    memmove(sb->str, sb->str + len, sb->length + 1);
+    memmove(sb->str, sb->str + len, sb->len + 1);
 }
 
 size_t string_length(string *sb) {
     if(sb == NULL) return 0;
-    return sb->length;
+    return sb->len;
 }

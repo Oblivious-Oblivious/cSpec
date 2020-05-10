@@ -24,7 +24,7 @@ module(string_spec, {
         
         context("when the initial value exitsts", {
             it("returns the correct char* when calling `string_get`", {
-                assert_that_string(string_get(str) equals to initial_value);
+                assert_that_charptr(string_get(str) equals to initial_value);
             });
         });
 

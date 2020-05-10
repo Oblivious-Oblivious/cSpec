@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<modules duration="0.69850 ms">
-    <module name="cDataLib", failures="23", skipped="1", tests="50", timestamp="2020-04-25 21:58:03">
+<modules duration="0.40300 ms">
+    <module name="cDataLib", failures="23", skipped="1", tests="50", timestamp="2020-05-10 13:24:13">
         <describe name="cSpec functions">
             <it name="succeeds `assert_that`", status="passing" />
             <it name="fails `assert_that`", status="failing">
@@ -61,7 +61,7 @@
             <it/>
         </describe>
     </module>
-    <module name="second", failures="23", skipped="1", tests="50", timestamp="2020-04-25 21:58:03">
+    <module name="second", failures="23", skipped="1", tests="50", timestamp="2020-05-10 13:24:13">
         <describe name="DESC 1">
             <it name="before on desc 1", status="passing" />
             <it name="does on 1", status="passing" />
@@ -134,7 +134,7 @@
             <it/>
         </describe>
     </module>
-    <module name="another_third", failures="23", skipped="1", tests="50", timestamp="2020-04-25 21:58:03">
+    <module name="another_third", failures="23", skipped="1", tests="50", timestamp="2020-05-10 13:24:13">
         <describe name="Generic type assertions">
             <context name="when using generic asserts">
                 <it name="succeeds generic int assertion", status="passing" />

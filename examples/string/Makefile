@@ -1,8 +1,10 @@
-INCL = string.h
-SRC = string.c string.spec.c
+NAME = string
+
+INCL = $(NAME).h
+SRC = $(NAME).c $(NAME).spec.c
 OBJ = $(SRC:.c=.o)
 LIBS =
-EXE = string
+EXE = $(NAME)
 
 CC = /usr/bin/gcc
 CFLAGS = -O3 -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-pointer-to-int-cast -Wno-sizeof-array-argument

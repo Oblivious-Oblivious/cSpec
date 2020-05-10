@@ -1,8 +1,10 @@
-INCL = vector.h
-SRC = vector.c vector.spec.c
+NAME = vector
+
+INCL = $(NAME).h
+SRC = $(NAME).c $(NAME).spec.c
 OBJ = $(SRC:.c=.o)
 LIBS =
-EXE = vector
+EXE = $(NAME)
 
 CC = /usr/bin/gcc
 CFLAGS = -O3 -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-pointer-to-int-cast -Wno-sizeof-array-argument

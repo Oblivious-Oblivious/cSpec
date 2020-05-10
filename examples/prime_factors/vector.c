@@ -16,7 +16,7 @@ static void vector_ensure_space(vector *v, size_t capacity) {
 vector *vector_create(void) {
     vector *v = malloc(sizeof(vector));
     v->alloced = vector_init_capacity;
-    v->length = 0;
+    v->len = 0;
     v->items = malloc(sizeof(void*) * v->alloced);
     return v;
 }
@@ -24,45 +24,45 @@ vector *vector_create(void) {
 void vector_add(vector *v, void *item) {
     /* TODO We allow NULL elements (NOT TESTED) */
     if(v == NULL) return;
-    if(v->alloced == v->length)
+    if(v->alloced == v->len)
         vector_ensure_space(v, v->alloced * 2);
-    v->items[v->length++] = item;
+    v->items[v->len++] = item;
 }
 
 void vector_set(vector *v, size_t index, void *item) {
     if(v == NULL) return;
-    if(index >= 0 && index < v->length)
+    if(index >= 0 && index < v->len)
         v->items[index] = item;
 }
 
 void *vector_get(vector *v, size_t index) {
     if(v == NULL) return NULL;
-    if(index >= 0 && index < v->length)
+    if(index >= 0 && index < v->len)
         return v->items[index];
     return NULL;
 }
 
 void vector_delete(vector *v, size_t index) {
     if(v == NULL) return;
-    if(index < 0 || index >= v->length) return;
+    if(index < 0 || index >= v->len) return;
     
     v->items[index] = NULL;
 
     /* Reset the rest of the elements forwards */
-    for(int i = index; i < v->length - 1; i++) {
+    for(int i = index; i < v->len - 1; i++) {
         v->items[i] = v->items[i + 1];
         v->items[i + 1] = NULL;
     }
 
-    v->length--;
+    v->len--;
 
-    if(v->length > 0 && v->length == v->alloced / 4)
+    if(v->len > 0 && v->len == v->alloced / 4)
         vector_ensure_space(v, v->alloced / 2);
 }
 
 size_t vector_length(vector *v) {
     if(v == NULL) return 0;
-    return v->length;
+    return v->len;
 };
 
 vector *vector_dup(vector *v) {

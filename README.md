@@ -12,7 +12,11 @@ CSpec is a lightweight, compile time unit testing library for TDD and BDD models
 - Assertion macros for different data types
     - `assert_that_int(actual, expected)`
     - `assert_that_double(actual, expected)`
-    - `assert_that_string(actual, expected)`
+    - `assert_that_charptr(actual, expected)`
+- Assertions for arrays
+    - `assert_that_int_array(actual, expected)`
+    - `assert_that_double_array(actual, expected)`
+    - `assert_that_charptr_array(actual, expected)`
 - Generic assertion macros for C11
     - `assert_that_value(actual, expected)`
 - Export options for txt, html, or markdown
@@ -343,13 +347,19 @@ Basic assert declaration. Asserts a test block for truthiness.
 - ### ***`assert_that(code_block)`***
 - ### ***`assert_that_int(actual, expected)`***
 - ### ***`assert_that_double(actual, expected)`***
-- ### ***`assert_that_string(actual, expected)`***
+- ### ***`assert_that_charptr(actual, expected)`***
+- ### ***`assert_that_int_array(actual, expected)`***
+- ### ***`assert_that_double_array(actual, expected)`***
+- ### ***`assert_that_charptr_array(actual, expected)`***
 
 ## Typed, false assertions
 - ### ***`nassert_that(code_block)`***
 - ### ***`nassert_that_int(actual, expected)`***
 - ### ***`nassert_that_double(actual, expected)`***
-- ### ***`nassert_that_string(actual, expected)`***
+- ### ***`nassert_that_charptr(actual, expected)`***
+- ### ***`nassert_that_int_array(actual, expected)`***
+- ### ***`nassert_that_double_array(actual, expected)`***
+- ### ***`nassert_that_charptr_array(actual, expected)`***
 
 ## Generic assertions
 - ### ***`assert_that_value(actual, expected)`***
@@ -375,6 +385,8 @@ When calling asserts, the main purpose is to validate some expression, to check 
 #define or ||
 #define equals ,
 #define to
+#define with
+#define length ,
 ```
 
 Using those constructs to call asserts we use the power of the C preprocessor to expand the macro like this:

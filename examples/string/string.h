@@ -18,20 +18,20 @@ static const size_t string_init_capacity = 32;
  * @desc: A mutable string of characters used to dynamically build a string.
  * @param str -> The str char* we construct our string into
  * @param alloced -> The total sized allocated for the string
- * @param length -> The total length of the string
+ * @param len -> The total length of the string
  * @param persistance -> A flag signaling the persistence state of the string
  **/
 typedef struct string {
     char *str;
     size_t alloced;
-    size_t length;
+    size_t len;
 } string;
 
 /**
  * @func: string_ensure_space
  * @desc: Ensure there is enough space for data being added plus a NULL terminator
  * @param sb -> The string builder to use
- * @param add_len -> he length that needs to be added *not* including a NULL terminator
+ * @param add_len -> The length that needs to be added *not* including a NULL terminator
  **/
 static void string_ensure_space(string *sb, size_t add_len);
 
