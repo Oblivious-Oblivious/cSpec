@@ -1,0 +1,28 @@
+#!/bin/sh
+
+cd src/development
+./compile
+cd ../../examples/prime_factors
+make clean
+make
+#./prime_factors
+
+cd ../../examples/simple
+make clean
+make
+./simple
+
+cd ../../examples/stack
+make clean
+make
+#./stack
+
+cd ../../examples/string
+make clean
+make
+#./string
+
+cd ../../examples/vector
+make clean
+make
+#./vector

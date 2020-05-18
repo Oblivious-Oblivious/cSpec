@@ -1,8 +1,0 @@
-
-Module `string_spec`
-    `string`
-        ✓ it creates a string with an initial char* using `nassert_that`
-        `when a string pointer is not NULL`
-            ✓ it returns the char* when calling `string_get`
-        `when the initial value exitsts`
-            ✓ it returns the correct char* when calling `string_get`
