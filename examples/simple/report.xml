@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <modules>
-    <duration>0.56960 ms</duration>
+    <duration>0.63530 ms</duration>
     <module>
         <name>cDataLib</name>
         <failures>23</failures>
         <skipped>1</skipped>
         <tests>50</tests>
-        <timestamp>2020-05-18 19:49:34</timestamp>
+        <timestamp>2020-06-25 02:19:24</timestamp>
         <describe>
             <name>cSpec functions</name>
             <it>
@@ -116,7 +116,7 @@
         <failures>23</failures>
         <skipped>1</skipped>
         <tests>50</tests>
-        <timestamp>2020-05-18 19:49:34</timestamp>
+        <timestamp>2020-06-25 02:19:24</timestamp>
         <describe>
             <name>DESC 1</name>
             <it>
@@ -239,7 +239,7 @@
         <failures>23</failures>
         <skipped>1</skipped>
         <tests>50</tests>
-        <timestamp>2020-05-18 19:49:34</timestamp>
+        <timestamp>2020-06-25 02:19:24</timestamp>
         <describe>
             <name>Generic type assertions</name>
             <context>
