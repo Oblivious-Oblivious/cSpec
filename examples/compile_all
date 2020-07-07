@@ -1,7 +1,8 @@
 #!/bin/sh
 
-cd src/development
+cd ../src/development
 ./compile
+
 cd ../../examples/prime_factors
 make clean
 make
