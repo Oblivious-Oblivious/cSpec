@@ -17,8 +17,6 @@ CSpec is a lightweight, compile time unit testing library for TDD and BDD models
     - `assert_that_int_array(actual, expected)`
     - `assert_that_double_array(actual, expected)`
     - `assert_that_charptr_array(actual, expected)`
-- Generic assertion macros for C11
-    - `assert_that_value(actual, expected)`
 - Export options for txt, html, or markdown
     - `export_test_results(vec, type)`
 - False assertions macro calls for defined data types
@@ -29,11 +27,6 @@ CSpec is a lightweight, compile time unit testing library for TDD and BDD models
 ------------------
 - ### ***`spec`***
 ```C
-#define spec(...) \
-    int main(int argc, char **argv) { \
-        _BLOCK(__VA_ARGS__); \
-    }
-
 spec({
     /* code */
 });
@@ -43,12 +36,6 @@ Basically a `main` function wrapper making the testing commands and code more co
 ------------------------
 - ### ***`spec_suite`***
 ```C
-#define spec_suite(...) \
-    static void run_spec_suite(char *type_of_tests) { \
-        _setup_test_data(); \
-        _BLOCK(__VA_ARGS__); \
-    }
-
 spec_suite({
     /*
         module_name1();
@@ -62,10 +49,6 @@ Defines a top-level function where test modules are run. Because the library's b
 ------------------------
 - ### ***`before`***
 ```C
-#define before(...) _BLOCK( \
-    __VA_ARGS__ \
-)
-
 before({
     /* code */
 });
@@ -75,10 +58,6 @@ Inlines a code block to be executed at the ***top*** of describe blocks. Mainly 
 ------------------------
 - ### ***`after`***
 ```C
-#define after(...) _BLOCK( \
-    __VA_ARGS__ \
-)
-
 after({
     /* code */
 });
@@ -88,10 +67,6 @@ Inlines a code block to be executed at the ***end*** of describe blocks. Mainly 
 ------------------------
 - ### ***`before_each`***
 ```C
-#define before_each(...) _BLOCK( \
-    __VA_ARGS__ \
-)
-
 before_each({
     /* code */
 });
@@ -101,10 +76,6 @@ Inlines a code block to be executed ***before each `it` block***. Mainly used to
 ------------------------
 - ### ***`after_each`***
 ```C
-#define after_each(...) _BLOCK( \
-    __VA_ARGS__ \
-)
-
 after_each({
     /* code */
 });
@@ -114,20 +85,6 @@ Inlines a code block to be executed ***after each `it` block***. Mainly used for
 ------------------------
 - ### ***`module`***
 ```C
-#define module(suite_name, ...) \
-    static void suite_name(void) { \
-        _cspec->name_of_module = _new_string(#suite_name); \
-        _cspec->list_of_describes = _new_vector(); \
-        _cspec->display_tab = _new_string(""); \
-        _BLOCK(__VA_ARGS__); \
-        _vector *mod = _new_vector(); \
-        _vector_add(mod, _cspec->list_of_describes); \
-        _vector_add(mod, _cspec->name_of_module); \
-        _vector_add(_cspec->list_of_modules, mod); \
-        \
-        /* mod([describes], name) */ \
-    }
-
 module(func_name, {
     describe("name 1", {});
     describe("name 2", {});
@@ -139,23 +96,6 @@ Defines a test module, containing one or multiple `describe` blocks. This allows
 ------------------------
 - ### ***`describe`***
 ```C
-#define describe(object_name, ...) _BLOCK( \
-    _string_add_str(_cspec->display_tab, "    "); \
-    _cspec->list_of_its = _new_vector(); \
-    _cspec->list_of_contexts = _new_vector(); \
-    _cspec->name_of_describe = _new_string(object_name); \
-    _vector *describe_block = _new_vector(); \
-    _vector_add(describe_block, _vector_dup(_cspec->list_of_its)); \
-    _vector_add(describe_block, _vector_dup(_cspec->list_of_contexts)); \
-    _vector_add(describe_block, _cspec->name_of_describe); \
-    _vector_add(_cspec->list_of_describes, describe_block); \
-    \
-    _describe(__VA_ARGS__); \
-    \
-    _string_skip(_cspec->display_tab, 4); \
-    /* desc([its], [contexts], name)*/ \
-)
-
 describe("describe name", {
     it("does something", {});
     it("does something else", {});
@@ -167,24 +107,6 @@ Defines a code block for grouping tests. Best use of the `describe` block would 
 ------------------------
 - ### ***`context`***
 ```C
-#define context(object_name, ...) _BLOCK( \
-    _cspec->in_context_block = true; \
-    _string_add_str(_cspec->display_tab, "    "); \
-    _cspec->list_of_its = _new_vector(); \
-    _cspec->name_of_context = _new_string(object_name); \
-    _vector *context_block = _new_vector(); \
-    _vector_add(context_block, _vector_dup(_cspec->list_of_its)); \
-    _vector_add(context_block, _cspec->name_of_context); \
-    _vector *desc_block = _vector_get(_cspec->list_of_describes, _cspec->inner_nest); \
-    _vector *list_of_cons = _vector_get(desc_block, 1); \
-    _vector_add(list_of_cons, context_block); \
-    _describe(__VA_ARGS__); \
-    _string_skip(_cspec->display_tab, 4); \
-    _cspec->in_context_block = false; \
-    \
-    /* con([its], name) */ \
-)
-
 context("context name", {
     it("tests some state", {});
     it("tests some more state", {});
@@ -196,37 +118,6 @@ Defines a code block for grouping tests. Best use of the `context` block would b
 ------------------------
 - ### ***`it`***
 ```C
-#define it(proc_name, ...) _BLOCK( \
-    /* Execute a `before` function */ \
-    if(_cspec->before_func) (*_cspec->before_func)(); \
-    \
-    _string_add_str(_cspec->display_tab, "    "); \
-	_cspec->number_of_tests++; \
-    _cspec->test_result_message = _new_string(""); \
-    _cspec->name_of_tested_proc = _new_string(proc_name); \
-    _cspec->list_of_asserts = _new_vector(); \
-    \
-    /* Assume its a passing test */ \
-    _cspec->status_of_test = _PASSING; \
-    _cspec->current_line = __LINE__; \
-    _cspec->current_file = __FILE__; \
-    \
-    size_t start_test_timer = _get_timer(); \
-    __VA_ARGS__ \
-    size_t end_test_timer = _get_timer(); \
-    \
-    /* Calculate the total time */ \
-    _cspec->total_time_taken_for_tests += end_test_timer - start_test_timer; \
-    \
-    \
-    _insert_it_block_in_list_of_its(); \
-    \
-    \
-    /* Reset the display tab and execute the `after_func` */ \
-    _string_skip(_cspec->display_tab, 4); \
-    if(_cspec->after_func) (*_cspec->after_func)(); \
-)
-
 it("tries to test stuff using asserts", {
     meaning_of_life = 43;
     assert_that(1 is 1);
@@ -240,34 +131,6 @@ The `it` block defines the basic declaration of a test procedure. You can call a
 ------------------------
 - ### ***`xit`***
 ```C
-#define xit(proc_name, ...) _BLOCK( \
-    /* Execute a `before` function */ \
-    if(_cspec->before_func) (*_cspec->before_func)(); \
-    _string_add_str(_cspec->display_tab, "    "); \
-    \
-    /* Setup for a skipped it block */ \
-    _cspec->number_of_tests++; \
-    _cspec->number_of_skipped_tests++; \
-    _cspec->test_result_message = _new_string(""); \
-    _cspec->name_of_tested_proc = _new_string(proc_name); \
-    _cspec->list_of_asserts = _new_vector(); \
-    _cspec->status_of_test = _SKIPPED; \
-    \
-    /* Dummy timers */ \
-    size_t start_test_timer = _get_timer(); \
-    size_t end_test_timer = _get_timer(); \
-    \
-    _cspec->total_time_taken_for_tests += end_test_timer - start_test_timer; \
-    \
-    \
-    _insert_it_block_in_list_of_its(); \
-    \
-    \
-    /* Reset the display tab and execute the `after_func` */ \
-    _string_skip(_cspec->display_tab, 4); \
-    if(_cspec->after_func) (*_cspec->after_func)(); \
-)
-
 xit("name of skipped it block", {
     /* ... */
 });
@@ -323,12 +186,6 @@ Export test results gathered through running assertions and formats it to a user
 - ### ***`assert_that`***
 ```C
 #define assert_that(test) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _cspec->position_in_file = _new_string(""); \
-    _cspec->assert_result = _new_string(""); \
-    _cspec->current_assert = #test; \
-    \
     /* Assert a custom block of code */ \
 	if(!(test)) { \
         _cspec->status_of_test = _FAILING; \
