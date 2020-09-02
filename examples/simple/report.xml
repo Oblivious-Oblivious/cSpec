@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <modules>
-    <duration>0.63530 ms</duration>
+    <duration>0.14180 ms</duration>
     <module>
         <name>cDataLib</name>
-        <failures>23</failures>
+        <failures>15</failures>
         <skipped>1</skipped>
-        <tests>50</tests>
-        <timestamp>2020-06-25 02:19:24</timestamp>
+        <tests>33</tests>
+        <timestamp>2020-09-02 12:23:14</timestamp>
         <describe>
             <name>cSpec functions</name>
             <it>
@@ -113,10 +113,10 @@
     </module>
     <module>
         <name>second</name>
-        <failures>23</failures>
+        <failures>15</failures>
         <skipped>1</skipped>
-        <tests>50</tests>
-        <timestamp>2020-06-25 02:19:24</timestamp>
+        <tests>33</tests>
+        <timestamp>2020-09-02 12:23:14</timestamp>
         <describe>
             <name>DESC 1</name>
             <it>
@@ -232,122 +232,6 @@
                     <error>|> `[g, g, g, g, g]` expected but got `[g, g, g, g, g]</error>
                 </failure>
             </it>
-        </describe>
-    </module>
-    <module>
-        <name>another_third</name>
-        <failures>23</failures>
-        <skipped>1</skipped>
-        <tests>50</tests>
-        <timestamp>2020-06-25 02:19:24</timestamp>
-        <describe>
-            <name>Generic type assertions</name>
-            <context>
-                <name>when using generic asserts</name>
-                <it>
-                    <name>succeeds generic int assertion</name>
-                    <status>passing</status>
-                </it>
-                <it>
-                    <name>fails generic int assertion</name>
-                    <status>failing</status>
-                    <failure>
-                        <position>simple.spec.c:173:</position>
-                        <error>|> `3` expected but got `2</error>
-                    </failure>
-                </it>
-                <it>
-                    <name>succeeds generic int nassertion</name>
-                    <status>passing</status>
-                </it>
-                <it>
-                    <name>fails generic int nassertion</name>
-                    <status>failing</status>
-                    <failure>
-                        <position>simple.spec.c:180:</position>
-                        <error>|> `4` expected but got `4</error>
-                    </failure>
-                </it>
-                <it>
-                    <name>succeeds generic double assertion</name>
-                    <status>passing</status>
-                </it>
-                <it>
-                    <name>fails generic double assertion</name>
-                    <status>failing</status>
-                    <failure>
-                        <position>simple.spec.c:187:</position>
-                        <error>|> `4.2` expected but got `3.2</error>
-                    </failure>
-                </it>
-                <it>
-                    <name>succeeds generic double nassertion</name>
-                    <status>passing</status>
-                </it>
-                <it>
-                    <name>fails generic double nassertion</name>
-                    <status>failing</status>
-                    <failure>
-                        <position>simple.spec.c:194:</position>
-                        <error>|> `6.6` expected but got `6.6</error>
-                    </failure>
-                </it>
-                <it>
-                    <name>fails generic int with double assertion</name>
-                    <status>failing</status>
-                    <failure>
-                        <position>simple.spec.c:198:</position>
-                        <error>|> `2.2` expected but got `2</error>
-                    </failure>
-                </it>
-                <it>
-                    <name>fails generic double with int assertion</name>
-                    <status>failing</status>
-                    <failure>
-                        <position>simple.spec.c:201:</position>
-                        <error>|> `3` expected but got `3.3</error>
-                    </failure>
-                </it>
-                <it>
-                    <name>succeeds generic int with double nassertion</name>
-                    <status>passing</status>
-                </it>
-                <it>
-                    <name>succeeds generic double with int nassertion</name>
-                    <status>passing</status>
-                </it>
-                <it>
-                    <name>succeeds generic string assertion</name>
-                    <status>passing</status>
-                </it>
-                <it>
-                    <name>fails generic string assertion</name>
-                    <status>failing</status>
-                    <failure>
-                        <position>simple.spec.c:215:</position>
-                        <error>|> `nottestme` expected but got `testme</error>
-                    </failure>
-                </it>
-                <it>
-                    <name>succeeds generic string nassertion</name>
-                    <status>passing</status>
-                </it>
-                <it>
-                    <name>fails generic string nassertion</name>
-                    <status>failing</status>
-                    <failure>
-                        <position>simple.spec.c:222:</position>
-                        <error>|> `ok str` expected but got `ok str</error>
-                    </failure>
-                </it>
-            </context>
-            <context>
-                <name>when we are finished</name>
-                <it>
-                    <name>does nothing</name>
-                    <status>passing</status>
-                </it>
-            </context>
         </describe>
     </module>
 </modules>

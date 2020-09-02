@@ -163,77 +163,9 @@ module(second, {
     });
 });
 
-module(another_third, {
-    describe("Generic type assertions", {
-        context("when using generic asserts", {
-            it("succeeds generic int assertion", {
-                assert_that_value(1 equals to 1);
-            });
-            it("fails generic int assertion", {
-                assert_that_value(2 equals to 3);
-            });
-
-            it("succeeds generic int nassertion", {
-                nassert_that_value(1 equals to 2);
-            });
-            it("fails generic int nassertion", {
-                nassert_that_value(4 equals to 4);
-            });
-
-            it("succeeds generic double assertion", {
-                assert_that_value(3.2 equals to 3.2);
-            });
-            it("fails generic double assertion", {
-                assert_that_value(3.2 equals to 4.2);
-            });
-
-            it("succeeds generic double nassertion", {
-                nassert_that_value(6.6 equals to 7.7);
-            });
-            it("fails generic double nassertion", {
-                nassert_that_value(6.6 equals to 6.6);
-            });
-
-            it("fails generic int with double assertion", {
-                assert_that_value(2 equals to 2.2); 
-            });
-            it("fails generic double with int assertion", {
-                assert_that_value(3.3 equals to 3);
-            });
-
-            it("succeeds generic int with double nassertion", {
-                nassert_that_value(2 equals to 2.2); 
-            });
-            it("succeeds generic double with int nassertion", {
-                nassert_that_value(3.3 equals to 3);
-            });
-
-            it("succeeds generic string assertion", {
-                assert_that_value("testme" equals to "testme");
-            });
-            it("fails generic string assertion", {
-                assert_that_value("testme" equals to "nottestme");
-            });
-
-            it("succeeds generic string nassertion", {
-                nassert_that_value("testme" equals to "notthepreviousvariable");
-            });
-            it("fails generic string nassertion", {
-                nassert_that_value("ok str" equals to "ok str");
-            });
-        });
-        context("when we are finished", {
-            it("does nothing", {
-                assert_that(true);
-            });
-        });
-    });
-});
-
 spec_suite({
     cDataLib();
     second();
-    another_third();
 });
 
 spec({
