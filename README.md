@@ -1,5 +1,8 @@
 # cSpec - A Full Scale Testing Library
+
 CSpec is a lightweight, compile time unit testing library for TDD and BDD models, heavily inspired from ruby's `rspec`.
+
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](./COPYING)
 
 ![](https://github.com/Oblivious-Oblivious/cSpec/blob/master/images/simple_example.png)
 
