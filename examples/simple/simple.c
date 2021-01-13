@@ -21,3 +21,4 @@ void destructor(void) {
     dt.d = 0;
     dt.s = (void*)0;
 }
+

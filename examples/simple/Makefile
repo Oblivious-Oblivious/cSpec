@@ -1,28 +1,23 @@
 NAME = simple
 
-INCL = $(NAME).h
-SRC = $(NAME).c $(NAME).spec.c
-OBJ = $(SRC:.c=.o)
+CC = /usr/bin/clang
+OPT = -march=native -O2
+#VERSION = -std=c89
+OUTPUT = a.out
+
+FLAGS = -Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic
+PRINT_WARNINGS = -Wno-int-conversion -Wno-format -Wno-unused-parameter -Wno-unused-function
+WARNINGS = $(PRINT_WARNINGS) -Wno-void-pointer-to-int-cast -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-sign-compare -Wno-string-compare -Wno-extra-semi
+HEADERS =
 LIBS =
-EXE = $(NAME)
 
-CC = /usr/bin/gcc
-CFLAGS = -O3 -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-pointer-to-int-cast -Wno-sizeof-array-argument
-LIBPATH = -L.
-LDFLAGS = -o $(EXE) $(LIBPATH) $(LIBS)
-CFDEBUG = -Wall -g -DDEBUG $(LDFLAGS)
-RM = /bin/rm -f
+COMPILE = $(NAME).c $(NAME).spec.c
 
-%.o: %.c
-	$(CC) -c $(CFLAGS) $*.c
+all: compiler
 
-$(EXE): $(OBJ)
-	$(CC) $(LDFLAGS) $(OBJ)
-
-$(OBJ): $(INCL)
-
-debug:
-	$(CC) $(CFDEBUG) $(SRC)
+compiler:
+	$(CC) $(OPT) $(VERSION) $(HEADERS) $(FLAGS) $(WARNINGS) $(LIBS) -o $(OUTPUT) $(COMPILE)
+	./$(OUTPUT)
 
 clean:
-	$(RM) $(OBJ) $(EXE) output.txt
+	rm -rf $(OUTPUT)
