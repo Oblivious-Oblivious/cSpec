@@ -1,10 +1,8 @@
 #!/bin/sh
 
-cd ../src/development
+cd ../src/
 ./compile
 
-cd ../../examples/simple
+cd ../examples/simple
 make clean
 make
-./simple
-cd ../../

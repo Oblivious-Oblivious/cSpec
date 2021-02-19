@@ -1,30 +1,25 @@
 #!/bin/sh
 
 
-cd ../src/development
+cd ../src/
 ./compile
 
-cd ../../examples/prime_factors
+cd ../examples/prime_factors
 make clean
 make
-#./prime_factors
 
-cd ../../examples/simple
+cd ../simple
 make clean
 make
-./simple
 
-cd ../../examples/stack
+cd ../stack
 make clean
 make
-#./stack
 
-cd ../../examples/string
+cd ../string
 make clean
 make
-#./string
 
-cd ../../examples/vector
+cd ../vector
 make clean
 make
-#./vector
