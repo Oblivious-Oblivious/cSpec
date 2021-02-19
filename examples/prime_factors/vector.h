@@ -1,16 +1,7 @@
 #ifndef __VECTOR_H_
 #define __VECTOR_H_
 
-#include <stdio.h> /* printf, snprintf */
 #include <stdlib.h> /* malloc, calloc, realloc, free */
-#include <string.h> /* memmove, strlen */
-
-typedef unsigned char bool;
-#define true 1
-#define false 0
-
-typedef void* (*lambda)(void*);
-typedef void* (*lambda2)(void*, void*);
 
 /* Initial capacity of a vector */
 static const size_t vector_init_capacity = 32;
@@ -20,10 +11,10 @@ static const size_t vector_init_capacity = 32;
  * @desc: Defines a vector data structure
  * @param items -> A void pointer array that contains the heterogenous elements of the vector
  * @param alloced -> The total capacity of the vector
- * @param len -> The total number of values
- * @param persistence
+ * @param length -> The total number of values
  **/
 typedef struct vector {
+    /* TODO -> USE A TYPED UNION INSTEAD OF VOID POINTERS */
     void **items;
     size_t alloced;
     size_t len;
@@ -38,12 +29,11 @@ typedef struct vector {
 static void vector_ensure_space(vector *v, size_t capacity);
 
 /**
- * @func: vector_create
+ * @func: new_vector
  * @desc: Initializes a vector data structure
  * @return: The newly created vector
  **/
-vector *vector_create(void);
-#define new_vector() vector_create()
+vector *new_vector(void);
 
 /**
  * @func: vector_add
@@ -86,40 +76,5 @@ void vector_delete(vector *v, size_t index);
  * @return: The number of items in the vector
  **/
 size_t vector_length(vector *v);
-
-/**
- * @func: vector_dup
- * @desc: Get a memory duplicate of the passed vector
- * @param v -> The vector to use
- * @return The duplicate vector
- **/
-vector *vector_dup(vector *v);
-
-/**
- * @func: vector_map
- * @desc: Maps all vector elements in iteration using a modifier function pointer
- * @param v -> The vector to map
- * @param modifier -> The modifier function
- * @return The mapped vector duplicate
- **/
-vector *vector_map(vector *v, lambda modifier);
-
-/**
- * @func: vector_filter
- * @desc: Filters all vector elements in iteration using a filter function
- * @param v -> The vector to filter
- * @param filter -> The filter function
- * @return The filtered vector duplicate
- **/
-vector *vector_filter(vector *v, lambda filter);
-
-/**
- * @func: vector_reduce
- * @desc: Recudes all vector elements into a void* result using a foldl function
- * @param v -> The vector to reduce
- * @param fold -> The folding function to use
- * @return The folder void* result
- **/
-void *vector_reduce(vector *v, lambda2 fold);
 
 #endif

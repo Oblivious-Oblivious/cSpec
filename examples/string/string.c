@@ -56,9 +56,6 @@ void string_add_str(string *sb, const char *str) {
 void string_add_char(string *sb, char c) {
     if(sb == NULL) return;
 
-    /* In any case we try to overflow the input */
-    if(c > 255 || c < 0) return;
-
     string_ensure_space(sb, 1);
 
     sb->str[sb->len] = c;
