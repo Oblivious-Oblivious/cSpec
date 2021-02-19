@@ -1,47 +1,58 @@
 #ifndef __CHARPTR_ASSERT_H_
 #define __CHARPTR_ASSERT_H_
 
-#include "../interface.h"
-#include "../functionality.h"
+#include "expression_assert.h"
+
 
 
 /**
- * @macro: _to_string_charptr_write
+ * @macro: cspec_to_string_charptr_write
  * @desc: Writes actual and expected values
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-#define _to_string_charptr_write(actual, expected) _BLOCK( \
-    _cspec->current_actual = _new_string(actual); \
-    _cspec->current_expected = _new_string(expected); \
+/* TODO -> CONVERT FROM A BLOCK TO A FUNCTION */
+#define cspec_to_string_charptr_write(actual, expected) CSPEC_BLOCK( \
+    cspec->current_actual = cspec_string_new(actual); \
+    cspec->current_expected = cspec_string_new(expected); \
 )
 
 /**
- * @func: _charptr_comparison
+ * @func: cspec_charptr_comparison
  * @desc: A function that compares char pointers for assertions
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  * @return a boolean
  **/
-static bool _charptr_comparison(char *actual, char *expected) {
-    return __streql(expected, actual);
+static bool cspec_charptr_comparison(char *actual, char *expected) {
+    return cspec_streql(expected, actual);
 }
 
 /**
- * @func: _call_assert_that_charptr
+ * @func: cspec_call_assert_that_charptr
  * @desc: Assert that the expected string is equal to the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-define_assert(_call_assert_that_charptr, char*, _to_string_charptr_write, !_charptr_comparison)
+define_assert(
+    cspec_call_assert_that_charptr,
+    char*,
+    cspec_to_string_charptr_write,
+    !cspec_charptr_comparison
+)
 
 /**
- * @func: _call_nassert_that_charptr
+ * @func: cspec_call_nassert_that_charptr
  * @desc: Assert that the expected string is different than the result
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-define_assert(_call_nassert_that_charptr, char*, _to_string_charptr_write, _charptr_comparison)
+define_assert(
+    cspec_call_nassert_that_charptr,
+    char*,
+    cspec_to_string_charptr_write,
+    cspec_charptr_comparison
+)
 
 /**
  * @macro: assert_that_charptr
@@ -49,10 +60,10 @@ define_assert(_call_nassert_that_charptr, char*, _to_string_charptr_write, _char
  * @param actual -> The actual value
  * @param expected -> The expected string
  **/
-#define assert_that_charptr(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_assert_that_charptr(inner); \
+#define assert_that_charptr(inner) CSPEC_BLOCK( \
+    cspec->current_file = __FILE__; \
+    cspec->current_line = __LINE__; \
+    cspec_call_assert_that_charptr(inner); \
 )
 
 /**
@@ -61,10 +72,10 @@ define_assert(_call_nassert_that_charptr, char*, _to_string_charptr_write, _char
  * @param actual -> The actual value
  * @param expected -> The expected string
  **/
-#define nassert_that_charptr(inner) _BLOCK( \
-    _cspec->current_file = __FILE__; \
-    _cspec->current_line = __LINE__; \
-    _call_nassert_that_charptr(inner); \
+#define nassert_that_charptr(inner) CSPEC_BLOCK( \
+    cspec->current_file = __FILE__; \
+    cspec->current_line = __LINE__; \
+    cspec_call_nassert_that_charptr(inner); \
 )
 
 #endif

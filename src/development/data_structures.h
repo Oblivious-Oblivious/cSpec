@@ -6,49 +6,47 @@
 
 
 /** @param bool -> A 'big' enough size to hold both 1 and 0 **/
-#ifndef bool
-    typedef unsigned char bool;
-    #define true 1
-    #define false 0
-#endif
+typedef unsigned char bool;
+#define true 1
+#define false 0
 
 /**
- * @func: _lambda
+ * @func: cspec_lambda
  * @desc: A generic function type used upon iterable data structures
  * @param -> An element belonging to an iterable
  * @return -> A value that satisfies the callee's purpose (map, filter, reduce)
  **/
-typedef void* (*_lambda)(void*);
+typedef void* (*cspec_lambda)(void*);
 
 /**
- * @struct: _string
+ * @struct: cspec_string
  * @desc: A mutable string of characters used to dynamically build a string.
  * @param str -> The str char* we construct our string into
  * @param alloced -> The total sized allocated for the string
  * @param len -> The total len of the string
  * @param persistance -> A flag signaling the persistence state of the string
  **/
-typedef struct _string {
+typedef struct cspec_string {
     char *str;
     size_t alloced;
     size_t len;
-} _string;
+} cspec_string;
 
 /**
- * @struct: _vector
+ * @struct: cspec_vector
  * @desc: Defines a vector data structure
  * @param items -> A void pointer array that contains the heterogenous elements of the vector
  * @param alloced -> The total capacity of the vector
  * @param len -> The total number of values
  **/
-typedef struct _vector {
+typedef struct cspec_vector {
     void **items;
     size_t alloced;
     size_t len;
-} _vector;
+} cspec_vector;
 
 /**
- * @struct: _cspec-_data_struct
+ * @struct: cspec_data_struct
  * @desc: Global variables grouped in container
  * @param number_of_tests -> The total number of tests performed
  * @param number_of_passing_tests -> Counts the passing tests
@@ -85,35 +83,35 @@ typedef struct _vector {
  * @param list_of_its -> A vector containing data about it block, part of list_of_contexts
  * @param list_of_asserts -> A vector containing data about asserts, part of list_of_its
  **/
-typedef struct _cspec_data_struct {
+typedef struct cspec_data_struct {
     int number_of_tests;
     int number_of_passing_tests;
     int number_of_failing_tests;
     int number_of_skipped_tests;
     int status_of_test;
     FILE *fd;
-    // jmp_buf escape;
+    /* jmp_buf escape; */
 
     size_t total_time_taken_for_tests;
-    _vector *signals_vector;
+    cspec_vector *signals_vector;
 
-    _string *test_result_message;
-    _string *name_of_tested_proc;
-    _string *name_of_describe;
-    _string *name_of_context;
-    _string *name_of_module;
-    _string *display_tab;
+    cspec_string *test_result_message;
+    cspec_string *name_of_tested_proc;
+    cspec_string *name_of_describe;
+    cspec_string *name_of_context;
+    cspec_string *name_of_module;
+    cspec_string *display_tab;
     int inner_nest;
     int outer_nest;
 
-    _string *type_of_tests;
-    _string *type_of_export_tests;
-    _string *current_assert;
-    _string *current_file;
-    _string *current_actual;
-    _string *current_expected;
-    _string *position_in_file;
-    _string *assert_result;
+    cspec_string *type_of_tests;
+    cspec_string *type_of_export_tests;
+    cspec_string *current_assert;
+    char *current_file;
+    cspec_string *current_actual;
+    cspec_string *current_expected;
+    cspec_string *position_in_file;
+    cspec_string *assert_result;
     int current_line;
     bool in_context_block;
 
@@ -121,43 +119,43 @@ typedef struct _cspec_data_struct {
     void (*after_func)(void);
 
     /** Colors **/
-    _string *GREEN;
-    _string *RED;
-    _string *YELLOW;
-    _string *PURPLE;
-    _string *CYAN;
-    _string *GRAY;
-    _string *WHITE;
-    _string *RESET;
-    _string *BACK_PURPLE;
+    cspec_string *GREEN;
+    cspec_string *RED;
+    cspec_string *YELLOW;
+    cspec_string *PURPLE;
+    cspec_string *CYAN;
+    cspec_string *GRAY;
+    cspec_string *WHITE;
+    cspec_string *RESET;
+    cspec_string *BACK_PURPLE;
 
-    _vector *list_of_modules;
-    _vector *list_of_describes;
-    _vector *list_of_contexts;
-    _vector *list_of_its;
-    _vector *list_of_asserts;
-} _cspec_data_struct;
+    cspec_vector *list_of_modules;
+    cspec_vector *list_of_describes;
+    cspec_vector *list_of_contexts;
+    cspec_vector *list_of_its;
+    cspec_vector *list_of_asserts;
+} cspec_data_struct;
 
-_cspec_data_struct *_cspec;
+cspec_data_struct *cspec;
 
 /**
- * @func: _fabs
+ * @func: cspec_fabs
  * @desc: Abs for floats
  * @param value -> The value to get `abs` for
  * @return Absolute value
  **/
-static double _fabs(double value) {
+static double cspec_fabs(double value) {
     return value < 0 ? (-value) : (value);
 }
 
 /**
- * @func: __streql
+ * @func: cspec_streql
  * @desc: Accurate equivalent of string.h 'strcmp' function
  * @param a -> The first string to compare
  * @param b -> The second string to compare
  * @return A bool signaling weather the strings are equal or not
  **/
-static bool __streql(const char *a, const char *b) {
+static bool cspec_streql(const char *a, const char *b) {
     while(*a && *a == *b) {
         ++a;
         ++b;
@@ -168,13 +166,13 @@ static bool __streql(const char *a, const char *b) {
 }
 
 /**
- * @func: __memmove
+ * @func: cspec_memmove
  * @desc: Accurate equivalent of string.h 'memmove' function
  * @param dest -> The dest pointer to move memory to
  * @param str -> The source string to copy from
  * @param n -> The size of the source string
  **/
-static void *__memmove(void *dest, const void *src, size_t n) {
+static void *cspec_memmove(void *dest, const void *src, size_t n) {
     unsigned char *pd = (unsigned char*) dest;
     const unsigned char *ps = (unsigned char*)src;
 
@@ -189,12 +187,12 @@ static void *__memmove(void *dest, const void *src, size_t n) {
 }
 
 /**
- * @func: _string_ensure_space
+ * @func: cspec_string_ensure_space
  * @desc: Ensure there is enough space for data being added plus a NULL terminator
  * @param sb -> The string builder to use
  * @param add_len -> he len that needs to be added *not* including a NULL terminator
  **/
-static void _string_ensure_space(_string *sb, size_t add_len) {
+static void cspec_string_ensure_space(cspec_string *sb, size_t add_len) {
     if(sb == NULL || add_len == 0) return;
 
     /* If out allocated space is big enough */
@@ -213,24 +211,27 @@ static void _string_ensure_space(_string *sb, size_t add_len) {
             sb->alloced--;
         }
     }
-    sb->str = realloc(sb->str, sb->alloced);
+    sb->str = (char*)realloc(sb->str, sb->alloced);
 }
 
 /**
- * @func: _string_add_str
+ * @func: cspec_string_add_str
  * @desc: Add a string to the builder
  * @param sb -> The string builder to use
  * @param str -> The string to add
  **/
-static void _string_add_str(_string *sb, const char *str) {
+static void cspec_string_add_str(cspec_string *sb, const char *str) {
+    const char *ptr;
+    size_t len;
+    
     if(sb == NULL || str == NULL || *str == '\0') return;
     
-    const char *ptr = str;
+    ptr = str;
     while(*ptr) ++ptr;
-    size_t len = ptr - str;
+    len = ptr - str;
     
-    _string_ensure_space(sb, len);
-    __memmove(sb->str+sb->len, str, len);
+    cspec_string_ensure_space(sb, len);
+    cspec_memmove(sb->str+sb->len, str, len);
 
     /* Reset len and NULL terminate */
     sb->len += len;
@@ -238,71 +239,71 @@ static void _string_add_str(_string *sb, const char *str) {
 }
 
 /**
- * @func: _new_string
+ * @func: cspec_string_new
  * @desc: Create an str builder
  * @param initial_string -> The initial string to set
  * @return The str builder
  **/
-static _string *_new_string(char *initial_string) {
-    _string *sb;
-    sb = calloc(1, sizeof(*sb));
-    sb->str = malloc(32);
+static cspec_string *cspec_string_new(const char *initial_string) {
+    cspec_string *sb;
+    sb = (cspec_string*)calloc(1, sizeof(*sb));
+    sb->str = (char*)malloc(32);
     *sb->str = '\0';
     sb->alloced = 32;
     sb->len = 0;
-    _string_add_str(sb, initial_string);
+    cspec_string_add_str(sb, initial_string);
     return sb;
 }
 
 /**
- * @func: _string_add_int
+ * @func: cspec_string_add_int
  * @desc: Add an integer to the builder
  * @param sb -> The string builder to use
  * @param val -> The integer to add
  **/
-static void _string_add_int(_string *sb, int val) {
+static void cspec_string_add_int(cspec_string *sb, int val) {
     char str[1024];
 
     if(sb == NULL) return;
 
     snprintf(str, sizeof(str), "%d", val);
-    _string_add_str(sb, str);
+    cspec_string_add_str(sb, str);
 }
 
 /**
- * @func: _string_add_double_precision
+ * @func: cspec_string_add_double_precision
  * @desc: Add a double to the builder
  * @param sb -> The string builder to use
  * @param val -> The double to add
  **/
-static void _string_add_double_precision(_string *sb, double val) {
+static void cspec_string_add_double_precision(cspec_string *sb, double val) {
     char str[1024];
 
     if(sb == NULL) return;
 
     /* Use %g for minimum precision on printing floats */
     snprintf(str, sizeof(str), "%g", val);
-    _string_add_str(sb, str);
+    cspec_string_add_str(sb, str);
 }
 
 /**
- * @func: _string_get
+ * @func: cspec_string_get
  * @desc: A pointer to the internal buffer with the builder's stirng data
  * @param sb -> The string builder to use
- * @return A pointer to the internal __string data
+ * @return A pointer to the internal cspec_string data
  **/
-static char *_string_get(_string *sb) {
+static char *cspec_string_get(cspec_string *sb) {
     if(sb == NULL) return NULL;
     return sb->str;
 }
 
 /**
- * @func: _string_shorten
+ * @func: cspec_string_shorten
  * @desc: Remove data from the end of the builder
  * @param sb -> The string builder to use
  * @param len -> The new len of the string, anything after this len is removed
  **/
-static void _string_shorten(_string *sb, size_t len) {
+static void cspec_string_shorten(cspec_string *sb, size_t len) {
     if(sb == NULL || len >= sb->len) return;
 
     /* Reset the len and NULL terminate, ingoring
@@ -312,88 +313,90 @@ static void _string_shorten(_string *sb, size_t len) {
 }
 
 /**
- * @func: _string_delete
+ * @func: cspec_string_delete
  * @desc: Clear the builder
  * @param sb -> The string builder to use
  **/
-static void _string_delete(_string *sb) {
+static void cspec_string_delete(cspec_string *sb) {
     if(sb == NULL) return;
-    _string_shorten(sb, 0);
+    cspec_string_shorten(sb, 0);
 }
 
 /**
- * @func: _string_skip
+ * @func: cspec_string_skip
  * @desc: Remove data from the beginning of the builder
- * @param sb -> The _string builder to use
+ * @param sb -> The cspec_string builder to use
  * @param len -> The len to remove
  **/
-static void _string_skip(_string *sb, size_t len) {
+static void cspec_string_skip(cspec_string *sb, size_t len) {
     if(sb == NULL || len == 0) return;
 
     if(len >= sb->len) {
         /* If we choose to drop more bytes than the
             string has simply clear the string */
-        _string_delete(sb);
+        cspec_string_delete(sb);
         return;
     }
 
     sb->len -= len;
 
     /* +1 to move the NULL. */
-    __memmove(sb->str, sb->str + len, sb->len + 1);
+    cspec_memmove(sb->str, sb->str + len, sb->len + 1);
 }
 
 /**
- * @func: _string_length
+ * @func: cspec_string_length
  * @desc: The len of the string contained in the builder
  * @param sb -> The string builder to use
  * @return The current len of the string
  **/
-static size_t _string_length(_string *sb) {
+static size_t cspec_string_length(cspec_string *sb) {
     if(sb == NULL) return 0;
     return sb->len;
 }
 
 /**
- * @func: _string_dup
+ * @func: cspec_string_dup
  * @desc: Return a memory duplicate string
  * @param sb -> The string to duplicate
  * @return The dup string
  **/
-static _string *_string_dup(_string *sb) {
+static cspec_string *cspec_string_dup(cspec_string *sb) {
+    cspec_string *dup;
     if(sb == NULL) return NULL;
 
-    _string *dup = _new_string("");
-    _string_add_str(dup, _string_get(sb));
+    dup = cspec_string_new("");
+    cspec_string_add_str(dup, cspec_string_get(sb));
     return dup;
 }
 
 /**
- * @func: _string_substring
+ * @func: cspec_string_substring
  * @desc: Return a substring of our current string without modifying the original
  * @param str -> The string builder we are using
  * @param from -> The point where we start our substring
  * @param to -> The point where we end our substring
  * @return A substring of a copy of the original string
  **/
-static _string *_string_substring(_string *str, size_t from, size_t _to_) {
-    _string *strdup = _string_dup(str);
-    _string_skip(strdup, from);
-    _string_shorten(strdup, _to_ - from + 1);
+static cspec_string *cspec_string_substring(cspec_string *str, size_t str_from, size_t str_to) {
+    cspec_string *strdup = cspec_string_dup(str);
+    cspec_string_skip(strdup, str_from);
+    cspec_string_shorten(strdup, str_to - str_from + 1);
     return strdup;
 }
 
 /**
- * @func: _vector_ensure_space
+ * @func: cspec_vector_ensure_space
  * @desc: Ensure there is enough space for our values in the vector
  * @param v -> The vector to use
  * @param capacity -> The new capacity to set
  **/
-static void _vector_ensure_space(_vector *v, size_t capacity) {
+static void cspec_vector_ensure_space(cspec_vector *v, size_t capacity) {
+    void **items;
     if(v == NULL || capacity == 0) return;
 
     /* Attempt to reallocate new memory in the items list */
-    void **items = realloc(v->items, sizeof(void*) * capacity);
+    items = (void**)realloc(v->items, sizeof(void*) * capacity);
 
     if(items) {
         /* Reset the items in the new memory space */
@@ -403,39 +406,39 @@ static void _vector_ensure_space(_vector *v, size_t capacity) {
 }
 
 /**
- * @func: _new_vector
+ * @func: cspec_vector_new
  * @desc: Initializes a vector data structure
  * @return: The newly created vector
  **/
-static _vector *_new_vector(void) {
-    _vector *v = malloc(sizeof(_vector));
+static cspec_vector *cspec_vector_new(void) {
+    cspec_vector *v = (cspec_vector *)malloc(sizeof(cspec_vector));
     v->alloced = 32;
     v->len = 0;
-    v->items = malloc(sizeof(void*) * v->alloced);
+    v->items = (void**)malloc(sizeof(void*) * v->alloced);
     return v;
 }
 
 /**
- * @func: _vector_add
+ * @func: cspec_vector_add
  * @desc: Adds a new element in the vector
  * @param v -> The vector to use
  * @param item -> The item to add
  **/
-static void _vector_add(_vector *v, void *item) {
+static void cspec_vector_add(cspec_vector *v, void *item) {
     if(v == NULL) return;
     if(v->alloced == v->len)
-        _vector_ensure_space(v, v->alloced * 2);
+        cspec_vector_ensure_space(v, v->alloced * 2);
     v->items[v->len++] = item;
 }
 
 /**
- * @func: _vector_get
+ * @func: cspec_vector_get
  * @desc: Get the value of a specific vector index
  * @param v -> The vector to use
  * @param index -> The index to get the value of
  * @return The value
  **/
-static void *_vector_get(_vector *v, size_t index) {
+static void *cspec_vector_get(cspec_vector *v, size_t index) {
     if(v == NULL) return NULL;
     if(index >= 0 && index < v->len)
         return v->items[index];
@@ -443,12 +446,12 @@ static void *_vector_get(_vector *v, size_t index) {
 }
 
 /**
- * @func: _vector_length
+ * @func: cspec_vector_length
  * @desc: Get the total number of values inserted in the vector
  * @param v -> The vector to use
  * @return: The number of items in the vector
  **/
-static size_t _vector_length(_vector *v) {
+static size_t cspec_vector_length(cspec_vector *v) {
     if(v == NULL) return 0;
     return v->len;
 }
@@ -459,32 +462,37 @@ static size_t _vector_length(_vector *v) {
  * @param v -> The vector to use
  * @return The duplicate vector
  **/
-static _vector *_vector_dup(_vector *v) {
+static cspec_vector *cspec_vector_dup(cspec_vector *v) {
+    size_t i;
+    cspec_vector *dup;
+
     if(v == NULL) return NULL;
 
-    _vector *dup = _new_vector();
+    dup = cspec_vector_new();
 
     /* Iteratively copy the vector items from one memory location to another */
-    for(size_t i = 0; i < _vector_length(v); i++)
-        _vector_add(dup, _vector_get(v, i));
+    for(i = 0; i < cspec_vector_length(v); i++)
+        cspec_vector_add(dup, cspec_vector_get(v, i));
     return dup;
 }
 
 /**
- * @func: _vector_map
+ * @func: cspec_vector_map
  * @desc: Maps all vector elements in iteration using a modifier function pointer
  * @param v -> The vector to map
  * @param modifier -> The modifier function
  * @return The mapped vector duplicate
  **/
-static _vector *_vector_map(_vector *v, _lambda modifier) {
+static cspec_vector *cspec_vector_map(cspec_vector *v, cspec_lambda modifier) {
+    size_t i;
+    cspec_vector *dup;
     if(v == NULL || modifier == NULL) return NULL;
 
-    _vector *dup = _new_vector();
+    dup = cspec_vector_new();
 
-    for(size_t i = 0; i < _vector_length(v); i++)
+    for(i = 0; i < cspec_vector_length(v); i++)
         /* Pass each element through the modifier and add it to the new vector */
-        _vector_add(dup, modifier(_vector_get(v, i)));
+        cspec_vector_add(dup, modifier(cspec_vector_get(v, i)));
     return dup;
 }
 
