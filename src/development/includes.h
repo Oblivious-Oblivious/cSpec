@@ -44,6 +44,11 @@
 #if defined(_WIN32)
     #include <Windows.h>
 #elif defined(__unix__)
+    #if defined(__clang__)
+        #define CLOCK_REALTIME 0
+        #define CLOCKID CLOCK_REALTIME
+    #endif
+
     #include <time.h>
 
     #define HAVE_POSIX_TIMER
@@ -60,11 +65,11 @@
 #endif
 
 /**
- * @func: _get_timer
+ * @func: cspec_get_timer
  * @desc: A cross platform timer function for profiling
  * @return The time in nanoseconds
  **/
-static size_t _get_timer(void) {
+static size_t cspec_get_timer(void) {
     static size_t is_init = 0;
 
     /* Cross platform definition */
@@ -90,12 +95,12 @@ static size_t _get_timer(void) {
         return now;
     #elif defined(__linux)
         static struct timespec linux_rate;
+        size_t now;
+        struct timespec spec;
         if(0 == is_init) {
             clock_getres(CLOCKID, &linux_rate);
             is_init = 1;
         }
-        size_t now;
-        struct timespec spec;
         clock_gettime(CLOCKID, &spec);
         now = spec.tv_sec * 1.0e9 + spec.tv_nsec;
         return now;
