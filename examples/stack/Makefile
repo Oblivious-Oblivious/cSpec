@@ -1,28 +1,25 @@
 NAME = stack
+INPUT = $(NAME).c
+OUTPUT = $(NAME)
 
-INCL = $(NAME).h
-SRC = $(NAME).c $(NAME).spec.c
-OBJ = $(SRC:.c=.o)
+CC = clang
+OPT = -march=native -O2
+VERSION = -std=c11
+
+FLAGS = -Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic
+WARNINGS = -Wno-variadic-macros -Wno-declaration-after-statement -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-string-compare
+UNUSED_WARNINGS = -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-extra-semi
+#COMPILER_WARNINGS = -ferror-limit=100
 LIBS =
-EXE = $(NAME)
 
-CC = /usr/bin/gcc
-CFLAGS = -O3 -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-pointer-to-int-cast -Wno-sizeof-array-argument
-LIBPATH = -L.
-LDFLAGS = -o $(EXE) $(LIBPATH) $(LIBS)
-CFDEBUG = -Wall -g -DDEBUG $(LDFLAGS)
-RM = /bin/rm -f
 
-%.o: %.c
-	$(CC) -c $(CFLAGS) $*.c
+COMPILE = $(INPUT) $(NAME).spec.c
 
-$(EXE): $(OBJ)
-	$(CC) $(LDFLAGS) $(OBJ)
+all: compiler
 
-$(OBJ): $(INCL)
-
-debug:
-	$(CC) $(CFDEBUG) $(SRC)
+compiler:
+	$(CC) $(OPT) $(VERSION) $(FLAGS) $(WARNINGS) $(UNUSED_WARNINGS) $(COMPILER_WARNINGS) $(LIBS) -o $(OUTPUT) $(COMPILE)
+	./$(NAME)
 
 clean:
-	$(RM) $(OBJ) $(EXE)
+	rm -f $(OUTPUT)

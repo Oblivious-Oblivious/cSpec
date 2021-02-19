@@ -1,23 +1,25 @@
 NAME = simple
+INPUT = $(NAME).c
+OUTPUT = $(NAME)
 
-CC = /usr/bin/clang
+CC = clang
 OPT = -march=native -O2
-#VERSION = -std=c89
-OUTPUT = a.out
+VERSION = -std=c11
 
 FLAGS = -Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic
-PRINT_WARNINGS = -Wno-int-conversion -Wno-format -Wno-unused-parameter -Wno-unused-function
-WARNINGS = $(PRINT_WARNINGS) -Wno-void-pointer-to-int-cast -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-sign-compare -Wno-string-compare -Wno-extra-semi
-HEADERS =
+WARNINGS = -Wno-variadic-macros -Wno-declaration-after-statement -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-string-compare
+UNUSED_WARNINGS = -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-extra-semi
+#COMPILER_WARNINGS = -ferror-limit=100
 LIBS =
 
-COMPILE = $(NAME).c $(NAME).spec.c
+
+COMPILE = $(INPUT) $(NAME).spec.c
 
 all: compiler
 
 compiler:
-	$(CC) $(OPT) $(VERSION) $(HEADERS) $(FLAGS) $(WARNINGS) $(LIBS) -o $(OUTPUT) $(COMPILE)
-	./$(OUTPUT)
+	$(CC) $(OPT) $(VERSION) $(FLAGS) $(WARNINGS) $(UNUSED_WARNINGS) $(COMPILER_WARNINGS) $(LIBS) -o $(OUTPUT) $(COMPILE)
+	./$(NAME)
 
 clean:
-	rm -rf $(OUTPUT)
+	rm -f $(OUTPUT)
