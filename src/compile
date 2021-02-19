@@ -1,0 +1,30 @@
+#!/bin/sh
+
+touch cSpec.h
+
+cat << EOF > cSpec.h
+#ifndef __CSPEC_H_
+#define __CSPEC_H_
+EOF
+
+for value in development/includes.h \
+development/helpers.h \
+development/data_structures.h \
+development/functionality.h \
+development/interface.h \
+development/assert_modules/charptr_array_assert.h \
+development/assert_modules/charptr_assert.h \
+development/assert_modules/double_array_assert.h \
+development/assert_modules/double_assert.h \
+development/assert_modules/expression_assert.h \
+development/assert_modules/int_array_assert.h \
+development/assert_modules/int_assert.h
+do
+    tail -n +7 $value | head -n -1 >> cSpec.h
+done
+
+cat << EOF >> cSpec.h
+
+#endif
+EOF
+
