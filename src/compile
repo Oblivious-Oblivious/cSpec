@@ -28,3 +28,6 @@ cat << EOF >> cSpec.h
 #endif
 EOF
 
+rm -rf ../export
+mkdir ../export
+mv cSpec.h ../export/

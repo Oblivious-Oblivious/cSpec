@@ -5,3 +5,4 @@ all:
 
 clean:
 	$(RM) -r $(OUTFILE)
+	$(RM) -r ../export
