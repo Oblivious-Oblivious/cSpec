@@ -85,3 +85,4 @@ void vector_delete(vector *v, size_t index);
 size_t vector_length(vector *v);
 
 #endif
+

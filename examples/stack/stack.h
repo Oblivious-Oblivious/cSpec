@@ -18,3 +18,4 @@ void stack_push(stack *st, int element);
 int stack_pop(stack *st);
 
 #endif
+

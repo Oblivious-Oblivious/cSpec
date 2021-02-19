@@ -3,11 +3,11 @@
 vector *factors_of(int remainder) {
     vector *factors = new_vector();
     
-    int divisor = 2;
+    long divisor = 2;
 
     while(remainder > 1) {
         while(remainder % divisor == 0) {
-            vector_add(factors, divisor);
+            vector_add(factors, (void*)divisor);
             remainder /= divisor;
         }
         divisor++;

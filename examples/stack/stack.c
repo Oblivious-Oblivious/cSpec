@@ -20,3 +20,4 @@ int stack_pop(stack *st) {
     if(stack_is_empty(st)) return NULL;
     return st->elements[--st->size];
 }
+
