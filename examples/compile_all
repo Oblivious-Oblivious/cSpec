@@ -8,9 +8,9 @@ cd ../examples/prime_factors
 make clean
 make
 
-cd ../simple
-make clean
-make
+#cd ../simple
+#make clean
+#make
 
 cd ../stack
 make clean

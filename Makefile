@@ -1,7 +1,7 @@
 all: default
 
 default:
-	cd src && make
+	./compile
 
 lib: default
 
