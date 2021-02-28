@@ -1,10 +1,12 @@
 #ifndef __FUNCTIONALITY_H_
 #define __FUNCTIONALITY_H_
 
-#include "includes.h"
-#include "interface.h"
-#include "data_structures.h"
-#include <time.h>
+/*
+    #include "includes.h"
+    #include "interface.h"
+    #include "data_structures.h"
+    #include <time.h>
+*/
 
 /**
  * @func: cspec_error_assertion_not_supported

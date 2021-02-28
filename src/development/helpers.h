@@ -1,10 +1,6 @@
 #ifndef __HELPERS_H_
 #define __HELPERS_H_
 
-
-
-
-
 /**
  * @param CSPEC_PASSING -> Set for passing tests
  * @param CSPEC_FAILING -> Set for failing tests

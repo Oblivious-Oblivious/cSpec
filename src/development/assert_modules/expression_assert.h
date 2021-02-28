@@ -1,9 +1,7 @@
 #ifndef __EXPRESSION_ASSERT_H
 #define __EXPRESSION_ASSERT_H
 
-#include "../functionality.h"
-
-
+/* #include "../functionality.h" */
 
 /**
  * @macro: assert_that

@@ -1,9 +1,7 @@
 #ifndef __DOUBLE_ARRAY_ASSERT_H_
 #define __DOUBLE_ARRAY_ASSERT_H_
 
-#include "expression_assert.h"
-
-
+/* #include "expression_assert.h" */
 
 /**
  * @func: cspec_to_string_double_array_write

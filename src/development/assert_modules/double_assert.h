@@ -1,9 +1,7 @@
 #ifndef __DOUBLE_ASSERT_H_
 #define __DOUBLE_ASSERT_H_
 
-#include "expression_assert.h"
-
-
+/* #include "expression_assert.h" */
 
 /**
  * @macro: cspec_to_string_double_write

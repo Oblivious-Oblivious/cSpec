@@ -8,19 +8,19 @@ cat << EOF > cSpec.h
 EOF
 
 for value in development/includes.h \
-development/helpers.h \
-development/data_structures.h \
-development/functionality.h \
-development/interface.h \
-development/assert_modules/charptr_array_assert.h \
-development/assert_modules/charptr_assert.h \
-development/assert_modules/double_array_assert.h \
-development/assert_modules/double_assert.h \
-development/assert_modules/expression_assert.h \
-development/assert_modules/int_array_assert.h \
-development/assert_modules/int_assert.h
+    development/helpers.h \
+    development/data_structures.h \
+    development/functionality.h \
+    development/interface.h \
+    development/assert_modules/charptr_array_assert.h \
+    development/assert_modules/charptr_assert.h \
+    development/assert_modules/double_array_assert.h \
+    development/assert_modules/double_assert.h \
+    development/assert_modules/expression_assert.h \
+    development/assert_modules/int_array_assert.h \
+    development/assert_modules/int_assert.h
 do
-    tail -n +7 $value | head -n -1 >> cSpec.h
+    cat $value >> cSpec.h
 done
 
 cat << EOF >> cSpec.h
