@@ -1,0 +1,12 @@
+name: cSpec
+version: 0.2.0
+
+dependencies:
+
+license: GPLv3
+
+application: make
+library: make lib
+postinstall: #
+test: make test
+clean: make clean

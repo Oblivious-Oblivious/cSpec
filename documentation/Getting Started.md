@@ -1,12 +1,15 @@
 # cSpec - A Full Scale Testing Library
+
 CSpec is a lightweight, compile time unit testing library for TDD and BDD models, heavily inspired from ruby's `rspec`.
+
+[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](./COPYING)
 
 ![](https://github.com/Oblivious-Oblivious/cSpec/blob/master/images/simple_example.png)
 
-# Why
+## Why
 `C` as a language is notorious for allowing the programmer to make critical errors on their code. With software gradually becoming more and more complicated it is pivotal that proper unit tests are developed as well as code being test driven, to ensure that production code is easy to refactor and maintain. `cSpec` provides an interface for creating both low level tests in the form of simple assertions, as well as high level integration or even acceptance tests in the form of `describes` or `contexts`. These tools will allow the programmer to encapsulate test modules that will be maintainable throughout huge projects.
 
-# Features
+## Features
 - Assertion macro for test blocks
     - `assert_that(test)`
 - Assertion macros for different data types
@@ -22,7 +25,24 @@ CSpec is a lightweight, compile time unit testing library for TDD and BDD models
 - False assertions macro calls for defined data types
     - `nassert_that_*`
 
-# Basic Interface
+## Usage
+
+* Include the `cSpec.h` file your project
+* All directives are defined in this one header
+
+## Contributing
+
+1. Fork it (<https://github.com/Oblivious-Oblivious/deleteme/fork>)
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
+
+## Contributors
+
+- [Oblivious](https://github.com/Oblivious-Oblivious) - creator and maintainer
+
+## Basic Interface
 
 ------------------
 - ### ***`spec`***
@@ -231,7 +251,7 @@ One useful use case of `assert_that_value` could be comparing floating point val
 
 ------------------------------------
 
-# Creating asserts
+## Creating asserts
 When calling asserts, the main purpose is to validate some expression, to check for a true of false condition. cSpec uses a few abstractions for making assert statements look more natural.
 
 ```C
@@ -253,14 +273,14 @@ Using those constructs to call asserts we use the power of the C preprocessor to
 
 ------------------------------------
 
-# Implementation
+## Implementation
 All functionality is included in a single header file `cSpec.h`. You can include the header into your test files. Production code and test code are completely separate. The library modifies a global struct of variables that are visible thoughout all tests. Variables include file names, lines of asserts, assert result strings, status of tests and more.
 
 The use of global values is driven by the design of the library. Each interface block (`describe`, `context`, `it`, ... ) is a `do {} while(0)` block of code that gets inlined inside a `module`. This choice of design allows us to embed multiple blocks inside each other. This way we can define complicated interactions between objects and functions as well as be able to define readable test structures. This approach however creates a different namespace (scope) for each block, meaning that moving data from inner blocks to outer blocks poses significant problems in scoping. The most basic solution is to move everything to a global scope, since the compile time definition of tests is linear anyway, so there is no need for sophisticated code constructs.
 
 ------------------------------
 
-# Basic usage
+## Basic usage
 Good practice for defining cSpec tests goes as follows:
 - Define a spec file named: `mySuite.spec.c`
 - Include the header files of the code to be tested.
