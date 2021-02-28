@@ -1,4 +1,4 @@
-#include "../../src/cSpec.h"
+#include "../../export/cSpec.h"
 #include "prime_factors.h"
 
 #include "prime_factors.module.h"

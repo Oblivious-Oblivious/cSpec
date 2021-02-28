@@ -3,9 +3,11 @@
 
 #include <stdlib.h>
 
-typedef unsigned char bool;
-#define true 1
-#define false 0
+#ifndef bool
+    #define bool unsigned char
+    #define true 1
+    #define false 0
+#endif
 
 typedef struct stack {
     size_t size;

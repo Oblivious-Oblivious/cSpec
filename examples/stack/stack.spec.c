@@ -1,4 +1,4 @@
-#include "../../src/cSpec.h"
+#include "../../export/cSpec.h"
 #include "stack.h"
 
 stack *st;

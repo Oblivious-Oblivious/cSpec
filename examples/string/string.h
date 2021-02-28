@@ -5,9 +5,11 @@
 #include <stdlib.h> /* malloc, calloc, realloc, free */
 #include <string.h> /* memmove, strlen */
 
-typedef unsigned char bool;
-#define true 1
-#define false 0
+#ifndef bool
+    #define bool unsigned char
+    #define true 1
+    #define false 0
+#endif
 
 /** The initial minimum size of a string **/
 static const size_t string_init_capacity = 32;

@@ -3,7 +3,7 @@ INPUT = $(NAME).c
 OUTPUT = $(NAME)
 
 CC = clang
-OPT = -march=native -O2
+OPT = -O2
 VERSION = -std=c11
 
 FLAGS = -Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic
