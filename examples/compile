@@ -1,8 +1,8 @@
 #!/bin/sh
 
-cd ../src/
-./compile
+cd ..
+em build app
 
-cd ../examples/simple
+cd examples/simple
 make clean
 make

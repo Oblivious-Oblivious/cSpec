@@ -1,6 +1,7 @@
 all: default
 
 default:
+	#sed -i -e 's/\r$//' compile
 	./compile
 
 lib: default

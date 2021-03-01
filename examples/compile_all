@@ -1,25 +1,31 @@
 #!/bin/sh
 
+cd ..
+em build app
+cd examples
 
-cd ../src/
-./compile
-
-cd ../examples/prime_factors
+cd prime_factors
 make clean
 make
+cd ..
 
-#cd ../simple
-#make clean
-#make
-
-cd ../stack
+cd simple
 make clean
 make
+cd ..
 
-cd ../string
+cd stack
 make clean
 make
+cd ..
 
-cd ../vector
+cd string
 make clean
 make
+cd ..
+
+cd vector
+make clean
+make
+cd ..
+
