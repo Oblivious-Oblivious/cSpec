@@ -49,11 +49,11 @@ static bool cspec_charptr_array_comparison(char **actual, char **expected, size_
 
 /**
  * @func: cspec_call_assert_that_charptr_array
- * @desc: Assertion of two int arrays
+ * @desc: Assertion of two char* arrays
  **/
 define_assert_array(
     cspec_call_assert_that_charptr_array,
-    double*,
+    char**,
     cspec_to_string_charptr_array_write,
     !cspec_charptr_array_comparison,
     len
@@ -61,11 +61,11 @@ define_assert_array(
 
 /**
  * @func: cspec_call_nassert_that_charptr_array
- * @desc: Negative assertion of two double arrays
+ * @desc: Negative assertion of two char* arrays
  **/
 define_assert_array(
     cspec_call_nassert_that_charptr_array,
-    double*,
+    char**,
     cspec_to_string_charptr_array_write,
     cspec_charptr_array_comparison,
     len

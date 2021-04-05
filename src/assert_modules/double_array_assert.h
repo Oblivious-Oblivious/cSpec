@@ -50,7 +50,7 @@ static bool cspec_double_array_comparison(double *actual, double *expected, size
 
 /**
  * @func: cspec_call_assert_that_double_array
- * @desc: Assertion of two int arrays
+ * @desc: Assertion of two double arrays
  **/
 define_assert_array(
     cspec_call_assert_that_double_array,

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 cd ..
-em build app
+make
 cd examples
 
 cd prime_factors

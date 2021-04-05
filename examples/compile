@@ -1,8 +1,9 @@
 #!/bin/sh
 
 cd ..
-em build app
+make
+cd examples
 
-cd examples/simple
+cd simple
 make clean
 make

@@ -113,7 +113,7 @@ static void cspec_insert_it_block_in_list_of_its(void) {
     cspec_vector *it_block = cspec_vector_new();
     cspec_vector_add(it_block, cspec->list_of_asserts);
     cspec_vector_add(it_block, cspec->name_of_tested_proc);
-    cspec_vector_add(it_block, cspec->status_of_test);
+    cspec_vector_add(it_block, (void*)(long)cspec->status_of_test);
 
     if(cspec->in_context_block) {
         /* Insert in a context block */
