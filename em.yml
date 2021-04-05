@@ -5,6 +5,6 @@ dependencies:
 
 dev-dependencies:
 
-build: ./compile
+build: chmod 755 compile && ./compile
 
 license: GPLv3
