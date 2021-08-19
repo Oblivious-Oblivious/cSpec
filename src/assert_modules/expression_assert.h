@@ -1,8 +1,6 @@
 #ifndef __EXPRESSION_ASSERT_H
 #define __EXPRESSION_ASSERT_H
 
-/* #include "../functionality.h" */
-
 /**
  * @macro: assert_that
  * @desc: Asserts that a proc returns true

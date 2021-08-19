@@ -1,8 +1,6 @@
 #ifndef __CHARPTR_ASSERT_H_
 #define __CHARPTR_ASSERT_H_
 
-/* #include "expression_assert.h" */
-
 /**
  * @macro: cspec_to_string_charptr_write
  * @desc: Writes actual and expected values
