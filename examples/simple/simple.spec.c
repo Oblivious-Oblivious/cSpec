@@ -152,9 +152,8 @@ module(second, {
             assert_that_charptr_array(bbb equals to ccc with length 5);
         });
 
-        /* TODO Nassert below fails (wrongfully) */
         it("succeeds `nassert_that_charptr_array`", {
-            char *my_arr2[5] = {"a", "b", "c", "d", "e"};
+            char *my_arr2[5] = {"g", "g", "g", "g", "g"};
             nassert_that_charptr_array(aaa equals to my_arr2 with length 5);
         });
         it("fails `nassert_that_charptr_array`", {
