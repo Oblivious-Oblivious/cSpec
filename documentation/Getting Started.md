@@ -60,7 +60,7 @@ spec({
     /* code */
 });
 ```
-Basically a `main` function wrapper making the testing commands and code more concise.
+A `main` function wrapper making the testing commands and code more concise.
 
 ------------------------
 - ### ***`spec_suite`***
@@ -186,38 +186,38 @@ will be skipped. Immediately the test becomes a skipped one and its asserts are 
 ------------------------
 - ### ***`export_test_results`***
 ```C
-#define export_test_results(name vec, type) _BLOCK( \
+#define export_test_results(name, vec, type) CSPEC_BLOCK( \
     /* Check for valid type of test export */ \
-    if(!__streql(vec, "passing") \
-    && !__streql(vec, "failing") \
-    && !__streql(vec, "skipped") \
-    && !__streql(vec, "all")) { \
+    if(!cspec_streql(vec, "passing") \
+    && !cspec_streql(vec, "failing") \
+    && !cspec_streql(vec, "skipped") \
+    && !cspec_streql(vec, "all")) { \
         printf("\n%sInput a type of test to export passing|failing|skipped|all%s\n\n", \
-        _string_get(_cspec->RED), \
-        _string_get(_cspec->RESET)); \
+        cspec_string_get(cspec->RED), \
+        cspec_string_get(cspec->RESET)); \
         return 0; \
     } \
-    _cspec->type_of_export_tests = _new_string(vec); \
+    cspec->type_of_export_tests = cspec_string_new(vec); \
     \
     /* Reset the display tab */ \
-    _string_delete(_cspec->display_tab); \
-    _string_add_str(_cspec->display_tab, "    "); \
+    cspec_string_delete(cspec->display_tab); \
+    cspec_string_add_str(cspec->display_tab, "    "); \
     if(type == "txt") { \
-        _cspec->fd = fopen(name, "w+"); \
-        _export_to_txt(); \
+        cspec->fd = fopen(name, "w+"); \
+        cspec_export_to_txt(); \
     } \
-    else if(type == "html") { \
-        _cspec->fd = fopen(name, "w+"); \
-        _export_to_html(); \
+    else if(type == "xml") { \
+        cspec->fd = fopen(name, "w+"); \
+        cspec_export_to_xml(); \
     } \
     else if(type == "markdown") { \
-        _cspec->fd = fopen(name, "w+"); \
-        _export_to_md(); \
+        cspec->fd = fopen(name, "w+"); \
+        cspec_export_to_md(); \
     } \
     else { \
-        printf("\n%sSpecify the export type: `txt|html|markdown`%s\n\n", \
-        _string_get(_cspec->RED), \
-        _string_get(_cspec->RESET)); \
+        printf("\n%sSpecify the export type: `txt|xml|markdown`%s\n\n", \
+        cspec_string_get(cspec->RED), \
+        cspec_string_get(cspec->RESET)); \
         return 0; /* Exit the main function */ \
     } \
 )
@@ -230,12 +230,12 @@ Export test results gathered through running assertions and formats it to a user
 ## Assertions
 - ### ***`assert_that`***
 ```C
-#define assert_that(test) _BLOCK( \
+#define assert_that(test) CSPEC_BLOCK( \
     /* Assert a custom block of code */ \
 	if(!(test)) { \
-        _cspec->status_of_test = _FAILING; \
-        _write_position_in_file(); \
-        _write_assert(); \
+        cspec->status_of_test = CSPEC_FAILING; \
+        cspec_write_position_in_file(); \
+        cspec_write_assert(); \
     } \
     \
     /* assert(string_builder) */ \
@@ -263,23 +263,10 @@ Basic assert declaration. Asserts a test block for truthiness.
 - ### ***`nassert_that_double_array(actual, expected)`***
 - ### ***`nassert_that_charptr_array(actual, expected)`***
 
-## Generic assertions
-- ### ***`assert_that_value(actual, expected)`***
-- ### ***`nassert_that_value(actual, expected)`***
-
 All assertions except `assert_that` and `nassert_that` take 2
 arguments as parameters, the actual and expected values.
 `actual` is the value that the user provides to the test.
 `expected` is the value that the user expects `actual` to be.
-
-Generic assertions are supported for C11 making use of the `_Generic`
-keyword, essentially abstracting out the worry of a type system when
-we are writting high level tests. Although handy, it
-is **highly recommended** that most tests specify the type of its
-contents so that we can avoid accidentally comparing 'apples with oranges'.
-One useful use case of `assert_that_value` could be comparing floating
-point values with integers, because of the ability to
-easily cast `int` values to `float` or `double`.
 
 ------------------------------------
 
@@ -347,9 +334,9 @@ Suppose we want to test a C project with a header and implementation file.
 
 /**
  * @func: find_meaning_of_life
- * @desc: Returns the ultimate answer to the great
+ * @desc: Finds the ultimate answer to the great
  *      question of life the universe and everything
- * @return The number
+ * @return Returns the answer
  **/
 int find_meaning_of_life(void);
 
