@@ -22,7 +22,6 @@ vector *vector_create(void) {
 }
 
 void vector_add(vector *v, void *item) {
-    /* TODO We allow NULL elements (NOT TESTED) */
     if(v == NULL) return;
     if(v->alloced == v->len)
         vector_ensure_space(v, v->alloced * 2);

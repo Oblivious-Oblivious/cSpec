@@ -14,7 +14,6 @@ static const size_t vector_init_capacity = 32;
  * @param length -> The total number of values
  **/
 typedef struct vector {
-    /* TODO -> USE A TYPED UNION INSTEAD OF VOID POINTERS */
     void **items;
     size_t alloced;
     size_t len;
