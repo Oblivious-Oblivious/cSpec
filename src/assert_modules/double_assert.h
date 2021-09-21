@@ -7,13 +7,12 @@
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-/* TODO -> CONVERT FROM A BLOCK TO A FUNCTION */
-#define cspec_to_string_double_write(actual, expected) CSPEC_BLOCK( \
-    cspec->current_actual = cspec_string_new(""); \
-    cspec->current_expected = cspec_string_new(""); \
-    cspec_string_add_double_precision(cspec->current_actual, actual); \
-    cspec_string_add_double_precision(cspec->current_expected, expected); \
-)
+static void cspec_to_string_double_write(double actual, double expected) {
+    cspec->current_actual = cspec_string_new("");
+    cspec->current_expected = cspec_string_new("");
+    cspec_string_add_double_precision(cspec->current_actual, actual);
+    cspec_string_add_double_precision(cspec->current_expected, expected);
+}
 
 /**
  * @func: cspec_double_comparison
