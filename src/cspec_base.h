@@ -814,7 +814,7 @@ static void cspec_write_assert_actual_expected(void) {
     cspec_vector *list_of_strings;
     cspec->assert_result = cspec_string_new("");
     cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->display_tab));
-    cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->WHITE));
+    cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->RESET));
     cspec_string_add_str(cspec->test_result_message, "    ");
     cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->position_in_file));
     cspec_string_add_str(cspec->test_result_message, "\n");
@@ -850,7 +850,7 @@ static void cspec_write_nassert_actual_expected(void) {
     cspec_vector *list_of_strings;
     cspec->assert_result = cspec_string_new("");
     cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->display_tab));
-    cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->WHITE));
+    cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->RESET));
     cspec_string_add_str(cspec->test_result_message, "    ");
     cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->position_in_file));
     cspec_string_add_str(cspec->test_result_message, "\n");
@@ -863,7 +863,7 @@ static void cspec_write_nassert_actual_expected(void) {
     cspec_string_add_str(cspec->test_result_message, "`");
     cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->current_actual));
     cspec_string_add_str(cspec->test_result_message, "`");
-    cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->WHITE));
+    cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->RESET));
     cspec_string_add_str(cspec->test_result_message, " but they are the same\n");
     cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->RESET));
 /****************************************************************************/
@@ -1278,7 +1278,7 @@ static void cspec_signal_handler(const int signal_id) {
     cspec_string_add_str(sig, cspec_string_get(cspec->display_tab));
     cspec_string_add_str(sig, cspec_string_get(cspec->RED));
     cspec_string_add_str(sig, "✗");
-    cspec_string_add_str(sig, cspec_string_get(cspec->WHITE));
+    cspec_string_add_str(sig, cspec_string_get(cspec->RESET));
     cspec_string_add_str(sig, " it ");
     cspec_string_add_str(sig, cspec_string_get(cspec->name_of_tested_proc));
     cspec_string_add_str(sig, ":\n");
@@ -1293,7 +1293,7 @@ static void cspec_signal_handler(const int signal_id) {
     cspec_string_add_str(sig, "signal: ");
     cspec_string_add_str(sig, cspec_string_get(cspec->RED));
     cspec_string_add_str(sig, sig_description);
-    cspec_string_add_str(sig, cspec_string_get(cspec->WHITE));
+    cspec_string_add_str(sig, cspec_string_get(cspec->RESET));
     cspec_string_add_str(sig, " got caught on \n");
     cspec_string_add_str(sig, cspec_string_get(cspec->display_tab));
     cspec_string_add_str(sig, "          -> ");
@@ -1365,7 +1365,6 @@ static void cspec_setup_test_data(void) {
     cspec->PURPLE = cspec_string_new("\033[38;5;207m");
     cspec->CYAN = cspec_string_new("\033[1;36m");
     cspec->GRAY = cspec_string_new("\033[38;5;244m");
-    cspec->WHITE = cspec_string_new("\033[38;5;254m");
     cspec->RESET = cspec_string_new("\033[0m");
     cspec->BACK_PURPLE = cspec_string_new("\033[48;5;89m");
 
@@ -1597,7 +1596,7 @@ static void cspec_setup_test_data(void) {
     cspec_string_get(cspec->display_tab), \
     cspec_string_get(cspec->YELLOW), \
     object_name, \
-    cspec_string_get(cspec->WHITE)); \
+    cspec_string_get(cspec->RESET)); \
     \
     \
     /* Construct data for export */ \
@@ -1705,7 +1704,7 @@ static void cspec_setup_test_data(void) {
             printf("%s%s✓%s it %s%s\n", \
             cspec_string_get(cspec->display_tab), \
             cspec_string_get(cspec->GREEN), \
-            cspec_string_get(cspec->WHITE), \
+            cspec_string_get(cspec->RESET), \
             cspec_string_get(cspec->name_of_tested_proc), \
             cspec_string_get(cspec->RESET)); \
         } \
@@ -1719,7 +1718,7 @@ static void cspec_setup_test_data(void) {
             printf("%s%s✗%s it %s:\n%s%s\n", \
             cspec_string_get(cspec->display_tab), \
             cspec_string_get(cspec->RED), \
-            cspec_string_get(cspec->WHITE), \
+            cspec_string_get(cspec->RESET), \
             cspec_string_get(cspec->name_of_tested_proc), \
             cspec_string_get(cspec->test_result_message), \
             cspec_string_get(cspec->RESET)); \

@@ -22,7 +22,7 @@
         \
         /* Craft the string builder for terminal output */ \
         cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->display_tab)); \
-        cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->WHITE)); \
+        cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->RESET)); \
         cspec_string_add_str(cspec->test_result_message, "    "); \
         cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->position_in_file)); \
         cspec_string_add_str(cspec->test_result_message, "\n"); \
@@ -32,7 +32,7 @@
         cspec_string_add_str(cspec->test_result_message, "`"); \
         cspec_string_add_str(cspec->test_result_message, #test); \
         cspec_string_add_str(cspec->test_result_message, "`"); \
-        cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->WHITE)); \
+        cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->RESET)); \
         cspec_string_add_str(cspec->test_result_message, " should be true\n"); \
         cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->RESET)); \
 /*************************************************************************/ \
@@ -70,7 +70,7 @@
         \
         /* Craft the string builder for terminal output */ \
         cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->display_tab)); \
-        cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->WHITE)); \
+        cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->RESET)); \
         cspec_string_add_str(cspec->test_result_message, "    "); \
         cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->position_in_file)); \
         cspec_string_add_str(cspec->test_result_message, "\n"); \
@@ -80,7 +80,7 @@
         cspec_string_add_str(cspec->test_result_message, "`"); \
         cspec_string_add_str(cspec->test_result_message, #test); \
         cspec_string_add_str(cspec->test_result_message, "`"); \
-        cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->WHITE)); \
+        cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->RESET)); \
         cspec_string_add_str(cspec->test_result_message, " should be false\n"); \
         cspec_string_add_str(cspec->test_result_message, cspec_string_get(cspec->RESET)); \
 /*************************************************************************/ \
