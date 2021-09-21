@@ -2,11 +2,11 @@
 #define __CSPEC_BASE_H_
 
 /**** INCLUDES ****/
-#include <stdlib.h> /* malloc, calloc, realloc, free */
-#include <signal.h> /* singal, kill */
-#include <setjmp.h> /* jmp_buf, setjmp, longjmp */
-#include <time.h>   /* time, localtime */
 #include <stdio.h>  /* FILE, fopen, fprintf, printf, snprintf */
+#include <stdlib.h> /* malloc, calloc, realloc, free */
+#include <signal.h> /* signal, kill */
+/* #include <setjmp.h> */ /* jmp_buf, setjmp, longjmp */
+#include <time.h>   /* time, localtime */
 
 /* Find C version for declaring cross version implementations */
 #if defined(__STDC__)
@@ -396,46 +396,6 @@ static void cspec_string_skip(cspec_string *sb, size_t len) {
     cspec_memmove(sb->str, sb->str + len, sb->len + 1);
 }
 
-/**
- * @func: cspec_string_length
- * @desc: The len of the string contained in the builder
- * @param sb -> The string builder to use
- * @return The current len of the string
- **/
-static size_t cspec_string_length(cspec_string *sb) {
-    if(sb == NULL) return 0;
-    return sb->len;
-}
-
-/**
- * @func: cspec_string_dup
- * @desc: Return a memory duplicate string
- * @param sb -> The string to duplicate
- * @return The dup string
- **/
-static cspec_string *cspec_string_dup(cspec_string *sb) {
-    cspec_string *dup;
-    if(sb == NULL) return NULL;
-
-    dup = cspec_string_new("");
-    cspec_string_add_str(dup, cspec_string_get(sb));
-    return dup;
-}
-
-/**
- * @func: cspec_string_substring
- * @desc: Return a substring of our current string without modifying the original
- * @param str -> The string builder we are using
- * @param from -> The point where we start our substring
- * @param to -> The point where we end our substring
- * @return A substring of a copy of the original string
- **/
-static cspec_string *cspec_string_substring(cspec_string *str, size_t str_from, size_t str_to) {
-    cspec_string *strdup = cspec_string_dup(str);
-    cspec_string_skip(strdup, str_from);
-    cspec_string_shorten(strdup, str_to - str_from + 1);
-    return strdup;
-}
 /**** ****/
 
 
