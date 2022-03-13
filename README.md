@@ -36,7 +36,7 @@ throughout huge projects.
 
 ## Usage
 
-* Include the `cSpec.h` file your project
+* Include the `cSpec.h` file your project (lies inside the `export` directory)
 * All directives are defined in this one header
 
 ## Contributing
