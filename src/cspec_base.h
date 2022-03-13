@@ -253,7 +253,7 @@ static void cspec_string_ensure_space(cspec_string *sb, size_t add_len) {
     while(sb->alloced < sb->len + add_len + 1) {
         /* Doubling growth strategy */
         sb->alloced <<= 1;
-        if(sb->alloced == 0) {
+        if(sb->alloced >= 0) {
             /* Left shift of max bits will go to 0. An unsigned type set to
              * -1 will return the maximum possible size. However, we should
              *  have run out of memory well before we need to do this. Since
