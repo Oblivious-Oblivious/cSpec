@@ -13,6 +13,9 @@ static void cspec_to_string_charptr_array_write(char **actual, char **expected, 
     cspec->current_actual = cspec_string_new("[");
     cspec->current_expected = cspec_string_new("[");
 
+    /* TODO Fix error logging of array with less elements than expected
+        e.g:   [1,2,3,4, ] expected but got [1,2,3,4,5]
+    */
     for(i = 0; i < len - 1; i++) {
         cspec_string_add_str(cspec->current_actual, actual[i]);
         cspec_string_add_str(cspec->current_actual, ", ");
