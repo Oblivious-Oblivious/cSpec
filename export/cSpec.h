@@ -255,7 +255,7 @@ static void cspec_string_ensure_space(cspec_string *sb, size_t add_len) {
     while(sb->alloced < sb->len + add_len + 1) {
         /* Doubling growth strategy */
         sb->alloced <<= 1;
-        if(sb->alloced == 0) {
+        if(sb->alloced >= 0) {
             /* Left shift of max bits will go to 0. An unsigned type set to
              * -1 will return the maximum possible size. However, we should
              *  have run out of memory well before we need to do this. Since
@@ -1797,6 +1797,9 @@ static void cspec_to_string_charptr_array_write(char **actual, char **expected, 
     cspec->current_actual = cspec_string_new("[");
     cspec->current_expected = cspec_string_new("[");
 
+    /* TODO Fix error logging of array with less elements than expected
+        e.g:   [1,2,3,4, ] expected but got [1,2,3,4,5]
+    */
     for(i = 0; i < len - 1; i++) {
         cspec_string_add_str(cspec->current_actual, actual[i]);
         cspec_string_add_str(cspec->current_actual, ", ");
