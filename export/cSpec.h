@@ -2149,7 +2149,7 @@ define_assert(
     cspec->assert_result = cspec_string_new(""); \
     \
     /* Save the test token */ \
-    cspec->current_assert = #test; \
+    cspec->current_assert = cspec_string_new(#test); \
     \
     /* Assert a custom block of code */ \
     if(!(test)) { \
@@ -2198,7 +2198,7 @@ define_assert(
     cspec->assert_result = cspec_string_new(""); \
     \
     /* Save the test token */ \
-    cspec->current_assert = #test; \
+    cspec->current_assert = cspec_string_new(#test); \
     \
 	if((test)) { \
         cspec->status_of_test = CSPEC_FAILING; \
