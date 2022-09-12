@@ -1241,7 +1241,6 @@ static void cspec_export_to_xml(void) {
  * @desc: Export test results into a markdown file
  **/
 static void cspec_export_to_md(void) {
-    /* TODO Complete exporting to md */
 }
 
 /**
@@ -1249,7 +1248,6 @@ static void cspec_export_to_md(void) {
  * @desc: Export test results into an html file
  **/
 static void cspec_export_to_html(void) {
-    /* TODO Complete exporting to html */
 }
 
 /**

@@ -170,7 +170,5 @@ spec_suite({
 
 spec({
     run_spec_suite("all");
-    /* TODO Fix on macos clang, makes a fork bomb */
-    /* export_test_results("report.xml", "all", "xml"); */
 });
 
