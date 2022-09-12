@@ -1201,7 +1201,7 @@ static void cspec_xml_write_modules(cspec_vector *mod) {
 
     time_t t = time(NULL);
     struct tm calc_time;
-    localtime_r(&calc_time, &t);
+    localtime_r(&t, &calc_time);
 
     cspec_string_delete(cspec->display_tab);
     fprintf(cspec->fd, "    <module>\n        <name>%s</name>\n        <failures>%d</failures>\n        <skipped>%d</skipped>\n        <tests>%d</tests>\n        <timestamp>%d-%02d-%02d %02d:%02d:%02d</timestamp>\n",
