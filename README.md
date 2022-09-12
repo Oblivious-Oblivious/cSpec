@@ -167,22 +167,22 @@ It is a preety satisfying DSL, very intuitive and close to high level designs.
 - [Interface](https://github.com/Oblivious-Oblivious/cSpec/blob/master/documentation/Basic%20Interface.md)
 
 ## Typed, truth assertions
-- #### ***`assert_that(code_block)`***
-- #### ***`assert_that_int(actual, expected)`***
-- #### ***`assert_that_double(actual, expected)`***
-- #### ***`assert_that_charptr(actual, expected)`***
-- #### ***`assert_that_int_array(actual, expected)`***
-- #### ***`assert_that_double_array(actual, expected)`***
-- #### ***`assert_that_charptr_array(actual, expected)`***
+- ##### ***`assert_that(code_block)`***
+- ##### ***`assert_that_int(actual, expected)`***
+- ##### ***`assert_that_double(actual, expected)`***
+- ##### ***`assert_that_charptr(actual, expected)`***
+- ##### ***`assert_that_int_array(actual, expected)`***
+- ##### ***`assert_that_double_array(actual, expected)`***
+- ##### ***`assert_that_charptr_array(actual, expected)`***
 
 ## Typed, false assertions
-- #### ***`nassert_that(code_block)`***
-- #### ***`nassert_that_int(actual, expected)`***
-- #### ***`nassert_that_double(actual, expected)`***
-- #### ***`nassert_that_charptr(actual, expected)`***
-- #### ***`nassert_that_int_array(actual, expected)`***
-- #### ***`nassert_that_double_array(actual, expected)`***
-- #### ***`nassert_that_charptr_array(actual, expected)`***
+- ##### ***`nassert_that(code_block)`***
+- ##### ***`nassert_that_int(actual, expected)`***
+- ##### ***`nassert_that_double(actual, expected)`***
+- ##### ***`nassert_that_charptr(actual, expected)`***
+- ##### ***`nassert_that_int_array(actual, expected)`***
+- ##### ***`nassert_that_double_array(actual, expected)`***
+- ##### ***`nassert_that_charptr_array(actual, expected)`***
 
 All assertions except `assert_that` and `nassert_that` take 2
 arguments as parameters, the actual and expected values.
