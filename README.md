@@ -66,7 +66,7 @@ Suppose we want to test a C project with a header and implementation file.
 
 /**
  * @func: find_meaning_of_life
- * @desc: Finds the ultimate answer to the great
+ * @brief: Finds the ultimate answer to the great
  *      question of life the universe and everything
  * @return Returns the answer
  **/
@@ -164,25 +164,25 @@ It is a preety satisfying DSL, very intuitive and close to high level designs.
 
 ## Basic Interface
 
-- [Interface](https://github.com/Oblivious-Oblivious/cSpec)
+- [Interface](https://github.com/Oblivious-Oblivious/cSpec/blob/master/documentation/Basic%20Interface.md)
 
 ## Typed, truth assertions
-- ### ***`assert_that(code_block)`***
-- ### ***`assert_that_int(actual, expected)`***
-- ### ***`assert_that_double(actual, expected)`***
-- ### ***`assert_that_charptr(actual, expected)`***
-- ### ***`assert_that_int_array(actual, expected)`***
-- ### ***`assert_that_double_array(actual, expected)`***
-- ### ***`assert_that_charptr_array(actual, expected)`***
+- #### ***`assert_that(code_block)`***
+- #### ***`assert_that_int(actual, expected)`***
+- #### ***`assert_that_double(actual, expected)`***
+- #### ***`assert_that_charptr(actual, expected)`***
+- #### ***`assert_that_int_array(actual, expected)`***
+- #### ***`assert_that_double_array(actual, expected)`***
+- #### ***`assert_that_charptr_array(actual, expected)`***
 
 ## Typed, false assertions
-- ### ***`nassert_that(code_block)`***
-- ### ***`nassert_that_int(actual, expected)`***
-- ### ***`nassert_that_double(actual, expected)`***
-- ### ***`nassert_that_charptr(actual, expected)`***
-- ### ***`nassert_that_int_array(actual, expected)`***
-- ### ***`nassert_that_double_array(actual, expected)`***
-- ### ***`nassert_that_charptr_array(actual, expected)`***
+- #### ***`nassert_that(code_block)`***
+- #### ***`nassert_that_int(actual, expected)`***
+- #### ***`nassert_that_double(actual, expected)`***
+- #### ***`nassert_that_charptr(actual, expected)`***
+- #### ***`nassert_that_int_array(actual, expected)`***
+- #### ***`nassert_that_double_array(actual, expected)`***
+- #### ***`nassert_that_charptr_array(actual, expected)`***
 
 All assertions except `assert_that` and `nassert_that` take 2
 arguments as parameters, the actual and expected values.
@@ -214,6 +214,10 @@ Using those constructs to call asserts we use the power of the C preprocessor to
 - ...
 
 ------------------------------------
+
+## Adding New Assertions
+
+- [New Assertions](https://github.com/Oblivious-Oblivious/cSpec/blob/master/documentation/Adding%20New%20Assertions.md)
 
 ## Implementation
 All functionality is included in a single header file `cSpec.h`. You can
