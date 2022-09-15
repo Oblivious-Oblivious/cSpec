@@ -789,14 +789,6 @@ cspec_data_struct *cspec;
 
 /**** FUNCTIONALITY ****/
 /**
- * @func: cspec_error_assertion_not_supported
- * @desc: Throw an error message
- **/
-static void cspec_error_assertion_not_supported(void) {
-    printf("Error. Generic assertions not supported for this compiler.\n");
-}
-
-/**
  * @func: cspec_write_position_in_file
  * @desc: Setup file position and line number for the current assert
  **/
