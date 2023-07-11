@@ -708,9 +708,13 @@ cspec_data_struct *cspec;
 
 #define is ==
 #define isnot !=
-#define not !
-#define and &&
-#define or ||
+
+#ifndef __cplusplus
+    #define not !
+    #define and &&
+    #define or ||
+#endif
+
 #define equals ,
 #define to
 #define with
