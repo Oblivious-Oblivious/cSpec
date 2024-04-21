@@ -4,9 +4,9 @@
 #include <stdio.h>
 
 typedef struct data {
-    int i;
-    double d;
-    char *s;
+  int i;
+  double d;
+  char *s;
 } data;
 
 void setup_arrays(void);

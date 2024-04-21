@@ -4,14 +4,14 @@
 #include <stdlib.h>
 
 #ifndef bool
-    #define bool unsigned char
-    #define true 1
-    #define false 0
+  #define bool unsigned char
+  #define true 1
+  #define false 0
 #endif
 
 typedef struct stack {
-    size_t size;
-    int elements[2];
+  size_t size;
+  int elements[2];
 } stack;
 
 stack *new_stack(void);
@@ -20,4 +20,3 @@ void stack_push(stack *st, int element);
 int stack_pop(stack *st);
 
 #endif
-
