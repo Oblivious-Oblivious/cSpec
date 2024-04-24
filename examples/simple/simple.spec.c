@@ -111,54 +111,54 @@ module(second, {
 
     it("succeeds `assert_that_int_array`", {
       int my_arr[5] = {1, 2, 3, 4, 5};
-      assert_that_int_array(my_arr equals to a with length 5);
+      assert_that_int_array(my_arr equals to a with array_size 5);
     });
     it("fails `assert_that_int_array`", {
-      assert_that_int_array(a equals to b with length 5);
-      assert_that_int_array(b equals to c with length 5);
+      assert_that_int_array(a equals to b with array_size 5);
+      assert_that_int_array(b equals to c with array_size 5);
     });
 
     it("succeeds `nassert_that_int_array`", {
-      nassert_that_int_array(a equals to c with length 5);
+      nassert_that_int_array(a equals to c with array_size 5);
     });
     it("fails `nassert_that_int_array`", {
       int my_arr2[5] = {7, 7, 7, 7, 7};
-      nassert_that_int_array(my_arr2 equals to b with length 5);
+      nassert_that_int_array(my_arr2 equals to b with array_size 5);
     });
 
     it("succeeds `assert_that_double_array`", {
       double my_arr[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
-      assert_that_double_array(my_arr equals to aa with length 5);
+      assert_that_double_array(my_arr equals to aa with array_size 5);
     });
     it("fails `assert_that_double_array`", {
-      assert_that_double_array(aa equals to bb with length 5);
-      assert_that_double_array(bb equals to cc with length 5);
+      assert_that_double_array(aa equals to bb with array_size 5);
+      assert_that_double_array(bb equals to cc with array_size 5);
     });
 
     it("succeeds `nassert_that_double_array`", {
-      nassert_that_double_array(aa equals to cc with length 5);
+      nassert_that_double_array(aa equals to cc with array_size 5);
     });
     it("fails `nassert_that_double_array`", {
       double my_arr2[5] = {7.7, 7.7, 7.7, 7.7, 7.7};
-      nassert_that_double_array(my_arr2 equals to bb with length 5);
+      nassert_that_double_array(my_arr2 equals to bb with array_size 5);
     });
 
     it("succeeds `assert_that_charptr_array`", {
       char *my_arr[5] = {"a", "b", "c", "d", "e"};
-      assert_that_charptr_array(my_arr equals to aaa with length 5);
+      assert_that_charptr_array(my_arr equals to aaa with array_size 5);
     });
     it("fails `assert_that_charptr_array`", {
-      assert_that_charptr_array(aaa equals to bbb with length 5);
-      assert_that_charptr_array(bbb equals to ccc with length 5);
+      assert_that_charptr_array(aaa equals to bbb with array_size 5);
+      assert_that_charptr_array(bbb equals to ccc with array_size 5);
     });
 
     it("succeeds `nassert_that_charptr_array`", {
       char *my_arr2[5] = {"g", "g", "g", "g", "g"};
-      nassert_that_charptr_array(aaa equals to my_arr2 with length 5);
+      nassert_that_charptr_array(aaa equals to my_arr2 with array_size 5);
     });
     it("fails `nassert_that_charptr_array`", {
       char *my_arr3[5] = {"g", "g", "g", "g", "g"};
-      nassert_that_charptr_array(my_arr3 equals to bbb with length 5);
+      nassert_that_charptr_array(my_arr3 equals to bbb with array_size 5);
     });
   });
 })

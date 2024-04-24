@@ -571,7 +571,7 @@ static cspec_data_struct *cspec;
 #define equals ,
 #define to
 #define with
-#define length ,
+#define array_size ,
 
 /**
  * @macro: cspec_compare_values
