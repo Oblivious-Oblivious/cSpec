@@ -1645,7 +1645,7 @@ define_assert_array(
  * @param actual -> The value passed by the user
  * @param expected -> The value `actual` is tested against
  **/
-static void cspec_to_string_charptr_write(char *actual, char *expected) {
+static void cspec_to_string_charptr_write(const char *actual, const char *expected) {
   cspec->current_actual = cspec_string_new(actual);
   cspec->current_expected = cspec_string_new(expected);
 }
@@ -1657,7 +1657,7 @@ static void cspec_to_string_charptr_write(char *actual, char *expected) {
  * @param expected -> The value `actual` is tested against
  * @return a boolean
  **/
-static bool cspec_charptr_comparison(char *actual, char *expected) {
+static bool cspec_charptr_comparison(const char *actual, const char *expected) {
   return cspec_streql(expected, actual);
 }
 
@@ -1669,7 +1669,7 @@ static bool cspec_charptr_comparison(char *actual, char *expected) {
  **/
 define_assert(
   cspec_call_assert_that_charptr,
-  char*,
+  const char*,
   cspec_to_string_charptr_write,
   !cspec_charptr_comparison
 )
@@ -1682,7 +1682,7 @@ define_assert(
  **/
 define_assert(
   cspec_call_nassert_that_charptr,
-  char*,
+  const char*,
   cspec_to_string_charptr_write,
   cspec_charptr_comparison
 )
