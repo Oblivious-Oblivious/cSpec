@@ -1370,8 +1370,8 @@ static void cspec_setup_test_data(void) {
   cspec_vector_add(context_block, cspec->name_of_context); \
   \
   /* Grab the specific describe block using `inner_nest` */ \
-  desc_block = cspec_vector_get(cspec->list_of_describes, cspec->inner_nest); \
-  list_of_cons = cspec_vector_get(desc_block, 1); \
+  desc_block = (cspec_vector*)cspec_vector_get(cspec->list_of_describes, cspec->inner_nest); \
+  list_of_cons = (cspec_vector*)cspec_vector_get(desc_block, 1); \
   cspec_vector_add(list_of_cons, context_block); \
   \
   \
