@@ -1193,7 +1193,7 @@ static void cspec_setup_test_data(void) {
  **/
 #define spec_suite(...) \
   /* Define a function to run tests modules at */ \
-  static void run_spec_suite(char *type_of_tests) { \
+  static void run_spec_suite(const char *type_of_tests) { \
     cspec_setup_test_data(); \
     cspec->type_of_tests = cspec_string_new(type_of_tests); \
     \
