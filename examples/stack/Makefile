@@ -20,4 +20,4 @@ compiler:
 	./$(NAME)
 
 clean:
-	rm -f $(OUTPUT)
+	rm -f $(OUTPUT) ./*.txt ./*.xml ./*.md ./*.html

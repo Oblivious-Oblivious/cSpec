@@ -1,0 +1,47 @@
+---
+BasedOnStyle: LLVM
+
+AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossComments: true
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossComments: true
+AlignConsecutiveBitFields:
+  Enabled: true
+  AcrossComments: true
+# AlignConsecutiveShortCaseStatements:
+#   Enabled: true
+#   AcrossEmptyLines: true
+#   AcrossComments: true
+AlignEscapedNewlines: Left
+AllowShortBlocksOnASingleLine: Empty
+BinPackArguments: false
+BinPackParameters: false
+BitFieldColonSpacing: After
+BreakArrays: true
+BreakStringLiterals: true
+ColumnLimit: 80
+ContinuationIndentWidth: 2
+IncludeBlocks: Regroup
+IndentExternBlock: Indent
+IndentGotoLabels: true
+IndentPPDirectives: BeforeHash
+IndentWidth: 2
+InsertBraces: true
+# InsertNewlineAtEOF: true
+MacroBlockBegin: "va_start"
+MacroBlockEnd: "va_end"
+MaxEmptyLinesToKeep: 3
+PointerAlignment: Right
+QualifierAlignment: Left
+ReferenceAlignment: Right
+ReflowComments: true
+RemoveSemicolon: true
+SortIncludes: CaseInsensitive
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceBeforeParens: false
+SpacesInContainerLiterals: false
+# SpacesInParens: Never
