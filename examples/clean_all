@@ -20,3 +20,6 @@ cd vector
 make clean
 cd ..
 
+cd ..
+em clean
+cd examples
