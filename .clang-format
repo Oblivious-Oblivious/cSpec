@@ -11,10 +11,10 @@ AlignConsecutiveMacros:
 AlignConsecutiveBitFields:
   Enabled: true
   AcrossComments: true
-# AlignConsecutiveShortCaseStatements:
-#   Enabled: true
-#   AcrossEmptyLines: true
-#   AcrossComments: true
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
 AlignEscapedNewlines: Left
 AllowShortBlocksOnASingleLine: Empty
 BinPackArguments: false
@@ -30,7 +30,7 @@ IndentGotoLabels: true
 IndentPPDirectives: BeforeHash
 IndentWidth: 2
 InsertBraces: true
-# InsertNewlineAtEOF: true
+InsertNewlineAtEOF: true
 MacroBlockBegin: "va_start"
 MacroBlockEnd: "va_end"
 MaxEmptyLinesToKeep: 3
@@ -44,4 +44,4 @@ SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceBeforeParens: false
 SpacesInContainerLiterals: false
-# SpacesInParens: Never
+SpacesInParens: Never
