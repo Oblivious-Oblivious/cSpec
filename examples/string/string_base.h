@@ -1,13 +1,13 @@
 #ifndef __STRING_H_
 #define __STRING_H_
 
-#include <stdio.h> /* printf, snprintf */
+#include <stdio.h>  /* printf, snprintf */
 #include <stdlib.h> /* malloc, calloc, realloc, free */
 #include <string.h> /* memmove, strlen */
 
 #ifndef bool
-  #define bool unsigned char
-  #define true 1
+  #define bool  unsigned char
+  #define true  1
   #define false 0
 #endif
 

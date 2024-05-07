@@ -3,51 +3,66 @@
 static void vector_ensure_space(vector *v, size_t capacity) {
   int *items;
 
-  if(v == NULL || capacity == 0) return;
+  if(v == NULL || capacity == 0) {
+    return;
+  }
 
   /* Attempt to reallocate new memory in the items list */
   items = realloc(v->items, sizeof(int) * capacity);
 
   if(items) {
     /* Reset the items in the new memory space */
-    v->items = items;
+    v->items   = items;
     v->alloced = capacity;
   }
 }
 
 vector *vector_create(void) {
-  vector *v = malloc(sizeof(vector));
+  vector *v  = malloc(sizeof(vector));
   v->alloced = vector_init_capacity;
-  v->len = 0;
-  v->items = malloc(sizeof(void*) * v->alloced);
+  v->len     = 0;
+  v->items   = malloc(sizeof(void *) * v->alloced);
   return v;
 }
 
 void vector_add(vector *v, int item) {
-  if(v == NULL) return;
-  if(v->alloced == v->len)
+  if(v == NULL) {
+    return;
+  }
+  if(v->alloced == v->len) {
     vector_ensure_space(v, v->alloced * 2);
+  }
   v->items[v->len++] = item;
 }
 
 void vector_set(vector *v, size_t index, int item) {
-  if(v == NULL) return;
-  if(index >= 0 && index < v->len)
+  if(v == NULL) {
+    return;
+  }
+  if(index >= 0 && index < v->len) {
     v->items[index] = item;
+  }
 }
 
 int vector_get(vector *v, size_t index) {
-  if(v == NULL) return 0;
-  if(index >= 0 && index < v->len)
+  if(v == NULL) {
+    return 0;
+  }
+  if(index >= 0 && index < v->len) {
     return v->items[index];
+  }
   return 0;
 }
 
 void vector_delete(vector *v, size_t index) {
   size_t i;
 
-  if(v == NULL) return;
-  if(index < 0 || index >= v->len) return;
+  if(v == NULL) {
+    return;
+  }
+  if(index < 0 || index >= v->len) {
+    return;
+  }
 
   /* Reset the rest of the elements forwards */
   for(i = index; i < v->len - 1; i++) {
@@ -56,11 +71,14 @@ void vector_delete(vector *v, size_t index) {
 
   v->len--;
 
-  if(v->len > 0 && v->len == v->alloced / 4)
+  if(v->len > 0 && v->len == v->alloced / 4) {
     vector_ensure_space(v, v->alloced / 2);
+  }
 }
 
 size_t vector_length(vector *v) {
-  if(v == NULL) return 0;
+  if(v == NULL) {
+    return 0;
+  }
   return v->len;
 }

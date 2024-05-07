@@ -4,8 +4,8 @@
 #include <stdlib.h>
 
 #ifndef bool
-  #define bool unsigned char
-  #define true 1
+  #define bool  unsigned char
+  #define true  1
   #define false 0
 #endif
 

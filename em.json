@@ -1,0 +1,38 @@
+{
+  "name": "cSpec",
+
+  "version": "0.2.0",
+
+  "dependencies": {},
+
+  "dev-dependencies": {},
+
+  "build": "make",
+
+  "compile-flags": {
+    "cc": "clang",
+    "debug": {
+      "opt": "-Og -g",
+      "version": "-std=c89",
+      "flags": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic",
+      "warnings": "-Wno-int-conversion -Wno-incompatible-pointer-types",
+      "libs": ""
+    },
+    "release": {
+      "opt": "-O2",
+      "version": "-std=c2x",
+      "flags": "",
+      "warnings": "-Wno-int-conversion",
+      "libs": ""
+    },
+    "test": {
+      "opt": "-O2",
+      "version": "-std=c2x",
+      "flags": "",
+      "warnings": "-Wno-int-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types",
+      "libs": ""
+    }
+  },
+
+  "license": "gpl-v3"
+}

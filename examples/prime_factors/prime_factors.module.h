@@ -56,7 +56,7 @@ module(primes, {
   });
 
   it("finds the factors of 2*2*3*3*5*7*11*11*13", {
-    vector *f = factors_of(2*2*3*3*5*7*11*11*13);
+    vector *f = factors_of(2 * 2 * 3 * 3 * 5 * 7 * 11 * 11 * 13);
     assert_that_int(vector_get(f, 0) equals to 2);
     assert_that_int(vector_get(f, 1) equals to 2);
     assert_that_int(vector_get(f, 2) equals to 3);

@@ -6,7 +6,7 @@ VERSION = -std=c89
 
 FLAGS = -Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic
 WARNINGS = -Wno-variadic-macros
-UNUSED_WARNINGS = -Wno-unused-function
+UNUSED_WARNINGS = -Wno-unused-function -Wno-extra-semi
 LIBS =
 
 INPUT = $(NAME).c

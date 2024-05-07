@@ -16,4 +16,3 @@ void initializer(void);
 void destructor(void);
 
 #endif
-
