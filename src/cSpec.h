@@ -205,6 +205,17 @@ static void cspec_string_add_int(cspec_string *sb, int val) {
   cspec_string_add_str(sb, str);
 }
 
+static void cspec_string_add_size_t(cspec_string *sb, size_t val) {
+  char str[1024];
+
+  if(sb == NULL) {
+    return;
+  }
+
+  snprintf(str, sizeof(str), "%zu", val);
+  cspec_string_add_str(sb, str);
+}
+
 /**
  * @desc: Add a double to the builder
  * @param sb -> The string builder to use
@@ -2182,6 +2193,13 @@ define_assert_array(
   cspec_string_add_int(cspec->current_expected, expected);
 }
 
+static void cspec_to_string_size_t_write(size_t actual, size_t expected) {
+  cspec->current_actual   = cspec_string_new("");
+  cspec->current_expected = cspec_string_new("");
+  cspec_string_add_size_t(cspec->current_actual, actual);
+  cspec_string_add_size_t(cspec->current_expected, expected);
+}
+
 /**
  * @brief A function that compares integers for assertions
  * @param actual -> The value passed by the user
@@ -2189,6 +2207,10 @@ define_assert_array(
  * @return a boolean
  **/
 static bool cspec_int_comparison(int actual, int expected) {
+  return actual == expected;
+}
+
+static bool cspec_size_t_comparison(size_t actual, size_t expected) {
   return actual == expected;
 }
 
@@ -2216,6 +2238,22 @@ define_assert(
     cspec_int_comparison
   )
 
+
+    define_assert(
+      cspec_call_assert_that_size_t,
+      size_t,
+      cspec_to_string_size_t_write,
+      !cspec_size_t_comparison
+    )
+
+      define_assert(
+        cspec_call_nassert_that_size_t,
+        size_t,
+        cspec_to_string_size_t_write,
+        cspec_size_t_comparison
+      )
+
+
 /**
  * @brief Assert that the expected integer is equal to the result
  * @param actual -> The actual value
@@ -2238,6 +2276,30 @@ define_assert(
     cspec->current_file = __FILE__;     \
     cspec->current_line = __LINE__;     \
     cspec_call_nassert_that_int(inner); \
+  })
+
+/**
+ * @brief Assert that the expected size_t is equal to the result
+ * @param actual -> The actual value
+ * @param expected -> The expected size_t
+ **/
+#define assert_that_size_t(inner)         \
+  CSPEC_BLOCK({                           \
+    cspec->current_file = __FILE__;       \
+    cspec->current_line = __LINE__;       \
+    cspec_call_assert_that_size_t(inner); \
+  })
+
+/**
+ * @brief Assert that the expected size_t is different than the result
+ * @param actual -> The actual value
+ * @param expected -> The expected size_t
+ **/
+#define nassert_that_size_t(inner)         \
+  CSPEC_BLOCK({                            \
+    cspec->current_file = __FILE__;        \
+    cspec->current_line = __LINE__;        \
+    cspec_call_nassert_that_size_t(inner); \
   })
 
 #endif
