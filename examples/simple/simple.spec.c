@@ -1,4 +1,4 @@
-#include "../../export/cSpec.h"
+#include "../../src/cSpec.h"
 #include "second.module.spec.h"
 #include "simple.module.spec.h"
 

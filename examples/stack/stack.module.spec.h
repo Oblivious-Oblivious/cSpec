@@ -1,10 +1,10 @@
 #ifndef __STACK_MODULE_SPEC_H_
 #define __STACK_MODULE_SPEC_H_
 
-#include "../../export/cSpec.h"
+#include "../../src/cSpec.h"
 #include "stack.h"
 
-stack *st;
+static stack *st;
 
 static void setup(void) { st = new_stack(); }
 

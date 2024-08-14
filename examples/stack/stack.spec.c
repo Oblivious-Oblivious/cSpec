@@ -1,4 +1,4 @@
-#include "../../export/cSpec.h"
+#include "../../src/cSpec.h"
 #include "stack.module.spec.h"
 
 spec_suite({ stack_spec(); });

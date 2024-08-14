@@ -1,4 +1,4 @@
-#include "../../export/cSpec.h"
+#include "../../src/cSpec.h"
 #include "string_base.module.spec.h"
 
 spec_suite({ string_spec(); });

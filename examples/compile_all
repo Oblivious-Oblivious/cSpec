@@ -1,9 +1,5 @@
 #!/bin/sh
 
-cd ..
-make
-cd examples
-
 cd prime_factors
 make clean
 make

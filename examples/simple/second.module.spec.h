@@ -1,7 +1,7 @@
 #ifndef __SECOND_MODULE_SPEC_H_
 #define __SECOND_MODULE_SPEC_H_
 
-#include "../../export/cSpec.h"
+#include "../../src/cSpec.h"
 
 module(second, {
   describe("DESC 1", {

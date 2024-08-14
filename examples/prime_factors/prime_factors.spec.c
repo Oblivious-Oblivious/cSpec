@@ -1,4 +1,4 @@
-#include "../../export/cSpec.h"
+#include "../../src/cSpec.h"
 #include "prime_factors.module.h"
 
 spec_suite({ primes(); });

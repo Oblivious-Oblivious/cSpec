@@ -1,4 +1,4 @@
-#include "../../export/cSpec.h"
+#include "../../src/cSpec.h"
 #include "vector.module.spec.h"
 
 spec_suite({ vector_spec(); })

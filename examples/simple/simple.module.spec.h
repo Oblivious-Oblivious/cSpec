@@ -1,7 +1,7 @@
 #ifndef __SIMPLE_MODULE_SPEC_H_
 #define __SIMPLE_MODULE_SPEC_H_
 
-#include "../../export/cSpec.h"
+#include "../../src/cSpec.h"
 #include "simple.h"
 
 module(simple, {

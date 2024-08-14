@@ -1,7 +1,7 @@
 #ifndef __STRING_BASE_MODULE_SPEC_H_
 #define __STRING_BASE_MODULE_SPEC_H_
 
-#include "../../export/cSpec.h"
+#include "../../src/cSpec.h"
 #include "string_base.h"
 
 module(string_spec, {

@@ -2,11 +2,11 @@ NAME = prime_factors
 
 CC = clang
 OPT = -O2
-VERSION = -std=c89
+VERSION = -std=c99
 
-FLAGS = -Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic
-WARNINGS = -Wno-variadic-macros
-UNUSED_WARNINGS = -Wno-unused-function -Wno-extra-semi
+FLAGS =
+WARNINGS = -Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic
+UNUSED_WARNINGS = -Wno-unused-function
 LIBS =
 
 INPUT = $(NAME).c
@@ -20,4 +20,4 @@ compiler:
 	./$(NAME)
 
 clean:
-	rm -f $(OUTPUT) ./*.txt ./*.xml ./*.md ./*.html
+	$(RM) -r $(OUTPUT) ./*.dSYM ./*.txt ./*.xml ./*.md ./*.html
