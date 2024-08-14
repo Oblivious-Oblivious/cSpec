@@ -1,6 +1,6 @@
 #include "../../src/cSpec.h"
 #include "stack.module.spec.h"
 
-spec_suite({ stack_spec(); });
-
-int main(void) { run_spec_suite("all"); }
+int main(void) {
+  cspec_run_suite("all", { stack_spec(); });
+}

@@ -1,9 +1,7 @@
 #include "../../src/cSpec.h"
 #include "vector.module.spec.h"
 
-spec_suite({ vector_spec(); })
-
-  int main(void) {
-  run_spec_suite("all");
-  export_test_results("output.txt", "all", "txt");
+int main(void) {
+  cspec_run_suite("all", { vector_spec(); });
+  cspec_export_test_results("output.txt", "all", "txt");
 }

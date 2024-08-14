@@ -22,13 +22,12 @@
 #define __CSPEC_H_
 
 /**** INCLUDES ****/
-#include <signal.h>       /* signal, kill */
-#include <stdint.h>       /* int8_t, int64_t, uint64_t */
-#include <stdio.h>        /* FILE, fopen, fprintf, printf, snprintf */
-#include <stdlib.h>       /* malloc, calloc, realloc, free */
-#include <string.h>       /* fabs, strcmp */
-/* #include <setjmp.h> */ /* jmp_buf, setjmp, longjmp */
-#include <time.h>         /* time_t, tm */
+#include <signal.h> /* signal, kill */
+#include <stdint.h> /* int8_t, int64_t, uint64_t */
+#include <stdio.h>  /* FILE, fopen, fprintf, printf, snprintf */
+#include <stdlib.h> /* malloc, calloc, realloc, free */
+#include <string.h> /* fabs, strcmp */
+#include <time.h>   /* time_t, tm */
 
 #if defined(_WIN32)
   #include <Windows.h>
@@ -445,23 +444,22 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
 
 /**
  * @brief A simple function definition for running test suites
+ * @param type_of_tests -> passing|failing|skipped|all
  * @param ... -> The block of modules to run
  **/
-#define spec_suite(...)                                                        \
-  static void run_spec_suite(const char *type_of_tests) {                      \
-    cspec_setup_test_data();                                                   \
-    cspec->type_of_tests = cspec_string_new(type_of_tests);                    \
-                                                                               \
+#define cspec_run_suite(type_of_tests, ...)                                    \
+  CSPEC_BLOCK({                                                                \
     /* Check for valid test type */                                            \
     if(strcmp(type_of_tests, "passing") && strcmp(type_of_tests, "failing") && \
        strcmp(type_of_tests, "skipped") && strcmp(type_of_tests, "all")) {     \
       printf("\n\033[1;31mInput a type of test to log "                        \
              "passing|failing|skipped|all\033[0m\n\n");                        \
     } else {                                                                   \
+      cspec_setup_test_data(type_of_tests);                                    \
       CSPEC_BLOCK(__VA_ARGS__);                                                \
       cspec_report_time_taken_for_tests();                                     \
     }                                                                          \
-  }
+  })
 
 /**
  * @brief Expands to a function definition of the test suite
@@ -699,7 +697,6 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
                                                                             \
     /* Execute asserts */                                                   \
     __VA_ARGS__;                                                            \
-    /* jmp_buf cspec->escape; */ /* setjmp(&cspec->escape); */              \
     end_test_timer = cspec_timer();                                         \
                                                                             \
     if(cspec->status_of_test) {                                             \
@@ -746,7 +743,7 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param vec -> Either passing|failing|skipped|all
  * @param type -> Export type either txt|xml|markdown
  **/
-#define export_test_results(name, vec, type)                          \
+#define cspec_export_test_results(name, vec, type)                    \
   /* Check for valid type of test export */                           \
   CSPEC_BLOCK({                                                       \
     if(strcmp(vec, "passing") && strcmp(vec, "failing") &&            \
@@ -773,13 +770,16 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
     } else if(!strcmp(type, "markdown")) {                            \
       cspec->fd = fopen(name, "w+");                                  \
       cspec_export_to_md();                                           \
+    } else if(!strcmp(type, "html")) {                                \
+      cspec->fd = fopen(name, "w+");                                  \
+      cspec_export_to_html();                                         \
     } else {                                                          \
       printf(                                                         \
         "\n%sSpecify the export type: `txt|xml|markdown|html`%s\n\n", \
         cspec_string_get(cspec->RED),                                 \
         cspec_string_get(cspec->RESET)                                \
       );                                                              \
-      return 0; /* Exit the main function */                          \
+      return 0;                                                       \
     }                                                                 \
   })
 
@@ -791,44 +791,41 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param number_of_skipped_tests -> Counts the skipped tests
  * @param status_of_test -> Either _PASSING|_FAILING|_SKIPPED
  * @param fd -> A file descriptor used for saving test results
+ *
  * @param total_time_taken_for_tests
  * @param signals_vector -> A vector saving descriptions about signals
+ *
  * @param test_result_message -> The string builder we construct for assertions
  * @param name_of_tested_proc -> The current name of the it block being tested
  * @param name_of_describe -> The current name of the describe block
  * @param name_of_context -> The current name of the context block
  * @param name_of_module -> The current name of the module block
- * @param display_tab -> A 4 space overhead used for a nicer display of test
- *results
+ * @param display_tab -> 4 space overhead for a nicer display of test results
  * @param inner_nest -> Counts the times we enter a nested block
  * @param outer_nest -> Counts the times we exit a nested block
+ *
  * @param type_of_tests -> The type of tests we want to display
  * @param type_of_export_tests -> The type of tests we want to export
- * @param current_assert -> The current assert token (only used in
- *`assert_that`)
- * @param current_file -> Current value of the __FILE__ macro used for tracking
- *assert positions in the file
+ * @param current_assert -> Current assert token (only used in `assert_that`)
+ * @param current_file -> Current __FILE__ used for tracking assert positions
  * @param current_actual -> Current actual value token
  * @param current_expected -> Current expected value token
- * @param position_in_file -> A string builder containing __FILE__ and __LINE__
- *results
- * @param assert_result -> A string builder containing the result description of
- *the current assert
+ * @param position_in_file -> A string containing __FILE__ and __LINE__ results
+ * @param assert_result -> Result description of the current assert
  * @param current_line -> Current value of the __LINE__ macro
- * @param in_context_block -> A boolean signaling if we are testing a context
- *block
+ * @param in_context_block -> Flag signaling if we are testing a context block
+ *
  * @param before_func -> A function pointer to be executed before it blocks
  * @param after_func -> A function pointer to be executed after it blocks
+ *
  * @param COLORS -> Terminal string color codes
- * @param list_of_modules -> A vector containing data about modules
- * @param list_of_describes -> A vector containing data about describes, part of
- *list_of_modules
- * @param list_of_contexts -> A vector containing data about contexts, part of
+ *
+ * @param list_of_modules -> Data vector about modules
+ * @param list_of_describes -> Data vector describes, part of list_of_modules
+ * @param list_of_contexts -> Data vector about contexts, part of
  *list_of_describes
- * @param list_of_its -> A vector containing data about it block, part of
- *list_of_contexts
- * @param list_of_asserts -> A vector containing data about asserts, part of
- *list_of_its
+ * @param list_of_its -> Data vector about it block, part of list_of_contexts
+ * @param list_of_asserts -> Data vector about asserts, part of list_of_its
  **/
 typedef struct cspec_data_struct {
   uint64_t number_of_tests;
@@ -837,7 +834,6 @@ typedef struct cspec_data_struct {
   uint64_t number_of_skipped_tests;
   int8_t status_of_test;
   FILE *fd;
-  /* jmp_buf escape; */
 
   uint64_t total_time_taken_for_tests;
   cspec_vector *signals_vector;
@@ -906,12 +902,6 @@ static cspec_data_struct *cspec;
 
 #define is    ==
 #define isnot !=
-
-#ifndef __cplusplus
-  #define not !
-  #define and &&
-  #define or  ||
-#endif
 
 #define equals ,
 #define to
@@ -1238,10 +1228,13 @@ static void cspec_fprintf_modules(cspec_vector *mod) {
 /**
  * @brief Export test results into a txt file
  **/
-static void cspec_export_to_txt(void) {
-  cspec_vector_map(cspec->list_of_modules, (cspec_lambda)cspec_fprintf_modules);
-  fclose(cspec->fd);
-}
+#define cspec_export_to_txt(void)                                 \
+  do {                                                            \
+    cspec_vector_map(                                             \
+      cspec->list_of_modules, (cspec_lambda)cspec_fprintf_modules \
+    );                                                            \
+    fclose(cspec->fd);                                            \
+  } while(0)
 
 /**
  * @brief Writes asserts to an xml file
@@ -1425,39 +1418,42 @@ static void cspec_xml_write_modules(cspec_vector *mod) {
 /**
  * @brief Export test results into an xml file
  **/
-static void cspec_export_to_xml(void) {
-  fprintf(cspec->fd, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-
-  if(cspec->total_time_taken_for_tests > 100000000) {
-    fprintf(
-      cspec->fd,
-      "<modules>\n    <duration>%.5f seconds</duration>\n",
-      cspec->total_time_taken_for_tests / 1000000000.0
-    );
-  } else {
-    fprintf(
-      cspec->fd,
-      "<modules>\n    <duration>%.5f ms</duration>\n",
-      cspec->total_time_taken_for_tests / 1000000.0
-    );
-  }
-
-  cspec_vector_map(
-    cspec->list_of_modules, (cspec_lambda)cspec_xml_write_modules
-  );
-  fprintf(cspec->fd, "</modules>\n");
-  fclose(cspec->fd);
-}
+#define cspec_export_to_xml()                                           \
+  do {                                                                  \
+    fprintf(cspec->fd, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"); \
+    if(cspec->total_time_taken_for_tests > 100000000) {                 \
+      fprintf(                                                          \
+        cspec->fd,                                                      \
+        "<modules>\n    <duration>%.5f seconds</duration>\n",           \
+        cspec->total_time_taken_for_tests / 1000000000.0                \
+      );                                                                \
+    } else {                                                            \
+      fprintf(                                                          \
+        cspec->fd,                                                      \
+        "<modules>\n    <duration>%.5f ms</duration>\n",                \
+        cspec->total_time_taken_for_tests / 1000000.0                   \
+      );                                                                \
+    }                                                                   \
+    cspec_vector_map(                                                   \
+      cspec->list_of_modules, (cspec_lambda)cspec_xml_write_modules     \
+    );                                                                  \
+    fprintf(cspec->fd, "</modules>\n");                                 \
+    fclose(cspec->fd);                                                  \
+  } while(0)
 
 /**
  * @brief Export test results into a markdown file
  **/
-static void cspec_export_to_md(void) {}
+#define cspec_export_to_md() \
+  do {                       \
+  } while(0)
 
 /**
  * @brief Export test results into an html file
  **/
-static void cspec_export_to_html(void) {}
+#define cspec_export_to_html() \
+  do {                         \
+  } while(0)
 
 /**
  * @brief Handles errors where undefined behaviour
@@ -1529,13 +1525,12 @@ static void cspec_signal_handler(const int signal_id) {
   printf("%s\n\n", cspec_string_get(sig));
   /* signal(signal_id, cspec_signal_handler); */
   signal(signal_id, SIG_DFL);
-  /* longjmp(&cspec->escape, 1); */
 }
 
 /**
  * @brief Allocates memory for vectors to save test results in
  **/
-static void cspec_setup_test_data(void) {
+static void cspec_setup_test_data(const char *type_of_tests) {
   /* Printf a neat intro */
   printf("\033[38;5;95m/######## ########/\n");
   printf("\033[38;5;95m/##### "
@@ -1552,7 +1547,6 @@ static void cspec_setup_test_data(void) {
   cspec->number_of_skipped_tests    = 0;
   cspec->total_time_taken_for_tests = 0;
   cspec->status_of_test             = CSPEC_PASSING;
-  /* jmp_buf cspec->escape; */
 
   cspec->test_result_message = NULL;
   cspec->name_of_tested_proc = NULL;
@@ -1566,7 +1560,7 @@ static void cspec_setup_test_data(void) {
   cspec->current_expected     = NULL;
   cspec->position_in_file     = NULL;
   cspec->assert_result        = NULL;
-  cspec->type_of_tests        = NULL;
+  cspec->type_of_tests        = cspec_string_new(type_of_tests);
   cspec->type_of_export_tests = NULL;
 
   /** Before and after procs **/

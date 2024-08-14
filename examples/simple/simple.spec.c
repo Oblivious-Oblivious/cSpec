@@ -2,9 +2,9 @@
 #include "second.module.spec.h"
 #include "simple.module.spec.h"
 
-spec_suite({
-  simple();
-  second();
-});
-
-int main(void) { run_spec_suite("all"); }
+int main(void) {
+  cspec_run_suite("all", {
+    simple();
+    second();
+  });
+}

@@ -1,6 +1,6 @@
 #include "../../src/cSpec.h"
 #include "prime_factors.module.h"
 
-spec_suite({ primes(); });
-
-int main(void) { run_spec_suite("all"); }
+int main(void) {
+  cspec_run_suite("all", { primes(); });
+}
