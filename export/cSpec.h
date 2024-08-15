@@ -21,13 +21,11 @@
 #ifndef __CSPEC_H_
 #define __CSPEC_H_
 
-/**** INCLUDES ****/
-#include <signal.h> /* signal, kill */
-#include <stdint.h> /* int8_t, int64_t, uint64_t */
+#include <signal.h> /* signal, SIGINT, SIGILL, SIGABRT, SIGFPE, SIGSEGV, SIGTERM */
+#include <stddef.h> /* size_t, ptrdiff_t */
 #include <stdio.h>  /* FILE, fopen, fprintf, printf, snprintf */
 #include <stdlib.h> /* malloc, calloc, realloc, free */
-#include <string.h> /* fabs, strcmp */
-#include <time.h>   /* time_t, tm */
+#include <string.h> /* strcmp */
 
 #if defined(_WIN32)
   #include <Windows.h>
@@ -47,6 +45,7 @@
   #define HAVE_MACH_TIMER
   #include <mach/mach.h>
   #include <mach/mach_time.h>
+  #include <time.h>
 #else
   #include <time.h>
 #endif
@@ -98,6 +97,8 @@ static size_t cspec_timer(void) {
   #define bool  unsigned char
   #define true  1
   #define false 0
+#else
+  #include <stdbool.h>
 #endif
 
 /**
@@ -448,7 +449,7 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param ... -> The block of modules to run
  **/
 #define cspec_run_suite(type_of_tests, ...)                                    \
-  CSPEC_BLOCK({                                                                \
+  do {                                                                         \
     /* Check for valid test type */                                            \
     if(strcmp(type_of_tests, "passing") && strcmp(type_of_tests, "failing") && \
        strcmp(type_of_tests, "skipped") && strcmp(type_of_tests, "all")) {     \
@@ -456,10 +457,10 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
              "passing|failing|skipped|all\033[0m\n\n");                        \
     } else {                                                                   \
       cspec_setup_test_data(type_of_tests);                                    \
-      CSPEC_BLOCK(__VA_ARGS__);                                                \
+      __VA_ARGS__;                                                             \
       cspec_report_time_taken_for_tests();                                     \
     }                                                                          \
-  })
+  } while(0)
 
 /**
  * @brief Expands to a function definition of the test suite
@@ -484,7 +485,7 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
     );                                                        \
     cspec->display_tab = cspec_string_new("");                \
                                                               \
-    CSPEC_BLOCK(__VA_ARGS__); /* Run describes */             \
+    __VA_ARGS__; /* Run describes */                          \
                                                               \
     /* Construct a module and save for exporting */           \
     mod = cspec_vector_new();                                 \
@@ -497,27 +498,27 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @brief Expands to a setup proc that gets executed before the tests
  * @param ... -> The proc to run
  **/
-#define before(...) CSPEC_BLOCK(__VA_ARGS__)
+#define before(...) __VA_ARGS__
 
 /**
  * @marco: after
  * @brief Expands to a teardown proc that gets executed after the tests
  * @param ... -> The proc to run
  **/
-#define after(...) CSPEC_BLOCK(__VA_ARGS__)
+#define after(...) __VA_ARGS__
 
 /**
  * @brief Sets the argument to a function to run before each it block
  * @param func -> The func to set
  **/
-#define before_each(func) CSPEC_BLOCK({ cspec->before_func = func; })
+#define before_each(func) cspec->before_func = func
 
 /**
  * @marco: after_each
  * @brief Sets the argument to a function to run after each it block
  * @param func -> The func to set
  **/
-#define after_each(func) CSPEC_BLOCK({ cspec->after_func = func; })
+#define after_each(func) cspec->after_func = func
 
 /**
  * @brief Defines a `describe` level block
@@ -525,7 +526,7 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param ...
  **/
 #define cspec_describe(...)       \
-  CSPEC_BLOCK({                   \
+  do {                            \
     if(cspec->inner_nest == -1) { \
       cspec->outer_nest = 0;      \
     }                             \
@@ -536,7 +537,7 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
     /* Reset nests */             \
     cspec->outer_nest++;          \
     cspec->inner_nest--;          \
-  })
+  } while(0)
 
 /**
  * @marco: describe
@@ -544,80 +545,73 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param object_name -> The name of the unit to describe
  * @param ... -> The proc to extend to
  **/
-#define describe(object_name, ...)                                          \
-  CSPEC_BLOCK({                                                             \
-    cspec_vector *describe_block;                                           \
-                                                                            \
-    cspec_string_add_str(cspec->display_tab, "    ");                       \
-    cspec->list_of_its      = cspec_vector_new();                           \
-    cspec->list_of_contexts = cspec_vector_new();                           \
-    cspec->name_of_describe = cspec_string_new(object_name);                \
-                                                                            \
-    /* Display describe data */                                             \
-    printf(                                                                 \
-      "%s%s`%s`%s\n",                                                       \
-      cspec_string_get(cspec->display_tab),                                 \
-      cspec_string_get(cspec->PURPLE),                                      \
-      object_name,                                                          \
-      cspec_string_get(cspec->RESET)                                        \
-    );                                                                      \
-                                                                            \
-    /* Construct the describe block */                                      \
-    describe_block = cspec_vector_new();                                    \
-    cspec_vector_add(describe_block, cspec_vector_dup(cspec->list_of_its)); \
-    cspec_vector_add(                                                       \
-      describe_block, cspec_vector_dup(cspec->list_of_contexts)             \
-    );                                                                      \
-    cspec_vector_add(describe_block, cspec->name_of_describe);              \
-    cspec_vector_add(cspec->list_of_describes, describe_block);             \
-                                                                            \
-    cspec_describe(__VA_ARGS__);                                            \
-                                                                            \
-    cspec_string_skip(cspec->display_tab, 4);                               \
-  })
+#define describe(object_name, ...)                              \
+  do {                                                          \
+    cspec_vector *describe_block;                               \
+                                                                \
+    cspec_string_add_str(cspec->display_tab, "    ");           \
+    cspec->name_of_describe = cspec_string_new(object_name);    \
+                                                                \
+    /* Display describe data */                                 \
+    printf(                                                     \
+      "%s%s`%s`%s\n",                                           \
+      cspec_string_get(cspec->display_tab),                     \
+      cspec_string_get(cspec->PURPLE),                          \
+      object_name,                                              \
+      cspec_string_get(cspec->RESET)                            \
+    );                                                          \
+                                                                \
+    /* Construct the describe block */                          \
+    describe_block = cspec_vector_new();                        \
+    cspec_vector_add(describe_block, cspec_vector_new());       \
+    cspec_vector_add(describe_block, cspec_vector_new());       \
+    cspec_vector_add(describe_block, cspec->name_of_describe);  \
+    cspec_vector_add(cspec->list_of_describes, describe_block); \
+                                                                \
+    cspec_describe(__VA_ARGS__);                                \
+                                                                \
+    cspec_string_skip(cspec->display_tab, 4);                   \
+  } while(0)
 
 /**
  * @brief Basically aliasing for descibe
  * @param object_name -> The name of the unit to describe
  * @param ... -> The proc to extend to
  **/
-#define context(object_name, ...)                                          \
-  CSPEC_BLOCK({                                                            \
-    cspec_vector *context_block;                                           \
-    cspec_vector *desc_block;                                              \
-    cspec_vector *list_of_cons;                                            \
-                                                                           \
-    cspec->in_context_block = true;                                        \
-    cspec_string_add_str(cspec->display_tab, "    ");                      \
-    cspec->list_of_its     = cspec_vector_new();                           \
-    cspec->name_of_context = cspec_string_new(object_name);                \
-                                                                           \
-    /* Display context data */                                             \
-    printf(                                                                \
-      "%s%s`%s`%s\n",                                                      \
-      cspec_string_get(cspec->display_tab),                                \
-      cspec_string_get(cspec->YELLOW),                                     \
-      object_name,                                                         \
-      cspec_string_get(cspec->RESET)                                       \
-    );                                                                     \
-                                                                           \
-    /* Construct data for export */                                        \
-    context_block = cspec_vector_new();                                    \
-    cspec_vector_add(context_block, cspec_vector_dup(cspec->list_of_its)); \
-    cspec_vector_add(context_block, cspec->name_of_context);               \
-                                                                           \
-    /* Grab the specific describe block using `inner_nest` */              \
-    desc_block = (cspec_vector *)cspec_vector_get(                         \
-      cspec->list_of_describes, cspec->inner_nest                          \
-    );                                                                     \
-    list_of_cons = (cspec_vector *)cspec_vector_get(desc_block, 1);        \
-    cspec_vector_add(list_of_cons, context_block);                         \
-                                                                           \
-    cspec_describe(__VA_ARGS__);                                           \
-                                                                           \
-    cspec_string_skip(cspec->display_tab, 4);                              \
-    cspec->in_context_block = false;                                       \
-  })
+#define context(object_name, ...)                                   \
+  do {                                                              \
+    cspec_vector *context_block;                                    \
+    cspec_vector *desc_block;                                       \
+    cspec_vector *list_of_cons;                                     \
+                                                                    \
+    cspec_string_add_str(cspec->display_tab, "    ");               \
+    cspec->name_of_context = cspec_string_new(object_name);         \
+                                                                    \
+    /* Display context data */                                      \
+    printf(                                                         \
+      "%s%s`%s`%s\n",                                               \
+      cspec_string_get(cspec->display_tab),                         \
+      cspec_string_get(cspec->YELLOW),                              \
+      object_name,                                                  \
+      cspec_string_get(cspec->RESET)                                \
+    );                                                              \
+                                                                    \
+    /* Construct data for export */                                 \
+    context_block = cspec_vector_new();                             \
+    cspec_vector_add(context_block, cspec_vector_new());            \
+    cspec_vector_add(context_block, cspec->name_of_context);        \
+                                                                    \
+    /* Grab the specific describe block using `inner_nest` */       \
+    desc_block = (cspec_vector *)cspec_vector_get(                  \
+      cspec->list_of_describes, cspec->inner_nest                   \
+    );                                                              \
+    list_of_cons = (cspec_vector *)cspec_vector_get(desc_block, 1); \
+    cspec_vector_add(list_of_cons, context_block);                  \
+                                                                    \
+    cspec_describe(__VA_ARGS__);                                    \
+                                                                    \
+    cspec_string_skip(cspec->display_tab, 4);                       \
+  } while(0)
 
 /**
  * @brief Temporarily disables a test
@@ -625,7 +619,7 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param ... -> The actual test code
  **/
 #define xit(proc_name, ...)                                                 \
-  CSPEC_BLOCK({                                                             \
+  do {                                                                      \
     size_t start_test_timer;                                                \
     size_t end_test_timer;                                                  \
                                                                             \
@@ -641,7 +635,6 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
     cspec->test_result_message = cspec_string_new("");                      \
     cspec->name_of_tested_proc = cspec_string_new(proc_name);               \
     cspec->list_of_asserts     = cspec_vector_new();                        \
-    cspec->status_of_test      = CSPEC_SKIPPED;                             \
                                                                             \
     /* Dummy timers */                                                      \
     start_test_timer = cspec_timer();                                       \
@@ -660,14 +653,13 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
       );                                                                    \
     }                                                                       \
     cspec->total_time_taken_for_tests += end_test_timer - start_test_timer; \
-    cspec_insert_it_block_in_list_of_its();                                 \
     /* Reset the display tab and execute the `after_func` */                \
     cspec_string_skip(cspec->display_tab, 4);                               \
                                                                             \
     if(cspec->after_func) {                                                 \
       (*cspec->after_func)();                                               \
     }                                                                       \
-  })
+  } while(0)
 
 /**
  * @brief Expands to a test run and saves all data gathered
@@ -675,11 +667,14 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param proc -> The actual test code
  **/
 #define it(proc_name, ...)                                                  \
-  CSPEC_BLOCK(                                                              \
-    size_t start_test_timer; size_t end_test_timer;                         \
+  do {                                                                      \
+    size_t start_test_timer;                                                \
+    size_t end_test_timer;                                                  \
                                                                             \
     /* Execute a `before` function */                                       \
-    if(cspec->before_func) { (*cspec->before_func)(); }                     \
+    if(cspec->before_func) {                                                \
+      (*cspec->before_func)();                                              \
+    }                                                                       \
                                                                             \
     /* Setup for an it block */                                             \
     cspec_string_add_str(cspec->display_tab, "    ");                       \
@@ -699,7 +694,7 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
     __VA_ARGS__;                                                            \
     end_test_timer = cspec_timer();                                         \
                                                                             \
-    if(cspec->status_of_test) {                                             \
+    if(cspec->status_of_test == CSPEC_PASSING) {                            \
       cspec->number_of_passing_tests++;                                     \
       if(!strcmp(cspec_string_get(cspec->type_of_tests), "all") ||          \
          !strcmp(cspec_string_get(cspec->type_of_tests), "passing")) {      \
@@ -731,57 +726,12 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
     } /* Calculate the total time */                                        \
     cspec->total_time_taken_for_tests += end_test_timer - start_test_timer; \
                                                                             \
-    cspec_insert_it_block_in_list_of_its();                                 \
-                                                                            \
     /* Reset the display tab and execute the `after_func` */                \
     cspec_string_skip(cspec->display_tab, 4);                               \
-    if(cspec->after_func) { (*cspec->after_func)(); }                       \
-  )
-
-/**
- * @brief Exports the test results to some file type
- * @param vec -> Either passing|failing|skipped|all
- * @param type -> Export type either txt|xml|markdown
- **/
-#define cspec_export_test_results(name, vec, type)                    \
-  /* Check for valid type of test export */                           \
-  CSPEC_BLOCK({                                                       \
-    if(strcmp(vec, "passing") && strcmp(vec, "failing") &&            \
-       strcmp(vec, "skipped") && strcmp(vec, "all")) {                \
-      printf(                                                         \
-        "\n%sInput a type of test to export "                         \
-        "passing|failing|skipped|all%s\n\n",                          \
-        cspec_string_get(cspec->RED),                                 \
-        cspec_string_get(cspec->RESET)                                \
-      );                                                              \
-      return 0;                                                       \
-    }                                                                 \
-    cspec->type_of_export_tests = cspec_string_new(vec);              \
-                                                                      \
-    /* Reset the display tab */                                       \
-    cspec_string_delete(cspec->display_tab);                          \
-    cspec_string_add_str(cspec->display_tab, "    ");                 \
-    if(!strcmp(type, "txt")) {                                        \
-      cspec->fd = fopen(name, "w+");                                  \
-      cspec_export_to_txt();                                          \
-    } else if(!strcmp(type, "xml")) {                                 \
-      cspec->fd = fopen(name, "w+");                                  \
-      cspec_export_to_xml();                                          \
-    } else if(!strcmp(type, "markdown")) {                            \
-      cspec->fd = fopen(name, "w+");                                  \
-      cspec_export_to_md();                                           \
-    } else if(!strcmp(type, "html")) {                                \
-      cspec->fd = fopen(name, "w+");                                  \
-      cspec_export_to_html();                                         \
-    } else {                                                          \
-      printf(                                                         \
-        "\n%sSpecify the export type: `txt|xml|markdown|html`%s\n\n", \
-        cspec_string_get(cspec->RED),                                 \
-        cspec_string_get(cspec->RESET)                                \
-      );                                                              \
-      return 0;                                                       \
-    }                                                                 \
-  })
+    if(cspec->after_func) {                                                 \
+      (*cspec->after_func)();                                               \
+    }                                                                       \
+  } while(0)
 
 /**
  * @brief Global variables grouped in container
@@ -789,11 +739,8 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param number_of_passing_tests -> Counts the passing tests
  * @param number_of_failing_tests -> Counts the failing tests
  * @param number_of_skipped_tests -> Counts the skipped tests
+ * @param total_time_taken_for_tests -> The total time taken for tests
  * @param status_of_test -> Either _PASSING|_FAILING|_SKIPPED
- * @param fd -> A file descriptor used for saving test results
- *
- * @param total_time_taken_for_tests
- * @param signals_vector -> A vector saving descriptions about signals
  *
  * @param test_result_message -> The string builder we construct for assertions
  * @param name_of_tested_proc -> The current name of the it block being tested
@@ -805,15 +752,12 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param outer_nest -> Counts the times we exit a nested block
  *
  * @param type_of_tests -> The type of tests we want to display
- * @param type_of_export_tests -> The type of tests we want to export
- * @param current_assert -> Current assert token (only used in `assert_that`)
  * @param current_file -> Current __FILE__ used for tracking assert positions
+ * @param current_line -> Current value of the __LINE__ macro
  * @param current_actual -> Current actual value token
  * @param current_expected -> Current expected value token
  * @param position_in_file -> A string containing __FILE__ and __LINE__ results
  * @param assert_result -> Result description of the current assert
- * @param current_line -> Current value of the __LINE__ macro
- * @param in_context_block -> Flag signaling if we are testing a context block
  *
  * @param before_func -> A function pointer to be executed before it blocks
  * @param after_func -> A function pointer to be executed after it blocks
@@ -821,22 +765,16 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param COLORS -> Terminal string color codes
  *
  * @param list_of_modules -> Data vector about modules
- * @param list_of_describes -> Data vector describes, part of list_of_modules
- * @param list_of_contexts -> Data vector about contexts, part of
- *list_of_describes
- * @param list_of_its -> Data vector about it block, part of list_of_contexts
- * @param list_of_asserts -> Data vector about asserts, part of list_of_its
+ * @param list_of_describes -> Describes data vector, part of list_of_modules
+ * @param list_of_asserts -> Asserts data vector, part of list_of_describes
  **/
 typedef struct cspec_data_struct {
-  uint64_t number_of_tests;
-  uint64_t number_of_passing_tests;
-  uint64_t number_of_failing_tests;
-  uint64_t number_of_skipped_tests;
-  int8_t status_of_test;
-  FILE *fd;
-
-  uint64_t total_time_taken_for_tests;
-  cspec_vector *signals_vector;
+  size_t number_of_tests;
+  size_t number_of_passing_tests;
+  size_t number_of_failing_tests;
+  size_t number_of_skipped_tests;
+  size_t total_time_taken_for_tests;
+  bool status_of_test;
 
   cspec_string *test_result_message;
   cspec_string *name_of_tested_proc;
@@ -844,19 +782,16 @@ typedef struct cspec_data_struct {
   cspec_string *name_of_context;
   cspec_string *name_of_module;
   cspec_string *display_tab;
-  int64_t inner_nest;
-  int64_t outer_nest;
+  ptrdiff_t inner_nest;
+  ptrdiff_t outer_nest;
 
   cspec_string *type_of_tests;
-  cspec_string *type_of_export_tests;
-  cspec_string *current_assert;
   const char *current_file;
+  size_t current_line;
   cspec_string *current_actual;
   cspec_string *current_expected;
   cspec_string *position_in_file;
   cspec_string *assert_result;
-  uint64_t current_line;
-  bool in_context_block;
 
   void (*before_func)(void);
   void (*after_func)(void);
@@ -874,8 +809,6 @@ typedef struct cspec_data_struct {
 
   cspec_vector *list_of_modules;
   cspec_vector *list_of_describes;
-  cspec_vector *list_of_contexts;
-  cspec_vector *list_of_its;
   cspec_vector *list_of_asserts;
 } cspec_data_struct;
 
@@ -884,21 +817,9 @@ static cspec_data_struct *cspec;
 /**
  * @param CSPEC_PASSING -> Set for passing tests
  * @param CSPEC_FAILING -> Set for failing tests
- * @param CSPEC_SKIPPED -> Set for skipeed tests
  **/
-#define CSPEC_PASSING 1
-#define CSPEC_FAILING 0
-#define CSPEC_SKIPPED -1
-
-/**
- * @brief Expands to a do while loop that runs once
- *      Useful for executing naked blocks
- * @param ... -> The block of code to run
- **/
-#define CSPEC_BLOCK(...) \
-  do {                   \
-    __VA_ARGS__          \
-  } while(0)
+#define CSPEC_PASSING true
+#define CSPEC_FAILING false
 
 #define is    ==
 #define isnot !=
@@ -1011,63 +932,11 @@ static void cspec_write_assert_actual_expected(void) {
 }
 
 /**
- * @brief Inserts the it block in its designated vector index
- **/
-static void cspec_insert_it_block_in_list_of_its(void) {
-  /* Setup the it block vector */
-  cspec_vector *it_block = cspec_vector_new();
-  cspec_vector_add(it_block, cspec->list_of_asserts);
-  cspec_vector_add(it_block, cspec->name_of_tested_proc);
-  cspec_vector_add(it_block, (void *)(long)cspec->status_of_test);
-
-  if(cspec->in_context_block) {
-    /* Insert in a context block */
-    if(cspec_vector_length(cspec->list_of_describes) > 1) {
-      /* Stupid indexing for finding the correct nested blocks */
-      cspec_vector *desc_block = (cspec_vector *)cspec_vector_get(
-        cspec->list_of_describes,
-        -(cspec_vector_length(cspec->list_of_describes) - cspec->inner_nest - 1)
-      );
-      cspec_vector *list_of_cons =
-        (cspec_vector *)cspec_vector_get(desc_block, 1);
-      cspec_vector *con_block = (cspec_vector *)cspec_vector_get(
-        list_of_cons, cspec_vector_length(list_of_cons) - 1
-      );
-      cspec_vector *list_of_con_its =
-        (cspec_vector *)cspec_vector_get(con_block, 0);
-      cspec_vector_add(list_of_con_its, it_block);
-    } else {
-      cspec_vector *desc_block = (cspec_vector *)cspec_vector_get(
-        cspec->list_of_describes,
-        cspec_vector_length(cspec->list_of_describes) - 1
-      );
-      cspec_vector *list_of_cons =
-        (cspec_vector *)cspec_vector_get(desc_block, 1);
-      cspec_vector *con_block = (cspec_vector *)cspec_vector_get(
-        list_of_cons, cspec_vector_length(list_of_cons) - 1
-      );
-      cspec_vector *list_of_con_its =
-        (cspec_vector *)cspec_vector_get(con_block, 0);
-      cspec_vector_add(list_of_con_its, it_block);
-    }
-  } else {
-    /* Insert in a describe block */
-    cspec_vector *desc_block = (cspec_vector *)cspec_vector_get(
-      cspec->list_of_describes,
-      cspec_vector_length(cspec->list_of_describes) - 1 - cspec->outer_nest
-    );
-    cspec_vector *list_of_desc_its =
-      (cspec_vector *)cspec_vector_get(desc_block, 0);
-    cspec_vector_add(list_of_desc_its, it_block);
-  }
-}
-
-/**
  * @brief Report the number of tests and time taken while testing
  **/
 static void cspec_report_time_taken_for_tests(void) {
   printf(
-    "\n%s● %llu tests\n%s✓ %llu passing\n%s✗ %llu failing\n%s- %llu "
+    "\n%s● %zu tests\n%s✓ %zu passing\n%s✗ %zu failing\n%s- %zu "
     "skipped%s\n",
     cspec_string_get(cspec->YELLOW),
     cspec->number_of_tests,
@@ -1101,433 +970,6 @@ static void cspec_report_time_taken_for_tests(void) {
 }
 
 /**
- * @brief Writes asserts to an output file
- * @param assert -> The assert string to export
- **/
-static void cspec_fprintf_asserts(cspec_vector *assert) {
-  fprintf(
-    cspec->fd,
-    "%s            %s\n                %s\n\n",
-    cspec_string_get(cspec->display_tab),
-    (char *)cspec_vector_get(assert, 0),
-    (char *)cspec_vector_get(assert, 1)
-  );
-}
-
-/**
- * @brief Writes it blocks to an output file
- * @param it_block -> The it block to iterate against
- **/
-static void cspec_fprintf_its(cspec_vector *it_block) {
-  /* Check for type of test */
-  if(((long)cspec_vector_get(it_block, 2) == CSPEC_FAILING)) {
-    if(!strcmp(cspec_string_get(cspec->type_of_export_tests), "failing") ||
-       !strcmp(cspec_string_get(cspec->type_of_export_tests), "all")) {
-      /* Write failing tests */
-      cspec_vector *asserts;
-      fprintf(
-        cspec->fd,
-        "%s        ✗ it %s\n",
-        cspec_string_get(cspec->display_tab),
-        cspec_string_get((cspec_string *)cspec_vector_get(it_block, 1))
-      );
-      asserts = (cspec_vector *)cspec_vector_get(it_block, 0);
-
-      /* Call to print the asserts iteratevely for the current it block */
-      cspec_vector_map(asserts, (cspec_lambda)cspec_fprintf_asserts);
-    }
-  } else if(((long)cspec_vector_get(it_block, 2) == CSPEC_SKIPPED)) {
-    if(!strcmp(cspec_string_get(cspec->type_of_export_tests), "skipped") ||
-       !strcmp(cspec_string_get(cspec->type_of_export_tests), "all")) {
-      /* Write skipped tests */
-      fprintf(
-        cspec->fd,
-        "%s        - it %s\n",
-        cspec_string_get(cspec->display_tab),
-        cspec_string_get((cspec_string *)cspec_vector_get(it_block, 1))
-      );
-    }
-  } else if(((long)cspec_vector_get(it_block, 2) == CSPEC_PASSING)) {
-    /* Write passing tests */
-    if(!strcmp(cspec_string_get(cspec->type_of_export_tests), "passing") ||
-       !strcmp(cspec_string_get(cspec->type_of_export_tests), "all")) {
-      fprintf(
-        cspec->fd,
-        "%s        ✓ it %s\n",
-        cspec_string_get(cspec->display_tab),
-        cspec_string_get((cspec_string *)cspec_vector_get(it_block, 1))
-      );
-    }
-  }
-}
-
-/**
- * @brief Writes context blocks to an output file
- * @param con -> The context block to iterate against
- **/
-static void cspec_fprintf_cons(cspec_vector *con) {
-  cspec_vector *its;
-
-  cspec_string_add_str(cspec->display_tab, "    ");
-
-  fprintf(
-    cspec->fd,
-    "        `%s`\n",
-    cspec_string_get((cspec_string *)cspec_vector_get(con, 1))
-  );
-  its = (cspec_vector *)cspec_vector_get(con, 0);
-
-  /* Iterate over the it blocks under the context block */
-  cspec_vector_map(its, (cspec_lambda)cspec_fprintf_its);
-
-  cspec_string_skip(cspec->display_tab, 4);
-}
-
-/**
- * @brief Writes describe blocks to an output file
- * @param desc -> The describe block to iterate against
- **/
-static void cspec_fprintf_describes(cspec_vector *desc) {
-  cspec_vector *its;
-  cspec_vector *cons;
-
-  fprintf(
-    cspec->fd,
-    "    `%s`\n",
-    cspec_string_get((cspec_string *)cspec_vector_get(desc, 2))
-  );
-
-  /* Iterate over the it blocks under the describe block */
-  its = (cspec_vector *)cspec_vector_get(desc, 0);
-  cspec_vector_map(its, (cspec_lambda)cspec_fprintf_its);
-
-  /* Iterate over the context blocks under the describe block */
-  cons = (cspec_vector *)cspec_vector_get(desc, 1);
-  cspec_vector_map(cons, (cspec_lambda)cspec_fprintf_cons);
-}
-
-/**
- * @brief Writes module blocks to an output file
- * @param mod -> The module block to iterate against
- **/
-static void cspec_fprintf_modules(cspec_vector *mod) {
-  cspec_vector *descs;
-
-  cspec_string_delete(cspec->display_tab);
-  fprintf(
-    cspec->fd,
-    "\nModule `%s`\n",
-    cspec_string_get((cspec_string *)cspec_vector_get(mod, 1))
-  );
-  descs = (cspec_vector *)cspec_vector_get(mod, 0);
-
-  /* Iterate over the describe blocks under the module block */
-  cspec_vector_map(descs, (cspec_lambda)cspec_fprintf_describes);
-}
-
-/**
- * @brief Export test results into a txt file
- **/
-#define cspec_export_to_txt(void)                                 \
-  do {                                                            \
-    cspec_vector_map(                                             \
-      cspec->list_of_modules, (cspec_lambda)cspec_fprintf_modules \
-    );                                                            \
-    fclose(cspec->fd);                                            \
-  } while(0)
-
-/**
- * @brief Writes asserts to an xml file
- * @param assert -> The assert block containing strings to print
- **/
-static void cspec_xml_write_asserts(cspec_vector *assert) {
-  fprintf(
-    cspec->fd,
-    "%s                <failure>\n",
-    cspec_string_get(cspec->display_tab)
-  );
-
-  fprintf(
-    cspec->fd,
-    "%s                    <position>%s</position>\n",
-    cspec_string_get(cspec->display_tab),
-    (char *)cspec_vector_get(assert, 0)
-  );
-
-  fprintf(
-    cspec->fd,
-    "%s                    <error>%s</error>\n",
-    cspec_string_get(cspec->display_tab),
-    (char *)cspec_vector_get(assert, 1)
-  );
-
-  fprintf(
-    cspec->fd,
-    "%s                </failure>\n",
-    cspec_string_get(cspec->display_tab)
-  );
-}
-
-/**
- * @brief Writes it blocks to an xml file
- * @param it_block -> The it block to iterate against
- **/
-static void cspec_xml_write_its(cspec_vector *it_block) {
-  /* Check for type of test */
-  if(((long)cspec_vector_get(it_block, 2) == CSPEC_FAILING)) {
-    if(!strcmp(cspec_string_get(cspec->type_of_export_tests), "failing") ||
-       !strcmp(cspec_string_get(cspec->type_of_export_tests), "all")) {
-      cspec_vector *asserts;
-      /* Write failing tests */
-      fprintf(
-        cspec->fd,
-        "            %s<it>\n                %s<name>%s</name>\n               "
-        " %s<status>failing</status>\n",
-        cspec_string_get(cspec->display_tab),
-        cspec_string_get(cspec->display_tab),
-        cspec_string_get((cspec_string *)cspec_vector_get(it_block, 1)),
-        cspec_string_get(cspec->display_tab)
-      );
-      asserts = (cspec_vector *)cspec_vector_get(it_block, 0);
-
-      /* Call to print the asserts iteratevely for the current it block */
-      cspec_vector_map(asserts, (cspec_lambda)cspec_xml_write_asserts);
-      fprintf(
-        cspec->fd, "            %s</it>\n", cspec_string_get(cspec->display_tab)
-      );
-    }
-  } else if(((long)cspec_vector_get(it_block, 2) == CSPEC_SKIPPED)) {
-    if(!strcmp(cspec_string_get(cspec->type_of_export_tests), "skipped") ||
-       !strcmp(cspec_string_get(cspec->type_of_export_tests), "all")) {
-      /* Write skipped tests */
-      fprintf(
-        cspec->fd,
-        "            %s<xit>\n                %s<name>%s</name>\n              "
-        "  %s<status>skipped</status>\n",
-        cspec_string_get(cspec->display_tab),
-        cspec_string_get(cspec->display_tab),
-        cspec_string_get((cspec_string *)cspec_vector_get(it_block, 1)),
-        cspec_string_get(cspec->display_tab)
-      );
-      fprintf(
-        cspec->fd,
-        "            %s</xit>\n",
-        cspec_string_get(cspec->display_tab)
-      );
-    }
-  } else if(((long)cspec_vector_get(it_block, 2) == CSPEC_PASSING)) {
-    /* Write passing tests */
-    if(!strcmp(cspec_string_get(cspec->type_of_export_tests), "passing") ||
-       !strcmp(cspec_string_get(cspec->type_of_export_tests), "all")) {
-      fprintf(
-        cspec->fd,
-        "            %s<it>\n                %s<name>%s</name>\n               "
-        " %s<status>passing</status>\n",
-        cspec_string_get(cspec->display_tab),
-        cspec_string_get(cspec->display_tab),
-        cspec_string_get((cspec_string *)cspec_vector_get(it_block, 1)),
-        cspec_string_get(cspec->display_tab)
-      );
-      fprintf(
-        cspec->fd, "            %s</it>\n", cspec_string_get(cspec->display_tab)
-      );
-    }
-  }
-}
-
-/**
- * @brief Writes context blocks to an xml file
- * @param con -> The context block to iterate against
- **/
-static void cspec_xml_write_cons(cspec_vector *con) {
-  cspec_vector *its;
-  cspec_string_add_str(cspec->display_tab, "    ");
-  fprintf(
-    cspec->fd,
-    "            <context>\n                <name>%s</name>\n",
-    cspec_string_get((cspec_string *)cspec_vector_get(con, 1))
-  );
-  its = (cspec_vector *)cspec_vector_get(con, 0);
-
-  /* Iterate over the it blocks under the context block */
-  cspec_vector_map(its, (cspec_lambda)cspec_xml_write_its);
-  fprintf(cspec->fd, "            </context>\n");
-  cspec_string_skip(cspec->display_tab, 4);
-}
-
-/**
- * @brief Writes describe blocks to an xml file
- * @param desc -> The current describe block to iterate against
- **/
-static void cspec_xml_write_describes(cspec_vector *desc) {
-  cspec_vector *its;
-  cspec_vector *cons;
-
-  fprintf(
-    cspec->fd,
-    "        <describe>\n            <name>%s</name>\n",
-    cspec_string_get((cspec_string *)cspec_vector_get(desc, 2))
-  );
-
-  /* Iterate over the it blocks under the describe block */
-  its = (cspec_vector *)cspec_vector_get(desc, 0);
-  cspec_vector_map(its, (cspec_lambda)cspec_xml_write_its);
-
-  /* Iterate over the context blocks under the describe block */
-  cons = (cspec_vector *)cspec_vector_get(desc, 1);
-  cspec_vector_map(cons, (cspec_lambda)cspec_xml_write_cons);
-  fprintf(cspec->fd, "        </describe>\n");
-}
-
-/**
- * @brief Writes module blocks to an xml file
- * @param mod -> The module block to iterate against
- **/
-static void cspec_xml_write_modules(cspec_vector *mod) {
-  cspec_vector *descs;
-
-  time_t t = time(NULL);
-  struct tm calc_time;
-  localtime_r(&t, &calc_time);
-
-  cspec_string_delete(cspec->display_tab);
-  fprintf(
-    cspec->fd,
-    "    <module>\n        <name>%s</name>\n        "
-    "<failures>%llu</failures>\n        <skipped>%llu</skipped>\n        "
-    "<tests>%llu</tests>\n        <timestamp>%d-%02d-%02d "
-    "%02d:%02d:%02d</timestamp>\n",
-    cspec_string_get((cspec_string *)cspec_vector_get(mod, 1)),
-    cspec->number_of_failing_tests,
-    cspec->number_of_skipped_tests,
-    cspec->number_of_tests,
-    calc_time.tm_year + 1900,
-    calc_time.tm_mon + 1,
-    calc_time.tm_mday,
-    calc_time.tm_hour,
-    calc_time.tm_min,
-    calc_time.tm_sec
-  );
-  descs = (cspec_vector *)cspec_vector_get(mod, 0);
-
-  /* Iterate over the describe blocks under the module block */
-  cspec_vector_map(descs, (cspec_lambda)cspec_xml_write_describes);
-  fprintf(cspec->fd, "    </module>\n");
-}
-
-/**
- * @brief Export test results into an xml file
- **/
-#define cspec_export_to_xml()                                           \
-  do {                                                                  \
-    fprintf(cspec->fd, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"); \
-    if(cspec->total_time_taken_for_tests > 100000000) {                 \
-      fprintf(                                                          \
-        cspec->fd,                                                      \
-        "<modules>\n    <duration>%.5f seconds</duration>\n",           \
-        cspec->total_time_taken_for_tests / 1000000000.0                \
-      );                                                                \
-    } else {                                                            \
-      fprintf(                                                          \
-        cspec->fd,                                                      \
-        "<modules>\n    <duration>%.5f ms</duration>\n",                \
-        cspec->total_time_taken_for_tests / 1000000.0                   \
-      );                                                                \
-    }                                                                   \
-    cspec_vector_map(                                                   \
-      cspec->list_of_modules, (cspec_lambda)cspec_xml_write_modules     \
-    );                                                                  \
-    fprintf(cspec->fd, "</modules>\n");                                 \
-    fclose(cspec->fd);                                                  \
-  } while(0)
-
-/**
- * @brief Export test results into a markdown file
- **/
-#define cspec_export_to_md() \
-  do {                       \
-  } while(0)
-
-/**
- * @brief Export test results into an html file
- **/
-#define cspec_export_to_html() \
-  do {                         \
-  } while(0)
-
-/**
- * @brief Handles errors where undefined behaviour
- *         calls for segfauls or other singals
- * @param signal_id -> The number assign to the signal
- **/
-static void cspec_signal_handler(const int signal_id) {
-  char *sig_description;
-  cspec_string *sig;
-
-  cspec_string *id = cspec_string_new("");
-  cspec_string_add_int(id, signal_id);
-
-  /* Find the correct signal description */
-  switch(signal_id) {
-  /* SIGINT */ case 2:
-    sig_description = (char *)cspec_vector_get(cspec->signals_vector, 0);
-    break;
-  /* SIGILL */ case 4:
-    sig_description = (char *)cspec_vector_get(cspec->signals_vector, 1);
-    break;
-  /* SIGABRT */ case 6:
-    sig_description = (char *)cspec_vector_get(cspec->signals_vector, 2);
-    break;
-  /* SIGFPE */ case 8:
-    sig_description = (char *)cspec_vector_get(cspec->signals_vector, 3);
-    break;
-  /* SIGSEGV */ case 11:
-    sig_description = (char *)cspec_vector_get(cspec->signals_vector, 4);
-    break;
-  /* SIGTERM */ case 15:
-    sig_description = (char *)cspec_vector_get(cspec->signals_vector, 5);
-    break;
-  }
-
-  /* Craft a response for signal errors */
-  sig = cspec_string_new("");
-  cspec_string_add_str(sig, cspec_string_get(cspec->display_tab));
-  cspec_string_add_str(sig, cspec_string_get(cspec->RED));
-  cspec_string_add_str(sig, "✗");
-  cspec_string_add_str(sig, cspec_string_get(cspec->RESET));
-  cspec_string_add_str(sig, " it ");
-  cspec_string_add_str(sig, cspec_string_get(cspec->name_of_tested_proc));
-  cspec_string_add_str(sig, ":\n");
-  cspec_string_add_str(sig, cspec_string_get(cspec->display_tab));
-  cspec_string_add_str(sig, "    ");
-  cspec_string_add_str(sig, cspec->current_file);
-  cspec_string_add_str(sig, ":");
-  cspec_string_add_int(sig, cspec->current_line);
-  cspec_string_add_str(sig, "\n");
-  cspec_string_add_str(sig, cspec_string_get(cspec->display_tab));
-  cspec_string_add_str(sig, "        |> ");
-  cspec_string_add_str(sig, "signal: ");
-  cspec_string_add_str(sig, cspec_string_get(cspec->RED));
-  cspec_string_add_str(sig, sig_description);
-  cspec_string_add_str(sig, cspec_string_get(cspec->RESET));
-  cspec_string_add_str(sig, " got caught on \n");
-  cspec_string_add_str(sig, cspec_string_get(cspec->display_tab));
-  cspec_string_add_str(sig, "          -> ");
-  cspec_string_add_str(sig, cspec_string_get(cspec->RED));
-  cspec_string_add_str(sig, "`");
-
-  /* This only works for `assert_that` blocks */
-  cspec_string_add_str(sig, cspec_string_get(cspec->current_assert));
-  /*------------------------------------------*/
-
-  cspec_string_add_str(sig, "`");
-  cspec_string_add_str(sig, cspec_string_get(cspec->RESET));
-  printf("%s\n\n", cspec_string_get(sig));
-  /* signal(signal_id, cspec_signal_handler); */
-  signal(signal_id, SIG_DFL);
-}
-
-/**
  * @brief Allocates memory for vectors to save test results in
  **/
 static void cspec_setup_test_data(const char *type_of_tests) {
@@ -1539,7 +981,7 @@ static void cspec_setup_test_data(const char *type_of_tests) {
   printf("/######## ########/\033[0m\n");
 
   /* Craft the global variable struct */
-  cspec = (cspec_data_struct *)malloc(sizeof(cspec_data_struct) + 1);
+  cspec = (cspec_data_struct *)malloc(sizeof(cspec_data_struct));
 
   cspec->number_of_tests            = 0;
   cspec->number_of_passing_tests    = 0;
@@ -1553,25 +995,21 @@ static void cspec_setup_test_data(const char *type_of_tests) {
   cspec->name_of_describe    = NULL;
   cspec->name_of_context     = NULL;
 
-  cspec->current_assert       = NULL;
-  cspec->current_file         = NULL;
-  cspec->current_line         = 0;
-  cspec->current_actual       = NULL;
-  cspec->current_expected     = NULL;
-  cspec->position_in_file     = NULL;
-  cspec->assert_result        = NULL;
-  cspec->type_of_tests        = cspec_string_new(type_of_tests);
-  cspec->type_of_export_tests = NULL;
+  cspec->current_file     = NULL;
+  cspec->current_line     = 0;
+  cspec->current_actual   = NULL;
+  cspec->current_expected = NULL;
+  cspec->position_in_file = NULL;
+  cspec->assert_result    = NULL;
+  cspec->type_of_tests    = cspec_string_new(type_of_tests);
 
   /** Before and after procs **/
   cspec->before_func = NULL;
   cspec->after_func  = NULL;
 
-  cspec->display_tab      = NULL;
-  cspec->signals_vector   = cspec_vector_new();
-  cspec->inner_nest       = -1;
-  cspec->outer_nest       = 0;
-  cspec->in_context_block = false;
+  cspec->display_tab = NULL;
+  cspec->inner_nest  = -1;
+  cspec->outer_nest  = 0;
 
   /** Colors **/
   cspec->GREEN       = cspec_string_new("\033[38;5;78m");
@@ -1585,32 +1023,7 @@ static void cspec_setup_test_data(const char *type_of_tests) {
 
   cspec->list_of_modules   = cspec_vector_new();
   cspec->list_of_describes = cspec_vector_new();
-  cspec->list_of_contexts  = cspec_vector_new();
-  cspec->list_of_its       = cspec_vector_new();
   cspec->list_of_asserts   = cspec_vector_new();
-
-  /* Signals that can be processed */
-  cspec_vector_add(cspec->signals_vector, (void *)"`SIGINT | Interrupt`");
-  cspec_vector_add(
-    cspec->signals_vector, (void *)"`SIGILL | Illegal instruction`"
-  );
-  cspec_vector_add(cspec->signals_vector, (void *)"`SIGABRT | Abort`");
-  cspec_vector_add(
-    cspec->signals_vector,
-    (void *)"`SIGFPE | Floating - Point arithmetic exception`"
-  );
-  cspec_vector_add(
-    cspec->signals_vector, (void *)"`SIGSEGV | Segmentation Violation`"
-  );
-  cspec_vector_add(cspec->signals_vector, (void *)"`SIGTERM | Termination`");
-
-  /* Setup the signals */
-  signal(SIGINT, cspec_signal_handler);
-  signal(SIGILL, cspec_signal_handler);
-  signal(SIGABRT, cspec_signal_handler);
-  signal(SIGFPE, cspec_signal_handler);
-  signal(SIGSEGV, cspec_signal_handler);
-  signal(SIGTERM, cspec_signal_handler);
 }
 
 /**
@@ -1689,11 +1102,11 @@ define_assert_array(
  * @param expected -> The expected value
  **/
 #define assert_that_charptr_array(inner)         \
-  CSPEC_BLOCK({                                  \
+  do {                                           \
     cspec->current_file = __FILE__;              \
     cspec->current_line = __LINE__;              \
     cspec_call_assert_that_charptr_array(inner); \
-  })
+  } while(0)
 
 /**
  * @brief Assert that the expected charptr array differs from the result
@@ -1701,11 +1114,11 @@ define_assert_array(
  * @param expected -> The expected value
  **/
 #define nassert_that_charptr_array(inner)         \
-  CSPEC_BLOCK({                                   \
+  do {                                            \
     cspec->current_file = __FILE__;               \
     cspec->current_line = __LINE__;               \
     cspec_call_nassert_that_charptr_array(inner); \
-  })
+  } while(0)
 
   /**
    * @brief Writes actual and expected values
@@ -1759,11 +1172,11 @@ define_assert(
  * @param expected -> The expected string
  **/
 #define assert_that_charptr(inner)         \
-  CSPEC_BLOCK({                            \
+  do {                                     \
     cspec->current_file = __FILE__;        \
     cspec->current_line = __LINE__;        \
     cspec_call_assert_that_charptr(inner); \
-  })
+  } while(0)
 
 /**
  * @brief Assert that the expected string is different than the result
@@ -1771,11 +1184,11 @@ define_assert(
  * @param expected -> The expected string
  **/
 #define nassert_that_charptr(inner)         \
-  CSPEC_BLOCK({                             \
+  do {                                      \
     cspec->current_file = __FILE__;         \
     cspec->current_line = __LINE__;         \
     cspec_call_nassert_that_charptr(inner); \
-  })
+  } while(0)
 
   /**
    * @brief Writes the actual and expected values
@@ -1854,11 +1267,11 @@ define_assert_array(
  * @param expected -> The expected value
  **/
 #define assert_that_double_array(inner)         \
-  CSPEC_BLOCK({                                 \
+  do {                                          \
     cspec->current_file = __FILE__;             \
     cspec->current_line = __LINE__;             \
     cspec_call_assert_that_double_array(inner); \
-  })
+  } while(0)
 
 /**
  * @brief Assert that the expected double array differs from the result
@@ -1866,11 +1279,11 @@ define_assert_array(
  * @param expected -> The expected value
  **/
 #define nassert_that_double_array(inner)         \
-  CSPEC_BLOCK({                                  \
+  do {                                           \
     cspec->current_file = __FILE__;              \
     cspec->current_line = __LINE__;              \
     cspec_call_nassert_that_double_array(inner); \
-  })
+  } while(0)
 
   /**
    * @brief Writes actual and expected values
@@ -1926,11 +1339,11 @@ define_assert(
  * @param expected -> The expected double
  **/
 #define assert_that_double(inner)         \
-  CSPEC_BLOCK({                           \
+  do {                                    \
     cspec->current_file = __FILE__;       \
     cspec->current_line = __LINE__;       \
     cspec_call_assert_that_double(inner); \
-  })
+  } while(0)
 
 /**
  * @brief Assert that the expected double is different than the result
@@ -1938,25 +1351,22 @@ define_assert(
  * @param expected -> The expected double
  **/
 #define nassert_that_double(inner)         \
-  CSPEC_BLOCK({                            \
+  do {                                     \
     cspec->current_file = __FILE__;        \
     cspec->current_line = __LINE__;        \
     cspec_call_nassert_that_double(inner); \
-  })
+  } while(0)
 
 /**
  * @brief Asserts that a proc returns true
  * @param test -> The test proc to run
  **/
 #define assert_that(test)                                                            \
-  CSPEC_BLOCK({                                                                      \
+  do {                                                                               \
     cspec->current_file     = __FILE__;                                              \
     cspec->current_line     = __LINE__;                                              \
     cspec->position_in_file = cspec_string_new("");                                  \
     cspec->assert_result    = cspec_string_new("");                                  \
-                                                                                     \
-    /* Save the test token */                                                        \
-    cspec->current_assert = cspec_string_new(#test);                                 \
                                                                                      \
     /* Assert a custom block of code */                                              \
     if(!(test)) {                                                                    \
@@ -2011,21 +1421,18 @@ define_assert(
       /****************************************************************************/ \
       cspec_vector_add(cspec->list_of_asserts, list_of_strings);                     \
     }                                                                                \
-  })
+  } while(0)
 
 /**
  * @brief Asserts that a proc returns false
  * @param test -> The test proc to run
  **/
 #define nassert_that(test)                                                           \
-  CSPEC_BLOCK({                                                                      \
+  do {                                                                               \
     cspec->current_file     = __FILE__;                                              \
     cspec->current_line     = __LINE__;                                              \
     cspec->position_in_file = cspec_string_new("");                                  \
     cspec->assert_result    = cspec_string_new("");                                  \
-                                                                                     \
-    /* Save the test token */                                                        \
-    cspec->current_assert = cspec_string_new(#test);                                 \
                                                                                      \
     if((test)) {                                                                     \
       cspec_vector *list_of_strings;                                                 \
@@ -2079,7 +1486,7 @@ define_assert(
       /****************************************************************************/ \
       cspec_vector_add(cspec->list_of_asserts, list_of_strings);                     \
     }                                                                                \
-  })
+  } while(0)
 
   /**
    * @brief Writes actual and expected values
@@ -2157,11 +1564,11 @@ define_assert_array(
  * @param expected -> The expected value
  **/
 #define assert_that_int_array(inner)         \
-  CSPEC_BLOCK({                              \
+  do {                                       \
     cspec->current_file = __FILE__;          \
     cspec->current_line = __LINE__;          \
     cspec_call_assert_that_int_array(inner); \
-  })
+  } while(0)
 
 /**
  * @brief Assert that the expected int array differs from the result
@@ -2169,11 +1576,11 @@ define_assert_array(
  * @param expected -> The expected value
  **/
 #define nassert_that_int_array(inner)         \
-  CSPEC_BLOCK({                               \
+  do {                                        \
     cspec->current_file = __FILE__;           \
     cspec->current_line = __LINE__;           \
     cspec_call_nassert_that_int_array(inner); \
-  })
+  } while(0)
 
   /**
    * @brief Writes actual and expected values
@@ -2232,7 +1639,6 @@ define_assert(
     cspec_int_comparison
   )
 
-
     define_assert(
       cspec_call_assert_that_size_t,
       size_t,
@@ -2247,18 +1653,17 @@ define_assert(
         cspec_size_t_comparison
       )
 
-
 /**
  * @brief Assert that the expected integer is equal to the result
  * @param actual -> The actual value
  * @param expected -> The expected int
  **/
 #define assert_that_int(inner)         \
-  CSPEC_BLOCK({                        \
+  do {                                 \
     cspec->current_file = __FILE__;    \
     cspec->current_line = __LINE__;    \
     cspec_call_assert_that_int(inner); \
-  })
+  } while(0)
 
 /**
  * @brief Assert that the expected integer is different than the result
@@ -2266,11 +1671,11 @@ define_assert(
  * @param expected -> The expected int
  **/
 #define nassert_that_int(inner)         \
-  CSPEC_BLOCK({                         \
+  do {                                  \
     cspec->current_file = __FILE__;     \
     cspec->current_line = __LINE__;     \
     cspec_call_nassert_that_int(inner); \
-  })
+  } while(0)
 
 /**
  * @brief Assert that the expected size_t is equal to the result
@@ -2278,11 +1683,11 @@ define_assert(
  * @param expected -> The expected size_t
  **/
 #define assert_that_size_t(inner)         \
-  CSPEC_BLOCK({                           \
+  do {                                    \
     cspec->current_file = __FILE__;       \
     cspec->current_line = __LINE__;       \
     cspec_call_assert_that_size_t(inner); \
-  })
+  } while(0)
 
 /**
  * @brief Assert that the expected size_t is different than the result
@@ -2290,10 +1695,10 @@ define_assert(
  * @param expected -> The expected size_t
  **/
 #define nassert_that_size_t(inner)         \
-  CSPEC_BLOCK({                            \
+  do {                                     \
     cspec->current_file = __FILE__;        \
     cspec->current_line = __LINE__;        \
     cspec_call_nassert_that_size_t(inner); \
-  })
+  } while(0)
 
 #endif

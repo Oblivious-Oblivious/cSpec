@@ -20,4 +20,4 @@ compiler:
 	./$(NAME)
 
 clean:
-	$(RM) -r $(OUTPUT) ./*.dSYM ./*.txt ./*.xml ./*.md ./*.html
+	$(RM) -r $(OUTPUT) ./*.dSYM
