@@ -23,7 +23,7 @@
 
 #include <stddef.h> /* size_t, ptrdiff_t */
 #include <stdio.h>  /* printf, snprintf */
-#include <stdlib.h> /* malloc, calloc, realloc, free */
+#include <stdlib.h> /* malloc, realloc */
 #include <string.h> /* strlen, strncmp, memmove */
 
 #if defined(_WIN32)
@@ -93,199 +93,135 @@ static size_t cspec_timer(void) {
 #define cspec_true  1
 #define cspec_false 0
 
-/**
- * @desc: A mutable string of characters used to dynamically build a string.
- * @param str -> The str char* we construct our string into
- * @param alloced -> The total sized allocated for the string
- * @param len -> The total len of the string
- */
-typedef struct cspec_string {
-  char *str;
-  size_t alloced;
-  size_t len;
-} cspec_string;
+typedef struct {
+  size_t size;
+  size_t capacity;
+} _cspec_vector_header;
 
-/**
- * @desc: Ensure there is enough space for data being added plus a NULL
- *terminator
- * @param sb -> The string builder to use
- * @param add_len -> he len that needs to be added *not* including a NULL
- *terminator
- */
-static void cspec_string_ensure_space(cspec_string *sb, size_t add_len) {
-  if(sb == NULL || add_len == 0) {
-    return;
+#define _cspec_vector_get_header(self)   ((_cspec_vector_header *)(self) - 1)
+#define _cspec_vector_selfptr_size(self) sizeof(*(self)) // NOLINT
+#define _cspec_vector_grow(self, n) \
+  (*(void **)&(self) =              \
+     _cspec_vector_growf((self), _cspec_vector_selfptr_size(self), (n), 0))
+#define _cspec_vector_maybegrow(self, n)                    \
+  ((!(self) || _cspec_vector_get_header(self)->size + (n) > \
+                 _cspec_vector_get_header(self)->capacity)  \
+     ? (_cspec_vector_grow(self, n), 0)                     \
+     : 0)
+#define cspec_vector_initialize(self) _cspec_vector_maybegrow(self, 1)
+#define cspec_vector_add_n(self, item, n)             \
+  ((item) != NULL ? _cspec_vector_maybegrow(self, n), \
+   memmove(                                           \
+     (self) + cspec_vector_size(self),                \
+     (item),                                          \
+     (n) * ((item) != NULL ? sizeof((self)[0]) : 0)   \
+   ),                                                 \
+   _cspec_vector_get_header(self)->size += (n)        \
+                  : 0)
+#define cspec_vector_size(self) \
+  ((self) ? (size_t)_cspec_vector_get_header(self)->size : 0)
+#define cspec_vector_size_signed(self) \
+  ((self) ? (ptrdiff_t)_cspec_vector_get_header(self)->size : 0)
+#define cspec_vector_capacity(self) \
+  ((self) ? (size_t)_cspec_vector_get_header(self)->capacity : 0)
+static void *_cspec_vector_growf(
+  void *self, size_t elemsize, size_t addlen, size_t min_cap
+) {
+  void *b;
+  size_t min_len = cspec_vector_size_signed(self) + addlen;
+
+  if(min_len > min_cap) {
+    min_cap = min_len;
   }
 
-  /* If out allocated space is big enough */
-  if(sb->alloced >= sb->len + add_len + 1) {
-    return;
+  if(min_cap <= cspec_vector_capacity(self)) {
+    return self;
   }
 
-  while(sb->alloced < sb->len + add_len + 1) {
-    /* Doubling growth strategy */
-    sb->alloced <<= 1;
-    if(sb->alloced >= 0) {
-      /* Left shift of max bits will go to 0. An unsigned type set to
-       * -1 will return the maximum possible size. However, we should
-       *  have run out of memory well before we need to do this. Since
-       *  this is the theoretical maximum total system memory we don't
-       *  have a flag saying we can't grow any more because it should
-       *  be impossible to get to this point */
-      sb->alloced--;
-    }
+  if(min_cap < 2 * cspec_vector_capacity(self)) {
+    min_cap = 2 * cspec_vector_capacity(self);
+  } else if(min_cap < 4) {
+    min_cap = 4;
   }
-  sb->str = (char *)realloc(sb->str, sb->alloced);
+
+  b = realloc(
+    (self) ? _cspec_vector_get_header(self) : 0,
+    elemsize * min_cap + sizeof(_cspec_vector_header)
+  );
+  b = (char *)b + sizeof(_cspec_vector_header);
+
+  if(self == NULL) {
+    _cspec_vector_get_header(b)->size = 0;
+  }
+
+  _cspec_vector_get_header(b)->capacity = min_cap;
+
+  return b;
 }
+#define cspec_vector_free(self)                                     \
+  ((void)((self) ? realloc(_cspec_vector_get_header(self), 0) : 0), \
+   (self) = NULL)
 
-/**
- * @desc: Add a string to the builder
- * @param sb -> The string builder to use
- * @param str -> The string to add
- */
-static void cspec_string_add_str(cspec_string *sb, const char *str) {
-  const char *ptr;
-  size_t len;
-
-  if(sb == NULL || str == NULL || *str == '\0') {
-    return;
-  }
-
-  ptr = str;
-  while(*ptr) {
-    ++ptr;
-  }
-  len = ptr - str;
-
-  cspec_string_ensure_space(sb, len);
-  memmove(sb->str + sb->len, str, len);
-
-  /* Reset len and NULL terminate */
-  sb->len += len;
-  sb->str[sb->len] = '\0';
+#define cspec_string_add(self, other)                   \
+  do {                                                  \
+    if(self == NULL && other != NULL) {                 \
+      cspec_vector_initialize(self);                    \
+    }                                                   \
+    cspec_vector_add_n(self, other, strlen(other) + 1); \
+    if(other != NULL) {                                 \
+      cspec_string_ignore_last(self, 1);                \
+    }                                                   \
+  } while(0)
+#define cspec_string_size(self) cspec_vector_size(self)
+#define cspec_string_shorten(self, _len)                \
+  do {                                                  \
+    ptrdiff_t len = (ptrdiff_t)(_len);                  \
+    if((self) != NULL) {                                \
+      if(len < 0) {                                     \
+        _cspec_vector_get_header(self)->size = 0;       \
+      } else if(len < cspec_vector_size_signed(self)) { \
+        _cspec_vector_get_header(self)->size = len;     \
+      }                                                 \
+      (self)[cspec_string_size(self)] = '\0';           \
+    }                                                   \
+  } while(0)
+#define cspec_string_ignore_last(self, len) \
+  cspec_string_shorten(self, cspec_string_size(self) - len)
+static char *cspec_string_new(const char *initial_string) {
+  char *self = NULL;
+  cspec_string_add(self, initial_string);
+  return self;
 }
+static void _cspec_string_internal_addf(char **self, const char *f, ...) {
+  signed int result = 0;
+  char buf[4096];
+  va_list args;
 
-/**
- * @desc: Create an str builder
- * @param initial_string -> The initial string to set
- * @return The str builder
- */
-static cspec_string *cspec_string_new(const char *initial_string) {
-  cspec_string *sb;
-  sb          = (cspec_string *)calloc(1, sizeof(*sb));
-  sb->str     = (char *)malloc(32);
-  *sb->str    = '\0';
-  sb->alloced = 32;
-  sb->len     = 0;
-  cspec_string_add_str(sb, initial_string);
-  return sb;
-}
+  va_start(args, f)
+    ;
+    result = vsnprintf(buf, sizeof(buf), f, args);
+  va_end(args);
 
-/**
- * @desc: Add an integer to the builder
- * @param sb -> The string builder to use
- * @param val -> The integer to add
- */
-static void cspec_string_add_int(cspec_string *sb, int val) {
-  char str[1024];
-
-  if(sb == NULL) {
-    return;
+  if(result >= 0) {
+    cspec_string_add(*self, buf);
   }
-
-  snprintf(str, sizeof(str), "%d", val);
-  cspec_string_add_str(sb, str);
 }
-
-static void cspec_string_add_size_t(cspec_string *sb, size_t val) {
-  char str[1024];
-
-  if(sb == NULL) {
-    return;
-  }
-
-  snprintf(str, sizeof(str), "%zu", val);
-  cspec_string_add_str(sb, str);
-}
-
-/**
- * @desc: Add a double to the builder
- * @param sb -> The string builder to use
- * @param val -> The double to add
- */
-static void cspec_string_add_double_precision(cspec_string *sb, double val) {
-  char str[1024];
-
-  if(sb == NULL) {
-    return;
-  }
-
-  /* Use %g for minimum precision on printing floats */
-  snprintf(str, sizeof(str), "%g", val);
-  cspec_string_add_str(sb, str);
-}
-
-/**
- * @desc: A pointer to the internal buffer with the builder's stirng data
- * @param sb -> The string builder to use
- * @return A pointer to the internal cspec_string data
- */
-static char *cspec_string_get(cspec_string *sb) {
-  if(sb == NULL) {
-    return NULL;
-  }
-  return sb->str;
-}
-
-/**
- * @desc: Remove data from the end of the builder
- * @param sb -> The string builder to use
- * @param len -> The new len of the string, anything after this len is removed
- */
-static void cspec_string_shorten(cspec_string *sb, size_t len) {
-  if(sb == NULL || len >= sb->len) {
-    return;
-  }
-
-  /* Reset the len and NULL terminate, ingoring
-      all values right to the NULL from memory */
-  sb->len          = len;
-  sb->str[sb->len] = '\0';
-}
-
-/**
- * @desc: Clear the builder
- * @param sb -> The string builder to use
- */
-static void cspec_string_delete(cspec_string *sb) {
-  if(sb == NULL) {
-    return;
-  }
-  cspec_string_shorten(sb, 0);
-}
-
-/**
- * @desc: Remove data from the beginning of the builder
- * @param sb -> The cspec_string builder to use
- * @param len -> The len to remove
- */
-static void cspec_string_skip(cspec_string *sb, size_t len) {
-  if(sb == NULL || len == 0) {
-    return;
-  }
-
-  if(len >= sb->len) {
-    /* If we choose to drop more bytes than the
-        string has simply clear the string */
-    cspec_string_delete(sb);
-    return;
-  }
-
-  sb->len -= len;
-
-  /* +1 to move the NULL. */
-  memmove(sb->str, sb->str + len, sb->len + 1);
-}
+#define cspec_string_addf(self, f, ...) \
+  _cspec_string_internal_addf(&self, f, __VA_ARGS__)
+#define cspec_string_delete(self) cspec_string_shorten(self, 0)
+#define cspec_string_skip_first(self, _len)                     \
+  do {                                                          \
+    ptrdiff_t len = (ptrdiff_t)(_len);                          \
+    if((self) != NULL) {                                        \
+      if(len >= cspec_vector_size_signed(self)) {               \
+        cspec_string_delete(self);                              \
+      } else if(len > 0) {                                      \
+        _cspec_vector_get_header(self)->size -= len;            \
+        memmove((self), (self) + len, cspec_string_size(self)); \
+      }                                                         \
+    }                                                           \
+  } while(0)
+#define cspec_string_free(self) cspec_vector_free(self)
 
 /**
  * @brief Abs for floats
@@ -319,18 +255,18 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param suite_name -> The name for the new module of tests
  * @param ... -> The block to define
  */
-#define module(suite_name, ...)                \
-  /* Define a static method for a module */    \
-  static void suite_name(void) {               \
-    printf(                                    \
-      "\n%s%sModule `%s`%s\n",                 \
-      cspec->BACK_PURPLE,                      \
-      cspec->YELLOW,                           \
-      #suite_name,                             \
-      cspec->RESET                             \
-    );                                         \
-    cspec->display_tab = cspec_string_new(""); \
-    __VA_ARGS__; /* Run describes */           \
+#define module(suite_name, ...)             \
+  /* Define a static method for a module */ \
+  static void suite_name(void) {            \
+    printf(                                 \
+      "\n%s%sModule `%s`%s\n",              \
+      cspec->BACK_PURPLE,                   \
+      cspec->YELLOW,                        \
+      #suite_name,                          \
+      cspec->RESET                          \
+    );                                      \
+    cspec_string_free(cspec->display_tab);  \
+    __VA_ARGS__; /* Run describes */        \
   }
 
 /**
@@ -357,18 +293,14 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  */
 #define after_each(func) cspec->after_func = func
 
-#define cspec_describe_context_block(object_name, color, ...) \
-  do {                                                        \
-    cspec_string_add_str(cspec->display_tab, "    ");         \
-    printf(                                                   \
-      "%s%s`%s`%s\n",                                         \
-      cspec_string_get(cspec->display_tab),                   \
-      color,                                                  \
-      object_name,                                            \
-      cspec->RESET                                            \
-    );                                                        \
-    __VA_ARGS__;                                              \
-    cspec_string_skip(cspec->display_tab, 4);                 \
+#define cspec_describe_context_block(object_name, color, ...)              \
+  do {                                                                     \
+    cspec_string_add(cspec->display_tab, "    ");                          \
+    printf(                                                                \
+      "%s%s`%s`%s\n", cspec->display_tab, color, object_name, cspec->RESET \
+    );                                                                     \
+    __VA_ARGS__;                                                           \
+    cspec_string_skip_first(cspec->display_tab, 4);                        \
   } while(0)
 
 /**
@@ -397,23 +329,23 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
     if(cspec->before_func) {                           \
       (*cspec->before_func)();                         \
     }                                                  \
-    cspec_string_add_str(cspec->display_tab, "    ");  \
+    cspec_string_add(cspec->display_tab, "    ");      \
                                                        \
     cspec->number_of_tests++;                          \
     cspec->number_of_skipped_tests++;                  \
-    cspec->test_result_message = cspec_string_new(""); \
+    cspec_string_free(cspec->test_result_message);     \
     if(!strncmp(cspec->type_of_tests, "all", 3) ||     \
        !strncmp(cspec->type_of_tests, "skipped", 7)) { \
       printf(                                          \
         "%s%s- %s%s\n",                                \
-        cspec_string_get(cspec->display_tab),          \
+        cspec->display_tab,                            \
         cspec->GRAY,                                   \
         proc_name,                                     \
         cspec->RESET                                   \
       );                                               \
     }                                                  \
                                                        \
-    cspec_string_skip(cspec->display_tab, 4);          \
+    cspec_string_skip_first(cspec->display_tab, 4);    \
     if(cspec->after_func) {                            \
       (*cspec->after_func)();                          \
     }                                                  \
@@ -432,9 +364,9 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
       (*cspec->before_func)();                                              \
     }                                                                       \
                                                                             \
-    cspec_string_add_str(cspec->display_tab, "    ");                       \
+    cspec_string_add(cspec->display_tab, "    ");                           \
     cspec->number_of_tests++;                                               \
-    cspec->test_result_message = cspec_string_new("");                      \
+    cspec_string_free(cspec->test_result_message);                          \
                                                                             \
     /* Assume its a passing test */                                         \
     cspec->status_of_test = CSPEC_PASSING;                                  \
@@ -451,7 +383,7 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
          !strncmp(cspec->type_of_tests, "passing", 7)) {                    \
         printf(                                                             \
           "%s%s✓%s it %s%s\n",                                              \
-          cspec_string_get(cspec->display_tab),                             \
+          cspec->display_tab,                                               \
           cspec->GREEN,                                                     \
           cspec->RESET,                                                     \
           proc_name,                                                        \
@@ -466,18 +398,18 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
          !strncmp(cspec->type_of_tests, "failing", 7)) {                    \
         printf(                                                             \
           "%s%s✗%s it %s:\n%s%s\n",                                         \
-          cspec_string_get(cspec->display_tab),                             \
+          cspec->display_tab,                                               \
           cspec->RED,                                                       \
           cspec->RESET,                                                     \
           proc_name,                                                        \
-          cspec_string_get(cspec->test_result_message),                     \
+          cspec->test_result_message,                                       \
           cspec->RESET                                                      \
         );                                                                  \
       }                                                                     \
     }                                                                       \
                                                                             \
     cspec->total_time_taken_for_tests += end_test_timer - start_test_timer; \
-    cspec_string_skip(cspec->display_tab, 4);                               \
+    cspec_string_skip_first(cspec->display_tab, 4);                         \
     if(cspec->after_func) {                                                 \
       (*cspec->after_func)();                                               \
     }                                                                       \
@@ -501,7 +433,6 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  * @param current_actual -> Current actual value token
  * @param current_expected -> Current expected value token
  * @param position_in_file -> A string containing __FILE__ and __LINE__ results
- * @param assert_result -> Result description of the current assert
  *
  * @param before_func -> A function pointer to be executed before it blocks
  * @param after_func -> A function pointer to be executed after it blocks
@@ -516,16 +447,15 @@ typedef struct cspec_data_struct {
   size_t total_time_taken_for_tests;
   cspec_bool status_of_test;
 
-  cspec_string *test_result_message;
-  cspec_string *display_tab;
+  char *test_result_message;
+  char *display_tab;
 
   const char *type_of_tests;
   const char *current_file;
   size_t current_line;
-  cspec_string *current_actual;
-  cspec_string *current_expected;
-  cspec_string *position_in_file;
-  cspec_string *assert_result;
+  char *current_actual;
+  char *current_expected;
+  char *position_in_file;
 
   void (*before_func)(void);
   void (*after_func)(void);
@@ -598,51 +528,27 @@ static cspec_data_struct *cspec;
  * @brief Setup file position and line number for the current assert
  */
 static void cspec_write_position_in_file(void) {
-  cspec->position_in_file = cspec_string_new("");
-  cspec_string_add_str(cspec->position_in_file, cspec->current_file);
-  cspec_string_add_str(cspec->position_in_file, ":");
-  cspec_string_add_int(cspec->position_in_file, cspec->current_line);
-  cspec_string_add_str(cspec->position_in_file, ":");
+  cspec_string_free(cspec->position_in_file);
+  cspec_string_addf(
+    cspec->position_in_file, "%s:%zu:", cspec->current_file, cspec->current_line
+  );
 }
 
 /**
  * @brief Setup the assert description for printing and exporting
  */
 static void cspec_write_assert_actual_expected(void) {
-  cspec->assert_result = cspec_string_new("");
-  cspec_string_add_str(
-    cspec->test_result_message, cspec_string_get(cspec->display_tab)
-  );
-  cspec_string_add_str(cspec->test_result_message, cspec->RESET);
-  cspec_string_add_str(cspec->test_result_message, "    ");
-  cspec_string_add_str(
-    cspec->test_result_message, cspec_string_get(cspec->position_in_file)
-  );
-  cspec_string_add_str(cspec->test_result_message, "\n");
-  cspec_string_add_str(
-    cspec->test_result_message, cspec_string_get(cspec->display_tab)
-  );
-  cspec_string_add_str(cspec->test_result_message, "        |> ");
-  cspec_string_add_str(cspec->test_result_message, "`");
-  cspec_string_add_str(
-    cspec->test_result_message, cspec_string_get(cspec->current_expected)
-  );
-  cspec_string_add_str(cspec->test_result_message, "` expected but got ");
-  cspec_string_add_str(cspec->test_result_message, cspec->RED);
-  cspec_string_add_str(cspec->test_result_message, "`");
-  cspec_string_add_str(
-    cspec->test_result_message, cspec_string_get(cspec->current_actual)
-  );
-  cspec_string_add_str(cspec->test_result_message, "`\n");
-  cspec_string_add_str(cspec->test_result_message, cspec->RESET);
-  cspec_string_add_str(cspec->assert_result, "|> `");
-  cspec_string_add_str(
-    cspec->assert_result, cspec_string_get(cspec->current_expected)
-  );
-  cspec_string_add_str(cspec->assert_result, "` expected but got ");
-  cspec_string_add_str(cspec->assert_result, "`");
-  cspec_string_add_str(
-    cspec->assert_result, cspec_string_get(cspec->current_actual)
+  cspec_string_addf(
+    cspec->test_result_message,
+    "%s%s    %s\n%s        |> `%s` expected but got %s`%s`%s\n",
+    cspec->display_tab,
+    cspec->RESET,
+    cspec->position_in_file,
+    cspec->display_tab,
+    cspec->current_expected,
+    cspec->RED,
+    cspec->current_actual,
+    cspec->RESET
   );
 }
 
@@ -710,7 +616,6 @@ static void cspec_setup_test_data(const char *type_of_tests) {
   cspec->current_actual   = NULL;
   cspec->current_expected = NULL;
   cspec->position_in_file = NULL;
-  cspec->assert_result    = NULL;
   cspec->type_of_tests    = type_of_tests;
 
   cspec->before_func = NULL;
@@ -742,17 +647,11 @@ static void cspec_to_string_charptr_array_write(
   cspec->current_expected = cspec_string_new("[");
 
   for(i = 0; i < len - 1; i++) {
-    cspec_string_add_str(cspec->current_actual, actual[i]);
-    cspec_string_add_str(cspec->current_actual, ", ");
-
-    cspec_string_add_str(cspec->current_expected, expected[i]);
-    cspec_string_add_str(cspec->current_expected, ", ");
+    cspec_string_addf(cspec->current_actual, "%s, ", actual[i]);
+    cspec_string_addf(cspec->current_expected, "%s, ", expected[i]);
   }
-  cspec_string_add_str(cspec->current_actual, actual[len - 1]);
-  cspec_string_add_str(cspec->current_actual, "]");
-
-  cspec_string_add_str(cspec->current_expected, expected[len - 1]);
-  cspec_string_add_str(cspec->current_expected, "]");
+  cspec_string_addf(cspec->current_actual, "%s]", actual[len - 1]);
+  cspec_string_addf(cspec->current_expected, "%s]", expected[len - 1]);
 }
 
 /**
@@ -906,17 +805,11 @@ cspec_define_assert(
   cspec->current_expected = cspec_string_new("[");
 
   for(i = 0; i < len - 1; i++) {
-    cspec_string_add_double_precision(cspec->current_actual, actual[i]);
-    cspec_string_add_str(cspec->current_actual, ", ");
-
-    cspec_string_add_double_precision(cspec->current_expected, expected[i]);
-    cspec_string_add_str(cspec->current_expected, ", ");
+    cspec_string_addf(cspec->current_actual, "%g, ", actual[i]);
+    cspec_string_addf(cspec->current_expected, "%g, ", expected[i]);
   }
-  cspec_string_add_double_precision(cspec->current_actual, actual[len - 1]);
-  cspec_string_add_str(cspec->current_actual, "]");
-
-  cspec_string_add_double_precision(cspec->current_expected, expected[len - 1]);
-  cspec_string_add_str(cspec->current_expected, "]");
+  cspec_string_addf(cspec->current_actual, "%g]", actual[len - 1]);
+  cspec_string_addf(cspec->current_expected, "%g]", expected[len - 1]);
 }
 
 /**
@@ -992,8 +885,8 @@ cspec_define_assert_array(
   static void cspec_to_string_double_write(double actual, double expected) {
   cspec->current_actual   = cspec_string_new("");
   cspec->current_expected = cspec_string_new("");
-  cspec_string_add_double_precision(cspec->current_actual, actual);
-  cspec_string_add_double_precision(cspec->current_expected, expected);
+  cspec_string_addf(cspec->current_actual, "%g", actual);
+  cspec_string_addf(cspec->current_expected, "%g", expected);
 }
 
 /**
@@ -1059,84 +952,56 @@ cspec_define_assert(
  * @brief Asserts that a proc returns true
  * @param test -> The test proc to run
  */
-#define assert_that(test)                                                     \
-  do {                                                                        \
-    cspec->current_file     = __FILE__;                                       \
-    cspec->current_line     = __LINE__;                                       \
-    cspec->position_in_file = cspec_string_new("");                           \
-    cspec->assert_result    = cspec_string_new("");                           \
-                                                                              \
-    if(!(test)) {                                                             \
-      cspec->status_of_test = CSPEC_FAILING;                                  \
-      cspec_write_position_in_file();                                         \
-                                                                              \
-      cspec_string_add_str(                                                   \
-        cspec->test_result_message, cspec_string_get(cspec->display_tab)      \
-      );                                                                      \
-      cspec_string_add_str(cspec->test_result_message, cspec->RESET);         \
-      cspec_string_add_str(cspec->test_result_message, "    ");               \
-      cspec_string_add_str(                                                   \
-        cspec->test_result_message, cspec_string_get(cspec->position_in_file) \
-      );                                                                      \
-      cspec_string_add_str(cspec->test_result_message, "\n");                 \
-      cspec_string_add_str(                                                   \
-        cspec->test_result_message, cspec_string_get(cspec->display_tab)      \
-      );                                                                      \
-      cspec_string_add_str(cspec->test_result_message, "        |> ");        \
-      cspec_string_add_str(cspec->test_result_message, cspec->RED);           \
-      cspec_string_add_str(cspec->test_result_message, "`");                  \
-      cspec_string_add_str(cspec->test_result_message, #test);                \
-      cspec_string_add_str(cspec->test_result_message, "`");                  \
-      cspec_string_add_str(cspec->test_result_message, cspec->RESET);         \
-      cspec_string_add_str(cspec->test_result_message, " should be true\n");  \
-      cspec_string_add_str(cspec->test_result_message, cspec->RESET);         \
-      cspec_string_add_str(cspec->assert_result, "|> `");                     \
-      cspec_string_add_str(cspec->assert_result, #test);                      \
-      cspec_string_add_str(cspec->assert_result, "`");                        \
-      cspec_string_add_str(cspec->assert_result, " should be true");          \
-    }                                                                         \
+#define assert_that(test)                                       \
+  do {                                                          \
+    cspec->current_file = __FILE__;                             \
+    cspec->current_line = __LINE__;                             \
+    cspec_string_delete(cspec->position_in_file);               \
+                                                                \
+    if(!(test)) {                                               \
+      cspec->status_of_test = CSPEC_FAILING;                    \
+      cspec_write_position_in_file();                           \
+      cspec_string_addf(                                        \
+        cspec->test_result_message,                             \
+        "%s%s    %s\n%s        |> %s`%s`%s should be true\n%s", \
+        cspec->display_tab,                                     \
+        cspec->RESET,                                           \
+        cspec->position_in_file,                                \
+        cspec->display_tab,                                     \
+        cspec->RED,                                             \
+        #test,                                                  \
+        cspec->RESET,                                           \
+        cspec->RESET                                            \
+      );                                                        \
+    }                                                           \
   } while(0)
 
 /**
  * @brief Asserts that a proc returns false
  * @param test -> The test proc to run
  */
-#define nassert_that(test)                                                    \
-  do {                                                                        \
-    cspec->current_file     = __FILE__;                                       \
-    cspec->current_line     = __LINE__;                                       \
-    cspec->position_in_file = cspec_string_new("");                           \
-    cspec->assert_result    = cspec_string_new("");                           \
-                                                                              \
-    if((test)) {                                                              \
-      cspec->status_of_test = CSPEC_FAILING;                                  \
-      cspec_write_position_in_file();                                         \
-                                                                              \
-      cspec_string_add_str(                                                   \
-        cspec->test_result_message, cspec_string_get(cspec->display_tab)      \
-      );                                                                      \
-      cspec_string_add_str(cspec->test_result_message, cspec->RESET);         \
-      cspec_string_add_str(cspec->test_result_message, "    ");               \
-      cspec_string_add_str(                                                   \
-        cspec->test_result_message, cspec_string_get(cspec->position_in_file) \
-      );                                                                      \
-      cspec_string_add_str(cspec->test_result_message, "\n");                 \
-      cspec_string_add_str(                                                   \
-        cspec->test_result_message, cspec_string_get(cspec->display_tab)      \
-      );                                                                      \
-      cspec_string_add_str(cspec->test_result_message, "        |> ");        \
-      cspec_string_add_str(cspec->test_result_message, cspec->RED);           \
-      cspec_string_add_str(cspec->test_result_message, "`");                  \
-      cspec_string_add_str(cspec->test_result_message, #test);                \
-      cspec_string_add_str(cspec->test_result_message, "`");                  \
-      cspec_string_add_str(cspec->test_result_message, cspec->RESET);         \
-      cspec_string_add_str(cspec->test_result_message, " should be false\n"); \
-      cspec_string_add_str(cspec->test_result_message, cspec->RESET);         \
-      cspec_string_add_str(cspec->assert_result, "|> `");                     \
-      cspec_string_add_str(cspec->assert_result, #test);                      \
-      cspec_string_add_str(cspec->assert_result, "`");                        \
-      cspec_string_add_str(cspec->assert_result, " should be false");         \
-    }                                                                         \
+#define nassert_that(test)                                       \
+  do {                                                           \
+    cspec->current_file = __FILE__;                              \
+    cspec->current_line = __LINE__;                              \
+    cspec_string_delete(cspec->position_in_file);                \
+                                                                 \
+    if((test)) {                                                 \
+      cspec->status_of_test = CSPEC_FAILING;                     \
+      cspec_write_position_in_file();                            \
+      cspec_string_addf(                                         \
+        cspec->test_result_message,                              \
+        "%s%s    %s\n%s        |> %s`%s`%s should be false\n%s", \
+        cspec->display_tab,                                      \
+        cspec->RESET,                                            \
+        cspec->position_in_file,                                 \
+        cspec->display_tab,                                      \
+        cspec->RED,                                              \
+        #test,                                                   \
+        cspec->RESET,                                            \
+        cspec->RESET                                             \
+      );                                                         \
+    }                                                            \
   } while(0)
 
   /**
@@ -1154,17 +1019,11 @@ cspec_define_assert(
   cspec->current_expected = cspec_string_new("[");
 
   for(i = 0; i < len - 1; i++) {
-    cspec_string_add_int(cspec->current_actual, actual[i]);
-    cspec_string_add_str(cspec->current_actual, ", ");
-
-    cspec_string_add_int(cspec->current_expected, expected[i]);
-    cspec_string_add_str(cspec->current_expected, ", ");
+    cspec_string_addf(cspec->current_actual, "%d, ", actual[i]);
+    cspec_string_addf(cspec->current_expected, "%d, ", expected[i]);
   }
-  cspec_string_add_int(cspec->current_actual, actual[len - 1]);
-  cspec_string_add_str(cspec->current_actual, "]");
-
-  cspec_string_add_int(cspec->current_expected, expected[len - 1]);
-  cspec_string_add_str(cspec->current_expected, "]");
+  cspec_string_addf(cspec->current_actual, "%d]", actual[len - 1]);
+  cspec_string_addf(cspec->current_expected, "%d]", expected[len - 1]);
 }
 
 /**
@@ -1240,15 +1099,15 @@ cspec_define_assert_array(
   static void cspec_to_string_int_write(int actual, int expected) {
   cspec->current_actual   = cspec_string_new("");
   cspec->current_expected = cspec_string_new("");
-  cspec_string_add_int(cspec->current_actual, actual);
-  cspec_string_add_int(cspec->current_expected, expected);
+  cspec_string_addf(cspec->current_actual, "%d", actual);
+  cspec_string_addf(cspec->current_expected, "%d", expected);
 }
 
-static void cspec_to_string_size_t_write(size_t actual, size_t expected) {
+static void cspec_to_cspec_string_size_t_write(size_t actual, size_t expected) {
   cspec->current_actual   = cspec_string_new("");
   cspec->current_expected = cspec_string_new("");
-  cspec_string_add_size_t(cspec->current_actual, actual);
-  cspec_string_add_size_t(cspec->current_expected, expected);
+  cspec_string_addf(cspec->current_actual, "%zu", actual);
+  cspec_string_addf(cspec->current_expected, "%zu", expected);
 }
 
 /**
@@ -1292,14 +1151,14 @@ cspec_define_assert(
     cspec_define_assert(
       cspec_call_assert_that_size_t,
       size_t,
-      cspec_to_string_size_t_write,
+      cspec_to_cspec_string_size_t_write,
       !cspec_size_t_comparison
     )
 
       cspec_define_assert(
         cspec_call_nassert_that_size_t,
         size_t,
-        cspec_to_string_size_t_write,
+        cspec_to_cspec_string_size_t_write,
         cspec_size_t_comparison
       )
 
