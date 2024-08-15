@@ -8,13 +8,15 @@ for TDD and BDD models, heavily inspired by ruby's `RSpec`.
 ![](https://github.com/Oblivious-Oblivious/cSpec/blob/master/images/simple_example.png)
 
 ## Why
+
 `cSpec` provides an interface for creating both low level tests
 in the form of simple assertions, as well as high level integration or even
-acceptance tests in the form of `describes` or `contexts`.  These tools will
+acceptance tests in the form of `describes` or `contexts`. These tools will
 allow the programmer to encapsulate test modules that will be maintainable
 throughout huge projects.
 
 ## Features
+
 - Assertion macro for test blocks
   - `assert_that(test)`
 - Assertion macros for different data types
@@ -25,15 +27,13 @@ throughout huge projects.
   - `assert_that_int_array(actual, expected, length)`
   - `assert_that_double_array(actual, expected, length)`
   - `assert_that_charptr_array(actual, expected, length)`
-- Export options for txt, html, or markdown
-  - `export_test_results(vec, type)`
 - False assertions macro calls for defined data types
   - `nassert_that_*`
 
 ## Usage
 
-* Include the `cSpec.h` file your project (compiled into the `export` directory)
-* All directives are defined in this one header
+- Include the `cSpec.h` file your project (compiled into the `export` directory)
+- All directives are defined in this one header
 
 ## Contributing
 
@@ -48,17 +48,19 @@ throughout huge projects.
 - [oblivious](https://github.com/Oblivious-Oblivious) - creator and maintainer
 
 ## Basic usage
+
 Good practice for defining cSpec tests goes as follows:
+
 - Define a spec file named: `mySuite.spec.c`
 - Include the header files of the code to be tested.
 - If you have multiple modules you can define them in different files named: `myModule.module.h`
 - Define a spec suite of modules using `spec_suite`
-- Run the `spec` function and optionally export the results using `export_test_results`
 
 ##### Setting up the testing environment
+
 Suppose we want to test a C project with a header and implementation file.
 
-***`meaning_of_life.h`***
+**_`meaning_of_life.h`_**
 
 ```C
 #ifndef __MEANING_OF_LIFE_H_
@@ -75,7 +77,8 @@ int find_meaning_of_life(void);
 #endif
 ```
 
-***`meaning_of_life.c`***
+**_`meaning_of_life.c`_**
+
 ```C
 #include "meaning_of_life.h"
 
@@ -88,7 +91,8 @@ int find_meaning_of_life(void) {
 
 **We define a spec file as such:**
 
-***`meaning_of_life.spec.c`***
+**_`meaning_of_life.spec.c`_**
+
 ```C
 #include "meaning_of_life.h"
 #include "cSpec.h"
@@ -102,13 +106,11 @@ module(lifeMod, {
   });
 })
 
-spec_suite({
-  lifeMod();
-});
-
 int main(void) {
-  run_spec_suite("failing"); /* We only want to print failing tests */
-  export_test_results("all", "txt"); /* We want a txt file of all test results */
+  /* We only want to print failing tests */
+  run_spec_suite("failing", {
+    lifeMod();
+  });
 }
 ```
 
@@ -135,6 +137,7 @@ module(lifeMod, {
 **and then include it in the spec file:**
 
 `life.spec.c`
+
 ```C
 #include "meaning_of_life.h"
 #include "cSpec.h"
@@ -142,13 +145,10 @@ module(lifeMod, {
 /* Get modules */
 #include "meaning_of_life.module.h"
 
-spec_suite({
-  lifeMod();
-});
-
 int main(void) {
-  run_spec_suite("failing"); /* We only want to print failing tests */
-  export_test_results("all", "txt"); /* We want a txt file of all test results */
+  run_spec_suite("failing", {
+    lifeMod();
+  });
 }
 ```
 
@@ -162,6 +162,7 @@ It is a preety satisfying DSL, very intuitive and close to high level designs.
 - [Interface](https://github.com/Oblivious-Oblivious/cSpec/blob/master/documentation/Basic%20Interface.md)
 
 ## Creating asserts
+
 When calling asserts, the main purpose is to validate some expression,
 to check for a true of false condition. cSpec uses a few
 abstractions for making assert statements look more natural.
@@ -169,23 +170,21 @@ abstractions for making assert statements look more natural.
 ```C
 #define is ==
 #define isnot !=
-#define not !
-#define and &&
-#define or ||
 #define equals ,
 #define to
 #define with
-#define length ,
+#define array_size ,
 ```
 
 Using those constructs to call asserts we use the power of the C preprocessor to expand the macro like this:
+
 - assert_that_int(actual equals to expected) --> assert_that_int(actual, expected)
 - assert_that(value isnot 2) --> assert_that(value != 2)
 
-------------------------------------
+---
 
 ## Adding New Assertions
 
 - [New Assertions](https://github.com/Oblivious-Oblivious/cSpec/blob/master/documentation/Adding%20New%20Assertions.md)
 
-------------------------------
+---
