@@ -1,3 +1,5 @@
+# Changes for cSpec 0.3.0 (16-08-2024)
+
 # Changes for cSpec 0.2.0 (28-02-2021)
 
 * Converted the filesystem into an emerald

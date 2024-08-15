@@ -16,7 +16,7 @@ module(string_spec, {
 
     it("creates a string with an initial char* using `nassert_that`", {
       str = new_string(initial_value);
-      assert_that(str isnot NULL);
+      nassert_that(str is NULL);
     });
 
     context("when a string pointer is not NULL", {
