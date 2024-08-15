@@ -71,7 +71,7 @@ Suppose we want to test a C project with a header and implementation file.
  * @brief: Finds the ultimate answer to the great
  *      question of life the universe and everything
  * @return Returns the answer
- **/
+ */
 int find_meaning_of_life(void);
 
 #endif
@@ -108,7 +108,7 @@ module(lifeMod, {
 
 int main(void) {
   /* We only want to print failing tests */
-  run_spec_suite("failing", {
+  cspec_run_suite("failing", {
     lifeMod();
   });
 }
@@ -146,7 +146,7 @@ module(lifeMod, {
 #include "meaning_of_life.module.h"
 
 int main(void) {
-  run_spec_suite("failing", {
+  cspec_run_suite("failing", {
     lifeMod();
   });
 }

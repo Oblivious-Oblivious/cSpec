@@ -36,6 +36,10 @@ module(second, {
       assert_that_int_array(a equals to b with array_size 5);
     });
 
+    it("succeeds `nassert_that_int_array`", {
+      int my_arr2[5] = {1, 2, 3, 4, 5};
+      nassert_that_int_array(my_arr2 equals to b with array_size 5);
+    });
     it("fails `nassert_that_int_array`", {
       int my_arr2[5] = {7, 7, 7, 7, 7};
       nassert_that_int_array(my_arr2 equals to b with array_size 5);
@@ -49,6 +53,10 @@ module(second, {
       assert_that_double_array(aa equals to bb with array_size 5);
     });
 
+    it("succeeds `nassert_that_double_array`", {
+      double my_arr2[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
+      nassert_that_double_array(my_arr2 equals to bb with array_size 5);
+    });
     it("fails `nassert_that_double_array`", {
       double my_arr2[5] = {7.7, 7.7, 7.7, 7.7, 7.7};
       nassert_that_double_array(my_arr2 equals to bb with array_size 5);
