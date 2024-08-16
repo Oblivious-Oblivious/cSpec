@@ -1,3 +1,2 @@
 - Do not swallow error when logging an array with less elements than expected e.g [1,2,3] with [1,2]
 - Capture signals and segfaults for graceful exits. (using signal, jmp_buf, setjmp)
-- Fix nassertions with (expected that `ok str` would differ from RED(`ok str`) but they are the same)

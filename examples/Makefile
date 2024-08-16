@@ -6,7 +6,7 @@ VERSION = -std=c99
 
 FLAGS = -fsanitize=address -g
 WARNINGS = -Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic
-UNUSED_WARNINGS = -Wno-unused-function
+UNUSED_WARNINGS =
 LIBS =
 
 INPUT = ./*.c

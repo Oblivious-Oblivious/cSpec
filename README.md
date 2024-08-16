@@ -182,9 +182,3 @@ Using those constructs to call asserts we use the power of the C preprocessor to
 - assert_that(value isnot 2) --> assert_that(value != 2)
 
 ---
-
-## Adding New Assertions
-
-- [New Assertions](https://github.com/Oblivious-Oblivious/cSpec/blob/master/documentation/Adding%20New%20Assertions.md)
-
----

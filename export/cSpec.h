@@ -228,7 +228,7 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param value -> The value to get `abs` for
  * @return Absolute value
  */
-static double cspec_fabs(double value) { return value < 0 ? -value : value; }
+#define cspec_fabs(value) ((value) < 0 ? -(value) : (value))
 
 /**
  * @brief A simple function definition for running test suites
@@ -237,10 +237,10 @@ static double cspec_fabs(double value) { return value < 0 ? -value : value; }
  */
 #define cspec_run_suite(type_of_tests, ...)             \
   do {                                                  \
-    if(strncmp(type_of_tests, "passing", 7) &&          \
-       strncmp(type_of_tests, "failing", 7) &&          \
-       strncmp(type_of_tests, "skipped", 7) &&          \
-       strncmp(type_of_tests, "all", 3)) {              \
+    if(strncmp((type_of_tests), "passing", 7) &&        \
+       strncmp((type_of_tests), "failing", 7) &&        \
+       strncmp((type_of_tests), "skipped", 7) &&        \
+       strncmp((type_of_tests), "all", 3)) {            \
       printf("\n\033[1;31mInput a type of test to log " \
              "passing|failing|skipped|all\033[0m\n\n"); \
     } else {                                            \
@@ -505,8 +505,8 @@ static cspec_data_struct *cspec;
     to_string_method(actual, expected);                                \
     if(comparison_method(actual, expected)) {                          \
       cspec->status_of_test = CSPEC_FAILING;                           \
-      cspec_write_position_in_file();                                  \
-      cspec_write_assert_actual_expected();                            \
+      _cspec_write_position_in_file();                                 \
+      _cspec_write_assert();                                           \
     }                                                                  \
   }
 
@@ -519,699 +519,356 @@ static cspec_data_struct *cspec;
     to_string_method(actual, expected, len);                                \
     if(comparison_method(actual, expected, len)) {                          \
       cspec->status_of_test = CSPEC_FAILING;                                \
-      cspec_write_position_in_file();                                       \
-      cspec_write_assert_actual_expected();                                 \
+      _cspec_write_position_in_file();                                      \
+      _cspec_write_assert();                                                \
     }                                                                       \
   }
 
 /**
- * @brief Setup file position and line number for the current assert
- */
-static void cspec_write_position_in_file(void) {
-  cspec_string_free(cspec->position_in_file);
-  cspec_string_addf(
-    cspec->position_in_file, "%s:%zu:", cspec->current_file, cspec->current_line
-  );
-}
-
-/**
- * @brief Setup the assert description for printing and exporting
- */
-static void cspec_write_assert_actual_expected(void) {
-  cspec_string_addf(
-    cspec->test_result_message,
-    "%s%s    %s\n%s        |> `%s` expected but got %s`%s`%s\n",
-    cspec->display_tab,
-    cspec->RESET,
-    cspec->position_in_file,
-    cspec->display_tab,
-    cspec->current_expected,
-    cspec->RED,
-    cspec->current_actual,
-    cspec->RESET
-  );
-}
-
-/**
  * @brief Report the number of tests and time taken while testing
  */
-static void cspec_report_time_taken_for_tests(void) {
-  printf(
-    "\n%s● %zu tests\n%s✓ %zu passing\n%s✗ %zu failing\n%s- %zu "
-    "skipped%s\n",
-    cspec->YELLOW,
-    cspec->number_of_tests,
-    cspec->GREEN,
-    cspec->number_of_passing_tests,
-    cspec->RED,
-    cspec->number_of_failing_tests,
-    cspec->GRAY,
-    cspec->number_of_skipped_tests,
-    cspec->RESET
-  );
-
-  /* Print in seconds if the time is more than 100ms */
-  if(cspec->total_time_taken_for_tests > 100000000) {
-    printf(
-      "%s★ Finished in %.5f seconds%s\n",
-      cspec->CYAN,
-      cspec->total_time_taken_for_tests / 1000000000.0,
-      cspec->RESET
-    );
-  }
-  /* Else print in miliseconds */
-  else {
-    printf(
-      "%s★ Finished in %.5f ms%s\n",
-      cspec->CYAN,
-      cspec->total_time_taken_for_tests / 1000000.0,
-      cspec->RESET
-    );
-  }
-}
+#define cspec_report_time_taken_for_tests()                               \
+  do {                                                                    \
+    printf(                                                               \
+      "\n%s● %zu tests\n%s✓ %zu passing\n%s✗ %zu failing\n%s- %zu " \
+      "skipped%s\n",                                                      \
+      cspec->YELLOW,                                                      \
+      cspec->number_of_tests,                                             \
+      cspec->GREEN,                                                       \
+      cspec->number_of_passing_tests,                                     \
+      cspec->RED,                                                         \
+      cspec->number_of_failing_tests,                                     \
+      cspec->GRAY,                                                        \
+      cspec->number_of_skipped_tests,                                     \
+      cspec->RESET                                                        \
+    );                                                                    \
+                                                                          \
+    /* Print in seconds if the time is more than 100ms */                 \
+    if(cspec->total_time_taken_for_tests > 100000000) {                   \
+      printf(                                                             \
+        "%s★ Finished in %.5f seconds%s\n",                               \
+        cspec->CYAN,                                                      \
+        cspec->total_time_taken_for_tests / 1000000000.0,                 \
+        cspec->RESET                                                      \
+      );                                                                  \
+    } /* Else print in miliseconds */                                     \
+    else {                                                                \
+      printf(                                                             \
+        "%s★ Finished in %.5f ms%s\n",                                    \
+        cspec->CYAN,                                                      \
+        cspec->total_time_taken_for_tests / 1000000.0,                    \
+        cspec->RESET                                                      \
+      );                                                                  \
+    }                                                                     \
+  } while(0)
 
 /**
  * @brief Allocates memory for vectors to save test results in
  */
-static void cspec_setup_test_data(const char *type_of_tests) {
-  printf("\033[38;5;95m/######## ########/\n");
-  printf("\033[38;5;95m/##### "
-         "\033[38;5;89mc\033[38;5;90mS\033[38;5;91mp\033[38;5;92me\033[38;5;"
-         "93mc\033[0m \033[38;5;95m#####/\n");
-  printf("/######## ########/\033[0m\n");
-
-  cspec = (cspec_data_struct *)malloc(sizeof(cspec_data_struct));
-
-  cspec->number_of_tests            = 0;
-  cspec->number_of_passing_tests    = 0;
-  cspec->number_of_failing_tests    = 0;
-  cspec->number_of_skipped_tests    = 0;
-  cspec->total_time_taken_for_tests = 0;
-  cspec->status_of_test             = CSPEC_PASSING;
-
-  cspec->test_result_message = NULL;
-
-  cspec->current_file     = NULL;
-  cspec->current_line     = 0;
-  cspec->current_actual   = NULL;
-  cspec->current_expected = NULL;
-  cspec->position_in_file = NULL;
-  cspec->type_of_tests    = type_of_tests;
-
-  cspec->before_func = NULL;
-  cspec->after_func  = NULL;
-
-  cspec->display_tab = NULL;
-
-  cspec->GREEN       = "\033[38;5;78m";
-  cspec->RED         = "\033[38;5;203m";
-  cspec->YELLOW      = "\033[38;5;11m";
-  cspec->PURPLE      = "\033[1;38;5;175m";
-  cspec->CYAN        = "\033[38;5;51m";
-  cspec->GRAY        = "\033[38;5;244m";
-  cspec->RESET       = "\033[0m";
-  cspec->BACK_PURPLE = "\033[48;5;96m";
-}
-
-/**
- * @brief Writes actual and expected values
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- * @param len -> The length of the arrays
- */
-static void cspec_to_string_charptr_array_write(
-  char **actual, char **expected, size_t len
-) {
-  size_t i;
-  cspec->current_actual   = cspec_string_new("[");
-  cspec->current_expected = cspec_string_new("[");
-
-  for(i = 0; i < len - 1; i++) {
-    cspec_string_addf(cspec->current_actual, "%s, ", actual[i]);
-    cspec_string_addf(cspec->current_expected, "%s, ", expected[i]);
-  }
-  cspec_string_addf(cspec->current_actual, "%s]", actual[len - 1]);
-  cspec_string_addf(cspec->current_expected, "%s]", expected[len - 1]);
-}
-
-/**
- * @brief Compares two string arrays for equality in elements
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- * @param len -> The length of the arrays
- * @return a boolean
- */
-static cspec_bool
-cspec_charptr_array_comparison(char **actual, char **expected, size_t len) {
-  size_t i;
-  for(i = 0; i < len; i++) {
-    if(strncmp(actual[i], expected[i], strlen(expected[i]))) {
-      return cspec_false;
-    }
-  }
-
-  return cspec_true;
-}
-
-/**
- * @brief Assertion of two char* arrays
- */
-cspec_define_assert_array(
-  cspec_call_assert_that_charptr_array,
-  char **,
-  cspec_to_string_charptr_array_write,
-  !cspec_charptr_array_comparison,
-  len
-)
-
-  /**
-   * @brief Negative assertion of two char* arrays
-   */
-  cspec_define_assert_array(
-    cspec_call_nassert_that_charptr_array,
-    char **,
-    cspec_to_string_charptr_array_write,
-    cspec_charptr_array_comparison,
-    len
-  )
-
-/**
- * @brief Assert that the expected charptr array equals to the result
- * @param actual -> The actual value
- * @param expected -> The expected value
- */
-#define assert_that_charptr_array(inner)         \
-  do {                                           \
-    cspec->current_file = __FILE__;              \
-    cspec->current_line = __LINE__;              \
-    cspec_call_assert_that_charptr_array(inner); \
+#define cspec_setup_test_data(type)                                        \
+  do {                                                                     \
+    printf("\033[38;5;95m/######## ########/\n");                          \
+    printf(                                                                \
+      "\033[38;5;95m/##### "                                               \
+      "\033[38;5;89mc\033[38;5;90mS\033[38;5;91mp\033[38;5;92me\033[38;5;" \
+      "93mc\033[0m \033[38;5;95m#####/\n"                                  \
+    );                                                                     \
+    printf("/######## ########/\033[0m\n");                                \
+                                                                           \
+    cspec = (cspec_data_struct *)malloc(sizeof(cspec_data_struct));        \
+                                                                           \
+    cspec->number_of_tests            = 0;                                 \
+    cspec->number_of_passing_tests    = 0;                                 \
+    cspec->number_of_failing_tests    = 0;                                 \
+    cspec->number_of_skipped_tests    = 0;                                 \
+    cspec->total_time_taken_for_tests = 0;                                 \
+    cspec->status_of_test             = CSPEC_PASSING;                     \
+                                                                           \
+    cspec->test_result_message = NULL;                                     \
+                                                                           \
+    cspec->current_file     = NULL;                                        \
+    cspec->current_line     = 0;                                           \
+    cspec->current_actual   = NULL;                                        \
+    cspec->current_expected = NULL;                                        \
+    cspec->position_in_file = NULL;                                        \
+    cspec->type_of_tests    = (type);                                      \
+                                                                           \
+    cspec->before_func = NULL;                                             \
+    cspec->after_func  = NULL;                                             \
+                                                                           \
+    cspec->display_tab = NULL;                                             \
+                                                                           \
+    cspec->GREEN       = "\033[38;5;78m";                                  \
+    cspec->RED         = "\033[38;5;203m";                                 \
+    cspec->YELLOW      = "\033[38;5;11m";                                  \
+    cspec->PURPLE      = "\033[1;38;5;175m";                               \
+    cspec->CYAN        = "\033[38;5;51m";                                  \
+    cspec->GRAY        = "\033[38;5;244m";                                 \
+    cspec->RESET       = "\033[0m";                                        \
+    cspec->BACK_PURPLE = "\033[48;5;96m";                                  \
   } while(0)
 
-/**
- * @brief Assert that the expected charptr array differs from the result
- * @param actual -> The actual value
- * @param expected -> The expected value
- */
-#define nassert_that_charptr_array(inner)         \
+
+/** Assertions */
+
+#define _cspec_clear_assertion_data()             \
   do {                                            \
     cspec->current_file = __FILE__;               \
     cspec->current_line = __LINE__;               \
-    cspec_call_nassert_that_charptr_array(inner); \
+    cspec_string_delete(cspec->position_in_file); \
+    cspec_string_delete(cspec->current_actual);   \
+    cspec_string_delete(cspec->current_expected); \
   } while(0)
 
-  /**
-   * @brief Writes actual and expected values
-   * @param actual -> The value passed by the user
-   * @param expected -> The value `actual` is tested against
-   */
-  static void cspec_to_string_charptr_write(
-    const char *actual, const char *expected
-  ) {
-  cspec->current_actual   = cspec_string_new(actual);
-  cspec->current_expected = cspec_string_new(expected);
-}
-
-/**
- * @brief A function that compares char pointers for assertions
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- * @return a boolean
- */
-static cspec_bool
-cspec_charptr_comparison(const char *actual, const char *expected) {
-  return !strncmp(expected, actual, strlen(expected));
-}
-
-/**
- * @brief Assert that the expected string is equal to the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- */
-cspec_define_assert(
-  cspec_call_assert_that_charptr,
-  const char *,
-  cspec_to_string_charptr_write,
-  !cspec_charptr_comparison
-)
-
-  /**
-   * @brief Assert that the expected string is different than the result
-   * @param actual -> The value passed by the user
-   * @param expected -> The value `actual` is tested against
-   */
-  cspec_define_assert(
-    cspec_call_nassert_that_charptr,
-    const char *,
-    cspec_to_string_charptr_write,
-    cspec_charptr_comparison
-  )
-
-/**
- * @brief Assert that the expected string is equal to the result
- * @param actual -> The actual value
- * @param expected -> The expected string
- */
-#define assert_that_charptr(inner)         \
-  do {                                     \
-    cspec->current_file = __FILE__;        \
-    cspec->current_line = __LINE__;        \
-    cspec_call_assert_that_charptr(inner); \
+#define _cspec_construct_actual_expected(format, actual, expected)  \
+  do {                                                              \
+    _cspec_clear_assertion_data();                                  \
+    cspec_string_addf(cspec->current_actual, format, (actual));     \
+    cspec_string_addf(cspec->current_expected, format, (expected)); \
   } while(0)
 
-/**
- * @brief Assert that the expected string is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected string
- */
-#define nassert_that_charptr(inner)         \
-  do {                                      \
-    cspec->current_file = __FILE__;         \
-    cspec->current_line = __LINE__;         \
-    cspec_call_nassert_that_charptr(inner); \
-  } while(0)
-
-  /**
-   * @brief Writes the actual and expected values
-   * @param actual -> The value passed by the user
-   * @param expected -> The value `actual` is tested against
-   * @param len -> The length of the arrays
-   */
-  static void cspec_to_string_double_array_write(
-    double *actual, double *expected, size_t len
-  ) {
-  size_t i;
-
-  cspec->current_actual   = cspec_string_new("[");
-  cspec->current_expected = cspec_string_new("[");
-
-  for(i = 0; i < len - 1; i++) {
-    cspec_string_addf(cspec->current_actual, "%g, ", actual[i]);
-    cspec_string_addf(cspec->current_expected, "%g, ", expected[i]);
-  }
-  cspec_string_addf(cspec->current_actual, "%g]", actual[len - 1]);
-  cspec_string_addf(cspec->current_expected, "%g]", expected[len - 1]);
-}
-
-/**
- * @brief Conpares two double arrays for equality in elements
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- * @param len -> The length of the arrays
- * @return a boolean
- */
-static cspec_bool
-cspec_double_array_comparison(double *actual, double *expected, size_t len) {
-  size_t i;
-  for(i = 0; i < len; i++) {
-    if(cspec_fabs(actual[i] - expected[i]) > 1E-12) {
-      return cspec_false;
-    }
-  }
-
-  return cspec_true;
-}
-
-/**
- * @brief Assertion of two double arrays
- */
-cspec_define_assert_array(
-  cspec_call_assert_that_double_array,
-  double *,
-  cspec_to_string_double_array_write,
-  !cspec_double_array_comparison,
-  len
-)
-
-  /**
-   * @brief Negative assertion of two double arrays
-   */
-  cspec_define_assert_array(
-    cspec_call_nassert_that_double_array,
-    double *,
-    cspec_to_string_double_array_write,
-    cspec_double_array_comparison,
-    len
-  )
-
-/**
- * @brief Assert that the expected double array equals to the result
- * @param actual -> The actual value
- * @param expected -> The expected value
- */
-#define assert_that_double_array(inner)         \
+#define _cspec_write_position_in_file()         \
   do {                                          \
-    cspec->current_file = __FILE__;             \
-    cspec->current_line = __LINE__;             \
-    cspec_call_assert_that_double_array(inner); \
+    cspec_string_free(cspec->position_in_file); \
+    cspec_string_addf(                          \
+      cspec->position_in_file,                  \
+      "%s:%zu:",                                \
+      cspec->current_file,                      \
+      cspec->current_line                       \
+    );                                          \
   } while(0)
 
-/**
- * @brief Assert that the expected double array differs from the result
- * @param actual -> The actual value
- * @param expected -> The expected value
- */
-#define nassert_that_double_array(inner)         \
-  do {                                           \
-    cspec->current_file = __FILE__;              \
-    cspec->current_line = __LINE__;              \
-    cspec_call_nassert_that_double_array(inner); \
+#define _cspec_write_assert()                                      \
+  do {                                                             \
+    cspec->status_of_test = CSPEC_FAILING;                         \
+    _cspec_write_position_in_file();                               \
+    cspec_string_addf(                                             \
+      cspec->test_result_message,                                  \
+      "%s%s    %s\n%s        |> `%s` expected but got %s`%s`%s\n", \
+      cspec->display_tab,                                          \
+      cspec->RESET,                                                \
+      cspec->position_in_file,                                     \
+      cspec->display_tab,                                          \
+      cspec->current_expected,                                     \
+      cspec->RED,                                                  \
+      cspec->current_actual,                                       \
+      cspec->RESET                                                 \
+    );                                                             \
   } while(0)
 
-  /**
-   * @brief Writes actual and expected values
-   * @param actual -> The value passed by the user
-   * @param expected -> The value `actual` is tested against
-   */
-  static void cspec_to_string_double_write(double actual, double expected) {
-  cspec->current_actual   = cspec_string_new("");
-  cspec->current_expected = cspec_string_new("");
-  cspec_string_addf(cspec->current_actual, "%g", actual);
-  cspec_string_addf(cspec->current_expected, "%g", expected);
-}
-
-/**
- * @brief A function that compares doubles for assertions
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- * @return a boolean
- */
-static cspec_bool cspec_double_comparison(double actual, double expected) {
-  /* Calculate margin to which the difference is too big so the test fails */
-  return cspec_fabs(actual - expected) < 1E-12;
-}
-
-/**
- * @brief Assert that the expected double is different than the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- */
-cspec_define_assert(
-  cspec_call_assert_that_double,
-  double,
-  cspec_to_string_double_write,
-  !cspec_double_comparison
-)
-
-  /**
-   * @brief Assert that the expected double is different than the result
-   * @param actual -> The value passed by the user
-   * @param expected -> The value `actual` is tested against
-   */
-  cspec_define_assert(
-    cspec_call_nassert_that_double,
-    double,
-    cspec_to_string_double_write,
-    cspec_double_comparison
-  )
-
-/**
- * @brief Assert that the expected double is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected double
- */
-#define assert_that_double(inner)         \
-  do {                                    \
-    cspec->current_file = __FILE__;       \
-    cspec->current_line = __LINE__;       \
-    cspec_call_assert_that_double(inner); \
+#define _cspec_write_nassert()                                         \
+  do {                                                                 \
+    cspec->status_of_test = CSPEC_FAILING;                             \
+    _cspec_write_position_in_file();                                   \
+    cspec_string_addf(                                                 \
+      cspec->test_result_message,                                      \
+      "%s%s    %s\n%s        |> expected that `%s` would differ from " \
+      "%s`%s`%s but they are the same\n",                              \
+      cspec->display_tab,                                              \
+      cspec->RESET,                                                    \
+      cspec->position_in_file,                                         \
+      cspec->display_tab,                                              \
+      cspec->current_expected,                                         \
+      cspec->RED,                                                      \
+      cspec->current_actual,                                           \
+      cspec->RESET                                                     \
+    );                                                                 \
   } while(0)
 
-/**
- * @brief Assert that the expected double is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected double
- */
-#define nassert_that_double(inner)         \
-  do {                                     \
-    cspec->current_file = __FILE__;        \
-    cspec->current_line = __LINE__;        \
-    cspec_call_nassert_that_double(inner); \
+#define _cspec_assert_that_array(                                        \
+  actual, expected, len_of_array, _format, comparison, output_function   \
+)                                                                        \
+  do {                                                                   \
+    size_t i;                                                            \
+    cspec->current_actual   = cspec_string_new("[");                     \
+    cspec->current_expected = cspec_string_new("[");                     \
+                                                                         \
+    char *format = cspec_string_new(_format);                            \
+    cspec_string_add(format, ", ");                                      \
+    for(i = 0; i < (len_of_array) - 1; i++) {                            \
+      cspec_string_addf(cspec->current_actual, format, (actual)[i]);     \
+      cspec_string_addf(cspec->current_expected, format, (expected)[i]); \
+    }                                                                    \
+    cspec_string_ignore_last(format, 2);                                 \
+    cspec_string_add(format, "]");                                       \
+    cspec_string_addf(                                                   \
+      cspec->current_actual, format, (actual)[(len_of_array) - 1]        \
+    );                                                                   \
+    cspec_string_addf(                                                   \
+      cspec->current_expected, format, (expected)[(len_of_array) - 1]    \
+    );                                                                   \
+    for(i = 0; i < (len_of_array) - 1; i++) {                            \
+      if(comparison((actual)[i], (expected)[i])) {                       \
+        output_function();                                               \
+        break;                                                           \
+      }                                                                  \
+    }                                                                    \
   } while(0)
 
 /**
  * @brief Asserts that a proc returns true
  * @param test -> The test proc to run
  */
-#define assert_that(test)                                       \
-  do {                                                          \
-    cspec->current_file = __FILE__;                             \
-    cspec->current_line = __LINE__;                             \
-    cspec_string_delete(cspec->position_in_file);               \
-                                                                \
-    if(!(test)) {                                               \
-      cspec->status_of_test = CSPEC_FAILING;                    \
-      cspec_write_position_in_file();                           \
-      cspec_string_addf(                                        \
-        cspec->test_result_message,                             \
-        "%s%s    %s\n%s        |> %s`%s`%s should be true\n%s", \
-        cspec->display_tab,                                     \
-        cspec->RESET,                                           \
-        cspec->position_in_file,                                \
-        cspec->display_tab,                                     \
-        cspec->RED,                                             \
-        #test,                                                  \
-        cspec->RESET,                                           \
-        cspec->RESET                                            \
-      );                                                        \
-    }                                                           \
+#define assert_that(test)                                     \
+  do {                                                        \
+    _cspec_clear_assertion_data();                            \
+    if(!(test)) {                                             \
+      cspec->status_of_test = CSPEC_FAILING;                  \
+      _cspec_write_position_in_file();                        \
+      cspec_string_addf(                                      \
+        cspec->test_result_message,                           \
+        "%s%s    %s\n%s        |> %s`%s`%s should be true\n", \
+        cspec->display_tab,                                   \
+        cspec->RESET,                                         \
+        cspec->position_in_file,                              \
+        cspec->display_tab,                                   \
+        cspec->RED,                                           \
+        #test,                                                \
+        cspec->RESET                                          \
+      );                                                      \
+    }                                                         \
   } while(0)
 
 /**
  * @brief Asserts that a proc returns false
  * @param test -> The test proc to run
  */
-#define nassert_that(test)                                       \
-  do {                                                           \
-    cspec->current_file = __FILE__;                              \
-    cspec->current_line = __LINE__;                              \
-    cspec_string_delete(cspec->position_in_file);                \
-                                                                 \
-    if((test)) {                                                 \
-      cspec->status_of_test = CSPEC_FAILING;                     \
-      cspec_write_position_in_file();                            \
-      cspec_string_addf(                                         \
-        cspec->test_result_message,                              \
-        "%s%s    %s\n%s        |> %s`%s`%s should be false\n%s", \
-        cspec->display_tab,                                      \
-        cspec->RESET,                                            \
-        cspec->position_in_file,                                 \
-        cspec->display_tab,                                      \
-        cspec->RED,                                              \
-        #test,                                                   \
-        cspec->RESET,                                            \
-        cspec->RESET                                             \
-      );                                                         \
-    }                                                            \
+#define nassert_that(test)                                     \
+  do {                                                         \
+    _cspec_clear_assertion_data();                             \
+    if((test)) {                                               \
+      cspec->status_of_test = CSPEC_FAILING;                   \
+      _cspec_write_position_in_file();                         \
+      cspec_string_addf(                                       \
+        cspec->test_result_message,                            \
+        "%s%s    %s\n%s        |> %s`%s`%s should be false\n", \
+        cspec->display_tab,                                    \
+        cspec->RESET,                                          \
+        cspec->position_in_file,                               \
+        cspec->display_tab,                                    \
+        cspec->RED,                                            \
+        #test,                                                 \
+        cspec->RESET                                           \
+      );                                                       \
+    }                                                          \
   } while(0)
 
-  /**
-   * @brief Writes actual and expected values
-   * @param actual -> The value passed by the user
-   * @param expected -> The value `actual` is tested against
-   * @param len -> The length of the arrays
-   */
-  static void cspec_to_string_int_array_write(
-    int *actual, int *expected, size_t len
-  ) {
-  size_t i;
-
-  cspec->current_actual   = cspec_string_new("[");
-  cspec->current_expected = cspec_string_new("[");
-
-  for(i = 0; i < len - 1; i++) {
-    cspec_string_addf(cspec->current_actual, "%d, ", actual[i]);
-    cspec_string_addf(cspec->current_expected, "%d, ", expected[i]);
+#define _cspec_int_comparison(actual, expected) ((actual) != (expected))
+static inline void assert_that_int(int actual, int expected) {
+  _cspec_construct_actual_expected("%d", actual, expected);
+  if(_cspec_int_comparison(actual, expected)) {
+    _cspec_write_assert();
   }
-  cspec_string_addf(cspec->current_actual, "%d]", actual[len - 1]);
-  cspec_string_addf(cspec->current_expected, "%d]", expected[len - 1]);
 }
-
-/**
- * @brief Compares two int arrays for equality in elements
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- * @param len -> The length of the arrays
- * @return a boolean
- */
-static cspec_bool
-cspec_int_array_comparison(int *actual, int *expected, size_t len) {
-  size_t i;
-  for(i = 0; i < len; i++) {
-    if(actual[i] != expected[i]) {
-      return cspec_false;
-    }
+static inline void nassert_that_int(int actual, int expected) {
+  _cspec_construct_actual_expected("%d", actual, expected);
+  if(!_cspec_int_comparison(actual, expected)) {
+    _cspec_write_nassert();
   }
-
-  return cspec_true;
+}
+static inline void
+assert_that_int_array(int *actual, int *expected, size_t len) {
+  _cspec_assert_that_array(
+    actual, expected, len, "%d", _cspec_int_comparison, _cspec_write_assert
+  );
+}
+static inline void
+nassert_that_int_array(int *actual, int *expected, size_t len) {
+  _cspec_assert_that_array(
+    actual, expected, len, "%d", !_cspec_int_comparison, _cspec_write_nassert
+  );
 }
 
-/**
- * @brief Assertion of two int arrays
- */
-cspec_define_assert_array(
-  cspec_call_assert_that_int_array,
-  int *,
-  cspec_to_string_int_array_write,
-  !cspec_int_array_comparison,
-  len
-)
-
-  /**
-   * @brief Negative assertion of two int arrays
-   */
-  cspec_define_assert_array(
-    cspec_call_nassert_that_int_array,
-    int *,
-    cspec_to_string_int_array_write,
-    cspec_int_array_comparison,
-    len
-  )
-
-/**
- * @brief Assert that the expected int array equals to the the result
- * @param actual -> The actual value
- * @param expected -> The expected value
- */
-#define assert_that_int_array(inner)         \
-  do {                                       \
-    cspec->current_file = __FILE__;          \
-    cspec->current_line = __LINE__;          \
-    cspec_call_assert_that_int_array(inner); \
-  } while(0)
-
-/**
- * @brief Assert that the expected int array differs from the result
- * @param actual -> The actual value
- * @param expected -> The expected value
- */
-#define nassert_that_int_array(inner)         \
-  do {                                        \
-    cspec->current_file = __FILE__;           \
-    cspec->current_line = __LINE__;           \
-    cspec_call_nassert_that_int_array(inner); \
-  } while(0)
-
-  /**
-   * @brief Writes actual and expected values
-   * @param actual -> The value passed by the user
-   * @param expected -> The value `actual` is tested against
-   */
-  static void cspec_to_string_int_write(int actual, int expected) {
-  cspec->current_actual   = cspec_string_new("");
-  cspec->current_expected = cspec_string_new("");
-  cspec_string_addf(cspec->current_actual, "%d", actual);
-  cspec_string_addf(cspec->current_expected, "%d", expected);
+#define _cspec_size_t_comparison(actual, expected) ((actual) != (expected))
+static inline void assert_that_size_t(size_t actual, size_t expected) {
+  _cspec_construct_actual_expected("%zu", actual, expected);
+  if(_cspec_size_t_comparison(actual, expected)) {
+    _cspec_write_assert();
+  }
+}
+static inline void nassert_that_size_t(size_t actual, size_t expected) {
+  _cspec_construct_actual_expected("%zu", actual, expected);
+  if(!_cspec_size_t_comparison(actual, expected)) {
+    _cspec_write_nassert();
+  }
+}
+static inline void
+assert_that_size_t_array(size_t *actual, size_t *expected, size_t len) {
+  _cspec_assert_that_array(
+    actual, expected, len, "%zu", _cspec_size_t_comparison, _cspec_write_assert
+  );
+}
+static inline void
+nassert_that_size_t_array(size_t *actual, size_t *expected, size_t len) {
+  _cspec_assert_that_array(
+    actual,
+    expected,
+    len,
+    "%zu",
+    !_cspec_size_t_comparison,
+    _cspec_write_nassert
+  );
 }
 
-static void cspec_to_cspec_string_size_t_write(size_t actual, size_t expected) {
-  cspec->current_actual   = cspec_string_new("");
-  cspec->current_expected = cspec_string_new("");
-  cspec_string_addf(cspec->current_actual, "%zu", actual);
-  cspec_string_addf(cspec->current_expected, "%zu", expected);
+#define _cspec_double_comparison(actual, expected) \
+  (cspec_fabs(actual - expected) > 1E-12)
+static inline void assert_that_double(double actual, double expected) {
+  _cspec_construct_actual_expected("%g", actual, expected);
+  if(_cspec_double_comparison(actual, expected)) {
+    _cspec_write_assert();
+  }
+}
+static inline void nassert_that_double(double actual, double expected) {
+  _cspec_construct_actual_expected("%g", actual, expected);
+  if(!_cspec_double_comparison(actual, expected)) {
+    _cspec_write_nassert();
+  }
+}
+static inline void
+assert_that_double_array(double *actual, double *expected, size_t len) {
+  _cspec_assert_that_array(
+    actual, expected, len, "%g", _cspec_double_comparison, _cspec_write_assert
+  );
+}
+static inline void
+nassert_that_double_array(double *actual, double *expected, size_t len) {
+  _cspec_assert_that_array(
+    actual, expected, len, "%g", !_cspec_double_comparison, _cspec_write_nassert
+  );
 }
 
-/**
- * @brief A function that compares integers for assertions
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- * @return a boolean
- */
-static cspec_bool cspec_int_comparison(int actual, int expected) {
-  return actual == expected;
+#define _cspec_charptr_comparison(actual, expected) \
+  (strncmp(expected, actual, strlen(expected)))
+static inline void
+assert_that_charptr(const char *actual, const char *expected) {
+  _cspec_construct_actual_expected("%s", actual, expected);
+  if(_cspec_charptr_comparison(actual, expected)) {
+    _cspec_write_assert();
+  }
 }
-
-static cspec_bool cspec_size_t_comparison(size_t actual, size_t expected) {
-  return actual == expected;
+static inline void
+nassert_that_charptr(const char *actual, const char *expected) {
+  _cspec_construct_actual_expected("%s", actual, expected);
+  if(!_cspec_charptr_comparison(actual, expected)) {
+    _cspec_write_nassert();
+  }
 }
-
-/**
- * @brief Assert that the expected integer is equal to the result
- * @param actual -> The value passed by the user
- * @param expected -> The value `actual` is tested against
- */
-cspec_define_assert(
-  cspec_call_assert_that_int,
-  int,
-  cspec_to_string_int_write,
-  !cspec_int_comparison
-)
-
-  /**
-   * @brief Assert that the expected integer is different than the result
-   * @param actual -> The value passed by the user
-   * @param expected -> The value `actual` is tested against
-   */
-  cspec_define_assert(
-    cspec_call_nassert_that_int,
-    int,
-    cspec_to_string_int_write,
-    cspec_int_comparison
-  )
-
-    cspec_define_assert(
-      cspec_call_assert_that_size_t,
-      size_t,
-      cspec_to_cspec_string_size_t_write,
-      !cspec_size_t_comparison
-    )
-
-      cspec_define_assert(
-        cspec_call_nassert_that_size_t,
-        size_t,
-        cspec_to_cspec_string_size_t_write,
-        cspec_size_t_comparison
-      )
-
-/**
- * @brief Assert that the expected integer is equal to the result
- * @param actual -> The actual value
- * @param expected -> The expected int
- */
-#define assert_that_int(inner)         \
-  do {                                 \
-    cspec->current_file = __FILE__;    \
-    cspec->current_line = __LINE__;    \
-    cspec_call_assert_that_int(inner); \
-  } while(0)
-
-/**
- * @brief Assert that the expected integer is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected int
- */
-#define nassert_that_int(inner)         \
-  do {                                  \
-    cspec->current_file = __FILE__;     \
-    cspec->current_line = __LINE__;     \
-    cspec_call_nassert_that_int(inner); \
-  } while(0)
-
-/**
- * @brief Assert that the expected size_t is equal to the result
- * @param actual -> The actual value
- * @param expected -> The expected size_t
- */
-#define assert_that_size_t(inner)         \
-  do {                                    \
-    cspec->current_file = __FILE__;       \
-    cspec->current_line = __LINE__;       \
-    cspec_call_assert_that_size_t(inner); \
-  } while(0)
-
-/**
- * @brief Assert that the expected size_t is different than the result
- * @param actual -> The actual value
- * @param expected -> The expected size_t
- */
-#define nassert_that_size_t(inner)         \
-  do {                                     \
-    cspec->current_file = __FILE__;        \
-    cspec->current_line = __LINE__;        \
-    cspec_call_nassert_that_size_t(inner); \
-  } while(0)
-
-#undef CSPEC_CLOCKID
-#undef cspec_define_assert
-#undef cspec_define_assert_array
+static inline void
+assert_that_charptr_array(char **actual, char **expected, size_t len) {
+  _cspec_assert_that_array(
+    actual, expected, len, "%s", _cspec_charptr_comparison, _cspec_write_assert
+  );
+}
+static inline void
+nassert_that_charptr_array(char **actual, char **expected, size_t len) {
+  _cspec_assert_that_array(
+    actual,
+    expected,
+    len,
+    "%s",
+    !_cspec_charptr_comparison,
+    _cspec_write_nassert
+  );
+}
 
 #endif
