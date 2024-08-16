@@ -624,13 +624,13 @@ static void cspec_setup_test_data(const char *type_of_tests) {
   cspec->display_tab = NULL;
 
   cspec->GREEN       = "\033[38;5;78m";
-  cspec->RED         = "\033[1;31m";
+  cspec->RED         = "\033[38;5;203m";
   cspec->YELLOW      = "\033[38;5;11m";
-  cspec->PURPLE      = "\033[38;5;207m";
-  cspec->CYAN        = "\033[1;36m";
+  cspec->PURPLE      = "\033[1;38;5;175m";
+  cspec->CYAN        = "\033[38;5;51m";
   cspec->GRAY        = "\033[38;5;244m";
   cspec->RESET       = "\033[0m";
-  cspec->BACK_PURPLE = "\033[48;5;89m";
+  cspec->BACK_PURPLE = "\033[48;5;96m";
 }
 
 /**
