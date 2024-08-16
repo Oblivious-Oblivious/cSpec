@@ -620,13 +620,6 @@ static cspec_data_struct *cspec;
     cspec_string_delete(cspec->current_expected); \
   } while(0)
 
-#define _cspec_construct_actual_expected(format, actual, expected)  \
-  do {                                                              \
-    _cspec_clear_assertion_data();                                  \
-    cspec_string_addf(cspec->current_actual, format, (actual));     \
-    cspec_string_addf(cspec->current_expected, format, (expected)); \
-  } while(0)
-
 #define _cspec_write_position_in_file()         \
   do {                                          \
     cspec_string_free(cspec->position_in_file); \
@@ -675,34 +668,63 @@ static cspec_data_struct *cspec;
     );                                                                 \
   } while(0)
 
-#define _cspec_assert_that_array(                                        \
-  actual, expected, len_of_array, _format, comparison, output_function   \
-)                                                                        \
-  do {                                                                   \
-    size_t i;                                                            \
-    cspec->current_actual   = cspec_string_new("[");                     \
-    cspec->current_expected = cspec_string_new("[");                     \
-                                                                         \
-    char *format = cspec_string_new(_format);                            \
-    cspec_string_add(format, ", ");                                      \
-    for(i = 0; i < (len_of_array) - 1; i++) {                            \
-      cspec_string_addf(cspec->current_actual, format, (actual)[i]);     \
-      cspec_string_addf(cspec->current_expected, format, (expected)[i]); \
-    }                                                                    \
-    cspec_string_ignore_last(format, 2);                                 \
-    cspec_string_add(format, "]");                                       \
-    cspec_string_addf(                                                   \
-      cspec->current_actual, format, (actual)[(len_of_array) - 1]        \
-    );                                                                   \
-    cspec_string_addf(                                                   \
-      cspec->current_expected, format, (expected)[(len_of_array) - 1]    \
-    );                                                                   \
-    for(i = 0; i < (len_of_array) - 1; i++) {                            \
-      if(comparison((actual)[i], (expected)[i])) {                       \
-        output_function();                                               \
-        break;                                                           \
-      }                                                                  \
-    }                                                                    \
+#define _cspec_assert_that(                                         \
+  actual, expected, format, comparison, output_function             \
+)                                                                   \
+  do {                                                              \
+    cspec_string_addf(cspec->current_actual, format, (actual));     \
+    cspec_string_addf(cspec->current_expected, format, (expected)); \
+    if(comparison(actual, expected)) {                              \
+      output_function();                                            \
+    }                                                               \
+  } while(0)
+
+#define _cspec_assert_array_body(actual, expected, len_of_array, _format) \
+  do {                                                                    \
+    cspec->current_actual   = cspec_string_new("[");                      \
+    cspec->current_expected = cspec_string_new("[");                      \
+                                                                          \
+    char *format = cspec_string_new(_format);                             \
+    cspec_string_add(format, ", ");                                       \
+    for(size_t i = 0; i < (len_of_array) - 1; i++) {                      \
+      cspec_string_addf(cspec->current_actual, format, (actual)[i]);      \
+      cspec_string_addf(cspec->current_expected, format, (expected)[i]);  \
+    }                                                                     \
+    cspec_string_ignore_last(format, 2);                                  \
+    cspec_string_add(format, "]");                                        \
+    cspec_string_addf(                                                    \
+      cspec->current_actual, format, (actual)[(len_of_array) - 1]         \
+    );                                                                    \
+    cspec_string_addf(                                                    \
+      cspec->current_expected, format, (expected)[(len_of_array) - 1]     \
+    );                                                                    \
+  } while(0)
+
+#define _cspec_assert_that_array(                                      \
+  actual, expected, len_of_array, _format, comparison, output_function \
+)                                                                      \
+  do {                                                                 \
+    _cspec_assert_array_body(actual, expected, len_of_array, _format); \
+    for(size_t i = 0; i < (len_of_array); i++) {                       \
+      if(comparison((actual)[i], (expected)[i])) {                     \
+        output_function();                                             \
+        break;                                                         \
+      }                                                                \
+    }                                                                  \
+  } while(0)
+
+#define _cspec_nassert_that_array(                                     \
+  actual, expected, len_of_array, _format, comparison, output_function \
+)                                                                      \
+  do {                                                                 \
+    _cspec_assert_array_body(actual, expected, len_of_array, _format); \
+    for(size_t i = 0; i < (len_of_array); i++) {                       \
+      if(comparison((actual)[i], (expected)[i])) {                     \
+        goto __end;                                                    \
+      }                                                                \
+    }                                                                  \
+    output_function();                                                 \
+  __end:;                                                              \
   } while(0)
 
 /**
@@ -753,120 +775,881 @@ static cspec_data_struct *cspec;
     }                                                          \
   } while(0)
 
-#define _cspec_int_comparison(actual, expected) ((actual) != (expected))
-static inline void assert_that_int(int actual, int expected) {
-  _cspec_construct_actual_expected("%d", actual, expected);
-  if(_cspec_int_comparison(actual, expected)) {
-    _cspec_write_assert();
-  }
+#define _cspec_char_comparison(actual, expected) ((actual) != (expected))
+#define _cspec_char_negative_comparison(actual, expected) \
+  ((actual) == (expected))
+#define assert_that_char(inner)    \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _assert_that_char(inner);      \
+  } while(0)
+#define nassert_that_char(inner)   \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _nassert_that_char(inner);     \
+  } while(0)
+#define assert_that_char_array(inner) \
+  do {                                \
+    _cspec_clear_assertion_data();    \
+    _assert_that_char_array(inner);   \
+  } while(0)
+#define nassert_that_char_array(inner) \
+  do {                                 \
+    _cspec_clear_assertion_data();     \
+    _nassert_that_char_array(inner);   \
+  } while(0)
+static inline void _assert_that_char(char actual, char expected) {
+  _cspec_assert_that(
+    actual, expected, "%c", _cspec_char_comparison, _cspec_write_assert
+  );
 }
-static inline void nassert_that_int(int actual, int expected) {
-  _cspec_construct_actual_expected("%d", actual, expected);
-  if(!_cspec_int_comparison(actual, expected)) {
-    _cspec_write_nassert();
-  }
+static inline void _nassert_that_char(char actual, char expected) {
+  _cspec_assert_that(
+    actual, expected, "%c", !_cspec_char_comparison, _cspec_write_nassert
+  );
 }
 static inline void
-assert_that_int_array(int *actual, int *expected, size_t len) {
+_assert_that_char_array(char *actual, char *expected, size_t len) {
+  _cspec_assert_that_array(
+    actual, expected, len, "'%c'", _cspec_char_comparison, _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_char_array(char *actual, char *expected, size_t len) {
+  _cspec_nassert_that_array(
+    actual, expected, len, "'%c'", _cspec_char_comparison, _cspec_write_nassert
+  );
+}
+
+#define _cspec_unsigned_char_comparison(actual, expected) \
+  ((unsigned char)(actual) != (expected))
+#define assert_that_unsigned_char(inner) \
+  do {                                   \
+    _cspec_clear_assertion_data();       \
+    _assert_that_unsigned_char(inner);   \
+  } while(0)
+#define nassert_that_unsigned_char(inner) \
+  do {                                    \
+    _cspec_clear_assertion_data();        \
+    _nassert_that_unsigned_char(inner);   \
+  } while(0)
+#define assert_that_unsigned_char_array(inner) \
+  do {                                         \
+    _cspec_clear_assertion_data();             \
+    _assert_that_unsigned_char_array(inner);   \
+  } while(0)
+#define nassert_that_unsigned_char_array(inner) \
+  do {                                          \
+    _cspec_clear_assertion_data();              \
+    _nassert_that_unsigned_char_array(inner);   \
+  } while(0)
+static inline void
+_assert_that_unsigned_char(unsigned char actual, unsigned char expected) {
+  _cspec_assert_that(
+    actual, expected, "%c", _cspec_unsigned_char_comparison, _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_unsigned_char(unsigned char actual, unsigned char expected) {
+  _cspec_assert_that(
+    actual,
+    expected,
+    "%c",
+    !_cspec_unsigned_char_comparison,
+    _cspec_write_nassert
+  );
+}
+static inline void _assert_that_unsigned_char_array(
+  unsigned char *actual, unsigned char *expected, size_t len
+) {
+  _cspec_assert_that_array(
+    actual,
+    expected,
+    len,
+    "'%c'",
+    _cspec_unsigned_char_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void _nassert_that_unsigned_char_array(
+  unsigned char *actual, unsigned char *expected, size_t len
+) {
+  _cspec_nassert_that_array(
+    actual,
+    expected,
+    len,
+    "'%c'",
+    _cspec_unsigned_char_comparison,
+    _cspec_write_nassert
+  );
+}
+
+#define _cspec_short_comparison(actual, expected) ((actual) != (expected))
+#define assert_that_short(inner)   \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _assert_that_short(inner);     \
+  } while(0)
+#define nassert_that_short(inner)  \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _nassert_that_short(inner);    \
+  } while(0)
+#define assert_that_short_array(inner) \
+  do {                                 \
+    _cspec_clear_assertion_data();     \
+    _assert_that_short_array(inner);   \
+  } while(0)
+#define nassert_that_short_array(inner) \
+  do {                                  \
+    _cspec_clear_assertion_data();      \
+    _nassert_that_short_array(inner);   \
+  } while(0)
+static inline void _assert_that_short(short actual, short expected) {
+  _cspec_assert_that(
+    actual, expected, "%hd", _cspec_short_comparison, _cspec_write_assert
+  );
+}
+static inline void _nassert_that_short(short actual, short expected) {
+  _cspec_assert_that(
+    actual, expected, "%hd", !_cspec_short_comparison, _cspec_write_nassert
+  );
+}
+static inline void
+_assert_that_short_array(short *actual, short *expected, size_t len) {
+  _cspec_assert_that_array(
+    actual, expected, len, "%hd", _cspec_short_comparison, _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_short_array(short *actual, short *expected, size_t len) {
+  _cspec_nassert_that_array(
+    actual, expected, len, "%hd", _cspec_short_comparison, _cspec_write_nassert
+  );
+}
+
+#define _cspec_unsigned_short_comparison(actual, expected) \
+  ((unsigned short)(actual) != (expected))
+#define assert_that_unsigned_short(inner) \
+  do {                                    \
+    _cspec_clear_assertion_data();        \
+    _assert_that_unsigned_short(inner);   \
+  } while(0)
+#define nassert_that_unsigned_short(inner) \
+  do {                                     \
+    _cspec_clear_assertion_data();         \
+    _nassert_that_unsigned_short(inner);   \
+  } while(0)
+#define assert_that_unsigned_short_array(inner) \
+  do {                                          \
+    _cspec_clear_assertion_data();              \
+    _assert_that_unsigned_short_array(inner);   \
+  } while(0)
+#define nassert_that_unsigned_short_array(inner) \
+  do {                                           \
+    _cspec_clear_assertion_data();               \
+    _nassert_that_unsigned_short_array(inner);   \
+  } while(0)
+static inline void
+_assert_that_unsigned_short(unsigned short actual, unsigned short expected) {
+  _cspec_assert_that(
+    actual,
+    expected,
+    "%hd",
+    _cspec_unsigned_short_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_unsigned_short(unsigned short actual, unsigned short expected) {
+  _cspec_assert_that(
+    actual,
+    expected,
+    "%hd",
+    !_cspec_unsigned_short_comparison,
+    _cspec_write_nassert
+  );
+}
+static inline void _assert_that_unsigned_short_array(
+  unsigned short *actual, unsigned short *expected, size_t len
+) {
+  _cspec_assert_that_array(
+    actual,
+    expected,
+    len,
+    "%hd",
+    _cspec_unsigned_short_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void _nassert_that_unsigned_short_array(
+  unsigned short *actual, unsigned short *expected, size_t len
+) {
+  _cspec_nassert_that_array(
+    actual,
+    expected,
+    len,
+    "%hd",
+    _cspec_unsigned_short_comparison,
+    _cspec_write_nassert
+  );
+}
+
+#define _cspec_int_comparison(actual, expected) ((actual) != (expected))
+#define assert_that_int(inner)     \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _assert_that_int(inner);       \
+  } while(0)
+#define nassert_that_int(inner)    \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _nassert_that_int(inner);      \
+  } while(0)
+#define assert_that_int_array(inner) \
+  do {                               \
+    _cspec_clear_assertion_data();   \
+    _assert_that_int_array(inner);   \
+  } while(0)
+#define nassert_that_int_array(inner) \
+  do {                                \
+    _cspec_clear_assertion_data();    \
+    _nassert_that_int_array(inner);   \
+  } while(0)
+static inline void _assert_that_int(int actual, int expected) {
+  _cspec_assert_that(
+    actual, expected, "%d", _cspec_int_comparison, _cspec_write_assert
+  );
+}
+static inline void _nassert_that_int(int actual, int expected) {
+  _cspec_assert_that(
+    actual, expected, "%d", !_cspec_int_comparison, _cspec_write_nassert
+  );
+}
+static inline void
+_assert_that_int_array(int *actual, int *expected, size_t len) {
   _cspec_assert_that_array(
     actual, expected, len, "%d", _cspec_int_comparison, _cspec_write_assert
   );
 }
 static inline void
-nassert_that_int_array(int *actual, int *expected, size_t len) {
+_nassert_that_int_array(int *actual, int *expected, size_t len) {
+  _cspec_nassert_that_array(
+    actual, expected, len, "%d", _cspec_int_comparison, _cspec_write_nassert
+  );
+}
+
+#define _cspec_unsigned_int_comparison(actual, expected) \
+  ((unsigned int)(actual) != (expected))
+#define assert_that_unsigned_int(inner) \
+  do {                                  \
+    _cspec_clear_assertion_data();      \
+    _assert_that_unsigned_int(inner);   \
+  } while(0)
+#define nassert_that_unsigned_int(inner) \
+  do {                                   \
+    _cspec_clear_assertion_data();       \
+    _nassert_that_unsigned_int(inner);   \
+  } while(0)
+#define assert_that_unsigned_int_array(inner) \
+  do {                                        \
+    _cspec_clear_assertion_data();            \
+    _assert_that_unsigned_int_array(inner);   \
+  } while(0)
+#define nassert_that_unsigned_int_array(inner) \
+  do {                                         \
+    _cspec_clear_assertion_data();             \
+    _nassert_that_unsigned_int_array(inner);   \
+  } while(0)
+static inline void
+_assert_that_unsigned_int(unsigned int actual, unsigned int expected) {
+  _cspec_assert_that(
+    actual, expected, "%u", _cspec_unsigned_int_comparison, _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_unsigned_int(unsigned int actual, unsigned int expected) {
+  _cspec_assert_that(
+    actual,
+    expected,
+    "%u",
+    !_cspec_unsigned_int_comparison,
+    _cspec_write_nassert
+  );
+}
+static inline void _assert_that_unsigned_int_array(
+  unsigned int *actual, unsigned int *expected, size_t len
+) {
   _cspec_assert_that_array(
-    actual, expected, len, "%d", !_cspec_int_comparison, _cspec_write_nassert
+    actual,
+    expected,
+    len,
+    "%u",
+    _cspec_unsigned_int_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void _nassert_that_unsigned_int_array(
+  unsigned int *actual, unsigned int *expected, size_t len
+) {
+  _cspec_nassert_that_array(
+    actual,
+    expected,
+    len,
+    "%u",
+    _cspec_unsigned_int_comparison,
+    _cspec_write_nassert
+  );
+}
+
+#define _cspec_long_comparison(actual, expected) ((actual) != (expected))
+#define assert_that_long(inner)    \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _assert_that_long(inner);      \
+  } while(0)
+#define nassert_that_long(inner)   \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _nassert_that_long(inner);     \
+  } while(0)
+#define assert_that_long_array(inner) \
+  do {                                \
+    _cspec_clear_assertion_data();    \
+    _assert_that_long_array(inner);   \
+  } while(0)
+#define nassert_that_long_array(inner) \
+  do {                                 \
+    _cspec_clear_assertion_data();     \
+    _nassert_that_long_array(inner);   \
+  } while(0)
+static inline void _assert_that_long(long actual, long expected) {
+  _cspec_assert_that(
+    actual, expected, "%ld", _cspec_long_comparison, _cspec_write_assert
+  );
+}
+static inline void _nassert_that_long(long actual, long expected) {
+  _cspec_assert_that(
+    actual, expected, "%ld", !_cspec_long_comparison, _cspec_write_nassert
+  );
+}
+static inline void
+_assert_that_long_array(long *actual, long *expected, size_t len) {
+  _cspec_assert_that_array(
+    actual, expected, len, "%ld", _cspec_long_comparison, _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_long_array(long *actual, long *expected, size_t len) {
+  _cspec_nassert_that_array(
+    actual, expected, len, "%ld", _cspec_long_comparison, _cspec_write_nassert
+  );
+}
+
+#define _cspec_unsigned_long_comparison(actual, expected) \
+  ((unsigned long)(actual) != (expected))
+#define assert_that_unsigned_long(inner) \
+  do {                                   \
+    _cspec_clear_assertion_data();       \
+    _assert_that_unsigned_long(inner);   \
+  } while(0)
+#define nassert_that_unsigned_long(inner) \
+  do {                                    \
+    _cspec_clear_assertion_data();        \
+    _nassert_that_unsigned_long(inner);   \
+  } while(0)
+#define assert_that_unsigned_long_array(inner) \
+  do {                                         \
+    _cspec_clear_assertion_data();             \
+    _assert_that_unsigned_long_array(inner);   \
+  } while(0)
+#define nassert_that_unsigned_long_array(inner) \
+  do {                                          \
+    _cspec_clear_assertion_data();              \
+    _nassert_that_unsigned_long_array(inner);   \
+  } while(0)
+static inline void
+_assert_that_unsigned_long(unsigned long actual, unsigned long expected) {
+  _cspec_assert_that(
+    actual,
+    expected,
+    "%ld",
+    _cspec_unsigned_long_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_unsigned_long(unsigned long actual, unsigned long expected) {
+  _cspec_assert_that(
+    actual,
+    expected,
+    "%ld",
+    !_cspec_unsigned_long_comparison,
+    _cspec_write_nassert
+  );
+}
+static inline void _assert_that_unsigned_long_array(
+  unsigned long *actual, unsigned long *expected, size_t len
+) {
+  _cspec_assert_that_array(
+    actual,
+    expected,
+    len,
+    "%ld",
+    _cspec_unsigned_long_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void _nassert_that_unsigned_long_array(
+  unsigned long *actual, unsigned long *expected, size_t len
+) {
+  _cspec_nassert_that_array(
+    actual,
+    expected,
+    len,
+    "%ld",
+    _cspec_unsigned_long_comparison,
+    _cspec_write_nassert
+  );
+}
+
+#define _cspec_long_long_comparison(actual, expected) \
+  ((long long)(actual) != (expected))
+#define assert_that_long_long(inner) \
+  do {                               \
+    _cspec_clear_assertion_data();   \
+    _assert_that_long_long(inner);   \
+  } while(0)
+#define nassert_that_long_long(inner) \
+  do {                                \
+    _cspec_clear_assertion_data();    \
+    _nassert_that_long_long(inner);   \
+  } while(0)
+#define assert_that_long_long_array(inner) \
+  do {                                     \
+    _cspec_clear_assertion_data();         \
+    _assert_that_long_long_array(inner);   \
+  } while(0)
+#define nassert_that_long_long_array(inner) \
+  do {                                      \
+    _cspec_clear_assertion_data();          \
+    _nassert_that_long_long_array(inner);   \
+  } while(0)
+static inline void
+_assert_that_long_long(long long actual, long long expected) {
+  _cspec_assert_that(
+    actual, expected, "%lld", _cspec_long_long_comparison, _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_long_long(long long actual, long long expected) {
+  _cspec_assert_that(
+    actual, expected, "%lld", !_cspec_long_long_comparison, _cspec_write_nassert
+  );
+}
+static inline void _assert_that_long_long_array(
+  long long *actual, long long *expected, size_t len
+) {
+  _cspec_assert_that_array(
+    actual,
+    expected,
+    len,
+    "%lld",
+    _cspec_long_long_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void _nassert_that_long_long_array(
+  long long *actual, long long *expected, size_t len
+) {
+  _cspec_nassert_that_array(
+    actual,
+    expected,
+    len,
+    "%lld",
+    _cspec_long_long_comparison,
+    _cspec_write_nassert
+  );
+}
+
+#define _cspec_unsigned_long_long_comparison(actual, expected) \
+  ((unsigned long long)(actual) != (expected))
+#define assert_that_unsigned_long_long(inner) \
+  do {                                        \
+    _cspec_clear_assertion_data();            \
+    _assert_that_unsigned_long_long(inner);   \
+  } while(0)
+#define nassert_that_unsigned_long_long(inner) \
+  do {                                         \
+    _cspec_clear_assertion_data();             \
+    _nassert_that_unsigned_long_long(inner);   \
+  } while(0)
+#define assert_that_unsigned_long_long_array(inner) \
+  do {                                              \
+    _cspec_clear_assertion_data();                  \
+    _assert_that_unsigned_long_long_array(inner);   \
+  } while(0)
+#define nassert_that_unsigned_long_long_array(inner) \
+  do {                                               \
+    _cspec_clear_assertion_data();                   \
+    _nassert_that_unsigned_long_long_array(inner);   \
+  } while(0)
+static inline void _assert_that_unsigned_long_long(
+  unsigned long long actual, unsigned long long expected
+) {
+  _cspec_assert_that(
+    actual,
+    expected,
+    "%llu",
+    _cspec_unsigned_long_long_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void _nassert_that_unsigned_long_long(
+  unsigned long long actual, unsigned long long expected
+) {
+  _cspec_assert_that(
+    actual,
+    expected,
+    "%llu",
+    !_cspec_unsigned_long_long_comparison,
+    _cspec_write_nassert
+  );
+}
+static inline void _assert_that_unsigned_long_long_array(
+  unsigned long long *actual, unsigned long long *expected, size_t len
+) {
+  _cspec_assert_that_array(
+    actual,
+    expected,
+    len,
+    "%llu",
+    _cspec_unsigned_long_long_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void _nassert_that_unsigned_long_long_array(
+  unsigned long long *actual, unsigned long long *expected, size_t len
+) {
+  _cspec_nassert_that_array(
+    actual,
+    expected,
+    len,
+    "%llu",
+    _cspec_unsigned_long_long_comparison,
+    _cspec_write_nassert
   );
 }
 
 #define _cspec_size_t_comparison(actual, expected) ((actual) != (expected))
-static inline void assert_that_size_t(size_t actual, size_t expected) {
-  _cspec_construct_actual_expected("%zu", actual, expected);
-  if(_cspec_size_t_comparison(actual, expected)) {
-    _cspec_write_assert();
-  }
+#define assert_that_size_t(inner)  \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _assert_that_size_t(inner);    \
+  } while(0)
+#define nassert_that_size_t(inner) \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _nassert_that_size_t(inner);   \
+  } while(0)
+#define assert_that_size_t_array(inner) \
+  do {                                  \
+    _cspec_clear_assertion_data();      \
+    _assert_that_size_t_array(inner);   \
+  } while(0)
+#define nassert_that_size_t_array(inner) \
+  do {                                   \
+    _cspec_clear_assertion_data();       \
+    _nassert_that_size_t_array(inner);   \
+  } while(0)
+static inline void _assert_that_size_t(size_t actual, size_t expected) {
+  _cspec_assert_that(
+    actual, expected, "%zu", _cspec_size_t_comparison, _cspec_write_assert
+  );
 }
-static inline void nassert_that_size_t(size_t actual, size_t expected) {
-  _cspec_construct_actual_expected("%zu", actual, expected);
-  if(!_cspec_size_t_comparison(actual, expected)) {
-    _cspec_write_nassert();
-  }
+static inline void _nassert_that_size_t(size_t actual, size_t expected) {
+  _cspec_assert_that(
+    actual, expected, "%zu", !_cspec_size_t_comparison, _cspec_write_nassert
+  );
 }
 static inline void
-assert_that_size_t_array(size_t *actual, size_t *expected, size_t len) {
+_assert_that_size_t_array(size_t *actual, size_t *expected, size_t len) {
   _cspec_assert_that_array(
     actual, expected, len, "%zu", _cspec_size_t_comparison, _cspec_write_assert
   );
 }
 static inline void
-nassert_that_size_t_array(size_t *actual, size_t *expected, size_t len) {
+_nassert_that_size_t_array(size_t *actual, size_t *expected, size_t len) {
+  _cspec_nassert_that_array(
+    actual, expected, len, "%zu", _cspec_size_t_comparison, _cspec_write_nassert
+  );
+}
+
+#define _cspec_ptrdiff_t_comparison(actual, expected) \
+  ((ptrdiff_t)(actual) != (expected))
+#define assert_that_ptrdiff_t(inner) \
+  do {                               \
+    _cspec_clear_assertion_data();   \
+    _assert_that_ptrdiff_t(inner);   \
+  } while(0)
+#define nassert_that_ptrdiff_t(inner) \
+  do {                                \
+    _cspec_clear_assertion_data();    \
+    _nassert_that_ptrdiff_t(inner);   \
+  } while(0)
+#define assert_that_ptrdiff_t_array(inner) \
+  do {                                     \
+    _cspec_clear_assertion_data();         \
+    _assert_that_ptrdiff_t_array(inner);   \
+  } while(0)
+#define nassert_that_ptrdiff_t_array(inner) \
+  do {                                      \
+    _cspec_clear_assertion_data();          \
+    _nassert_that_ptrdiff_t_array(inner);   \
+  } while(0)
+static inline void
+_assert_that_ptrdiff_t(ptrdiff_t actual, ptrdiff_t expected) {
+  _cspec_assert_that(
+    actual, expected, "%td", _cspec_ptrdiff_t_comparison, _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_ptrdiff_t(ptrdiff_t actual, ptrdiff_t expected) {
+  _cspec_assert_that(
+    actual, expected, "%td", !_cspec_ptrdiff_t_comparison, _cspec_write_nassert
+  );
+}
+static inline void _assert_that_ptrdiff_t_array(
+  ptrdiff_t *actual, ptrdiff_t *expected, size_t len
+) {
   _cspec_assert_that_array(
     actual,
     expected,
     len,
-    "%zu",
-    !_cspec_size_t_comparison,
+    "%td",
+    _cspec_ptrdiff_t_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void _nassert_that_ptrdiff_t_array(
+  ptrdiff_t *actual, ptrdiff_t *expected, size_t len
+) {
+  _cspec_nassert_that_array(
+    actual,
+    expected,
+    len,
+    "%td",
+    _cspec_ptrdiff_t_comparison,
     _cspec_write_nassert
+  );
+}
+
+#define _cspec_float_comparison(actual, expected) \
+  (cspec_fabs(actual - expected) > 1E-12)
+#define assert_that_float(inner)   \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _assert_that_float(inner);     \
+  } while(0)
+#define nassert_that_float(inner)  \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _nassert_that_float(inner);    \
+  } while(0)
+#define assert_that_float_array(inner) \
+  do {                                 \
+    _cspec_clear_assertion_data();     \
+    _assert_that_float_array(inner);   \
+  } while(0)
+#define nassert_that_float_array(inner) \
+  do {                                  \
+    _cspec_clear_assertion_data();      \
+    _nassert_that_float_array(inner);   \
+  } while(0)
+static inline void _assert_that_float(float actual, float expected) {
+  _cspec_assert_that(
+    actual, expected, "%g", _cspec_float_comparison, _cspec_write_assert
+  );
+}
+static inline void _nassert_that_float(float actual, float expected) {
+  _cspec_assert_that(
+    actual, expected, "%g", !_cspec_float_comparison, _cspec_write_nassert
+  );
+}
+static inline void
+_assert_that_float_array(float *actual, float *expected, size_t len) {
+  _cspec_assert_that_array(
+    actual, expected, len, "%g", _cspec_float_comparison, _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_float_array(float *actual, float *expected, size_t len) {
+  _cspec_nassert_that_array(
+    actual, expected, len, "%g", _cspec_float_comparison, _cspec_write_nassert
   );
 }
 
 #define _cspec_double_comparison(actual, expected) \
   (cspec_fabs(actual - expected) > 1E-12)
-static inline void assert_that_double(double actual, double expected) {
-  _cspec_construct_actual_expected("%g", actual, expected);
-  if(_cspec_double_comparison(actual, expected)) {
-    _cspec_write_assert();
-  }
+#define assert_that_double(inner)  \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _assert_that_double(inner);    \
+  } while(0)
+#define nassert_that_double(inner) \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _nassert_that_double(inner);   \
+  } while(0)
+#define assert_that_double_array(inner) \
+  do {                                  \
+    _cspec_clear_assertion_data();      \
+    _assert_that_double_array(inner);   \
+  } while(0)
+#define nassert_that_double_array(inner) \
+  do {                                   \
+    _cspec_clear_assertion_data();       \
+    _nassert_that_double_array(inner);   \
+  } while(0)
+static inline void _assert_that_double(double actual, double expected) {
+  _cspec_assert_that(
+    actual, expected, "%g", _cspec_double_comparison, _cspec_write_assert
+  );
 }
-static inline void nassert_that_double(double actual, double expected) {
-  _cspec_construct_actual_expected("%g", actual, expected);
-  if(!_cspec_double_comparison(actual, expected)) {
-    _cspec_write_nassert();
-  }
+static inline void _nassert_that_double(double actual, double expected) {
+  _cspec_assert_that(
+    actual, expected, "%g", !_cspec_double_comparison, _cspec_write_nassert
+  );
 }
 static inline void
-assert_that_double_array(double *actual, double *expected, size_t len) {
+_assert_that_double_array(double *actual, double *expected, size_t len) {
   _cspec_assert_that_array(
     actual, expected, len, "%g", _cspec_double_comparison, _cspec_write_assert
   );
 }
 static inline void
-nassert_that_double_array(double *actual, double *expected, size_t len) {
+_nassert_that_double_array(double *actual, double *expected, size_t len) {
+  _cspec_nassert_that_array(
+    actual, expected, len, "%g", _cspec_double_comparison, _cspec_write_nassert
+  );
+}
+
+#define _cspec_long_double_comparison(actual, expected) \
+  (cspec_fabs(actual - expected) > 1E-12)
+#define assert_that_long_double(inner) \
+  do {                                 \
+    _cspec_clear_assertion_data();     \
+    _assert_that_long_double(inner);   \
+  } while(0)
+#define nassert_that_long_double(inner) \
+  do {                                  \
+    _cspec_clear_assertion_data();      \
+    _nassert_that_long_double(inner);   \
+  } while(0)
+#define assert_that_long_double_array(inner) \
+  do {                                       \
+    _cspec_clear_assertion_data();           \
+    _assert_that_long_double_array(inner);   \
+  } while(0)
+#define nassert_that_long_double_array(inner) \
+  do {                                        \
+    _cspec_clear_assertion_data();            \
+    _nassert_that_long_double_array(inner);   \
+  } while(0)
+static inline void
+_assert_that_long_double(long double actual, long double expected) {
+  _cspec_assert_that(
+    actual, expected, "%Lf", _cspec_long_double_comparison, _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_long_double(long double actual, long double expected) {
+  _cspec_assert_that(
+    actual,
+    expected,
+    "%Lf",
+    !_cspec_long_double_comparison,
+    _cspec_write_nassert
+  );
+}
+static inline void _assert_that_long_double_array(
+  long double *actual, long double *expected, size_t len
+) {
   _cspec_assert_that_array(
-    actual, expected, len, "%g", !_cspec_double_comparison, _cspec_write_nassert
+    actual,
+    expected,
+    len,
+    "%Lf",
+    _cspec_long_double_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void _nassert_that_long_double_array(
+  long double *actual, long double *expected, size_t len
+) {
+  _cspec_nassert_that_array(
+    actual,
+    expected,
+    len,
+    "%Lf",
+    _cspec_long_double_comparison,
+    _cspec_write_nassert
   );
 }
 
 #define _cspec_charptr_comparison(actual, expected) \
   (strncmp(expected, actual, strlen(expected)))
+#define assert_that_charptr(inner) \
+  do {                             \
+    _cspec_clear_assertion_data(); \
+    _assert_that_charptr(inner);   \
+  } while(0)
+#define nassert_that_charptr(inner) \
+  do {                              \
+    _cspec_clear_assertion_data();  \
+    _nassert_that_charptr(inner);   \
+  } while(0)
+#define assert_that_charptr_array(inner) \
+  do {                                   \
+    _cspec_clear_assertion_data();       \
+    _assert_that_charptr_array(inner);   \
+  } while(0)
+#define nassert_that_charptr_array(inner) \
+  do {                                    \
+    _cspec_clear_assertion_data();        \
+    _nassert_that_charptr_array(inner);   \
+  } while(0)
 static inline void
-assert_that_charptr(const char *actual, const char *expected) {
-  _cspec_construct_actual_expected("%s", actual, expected);
-  if(_cspec_charptr_comparison(actual, expected)) {
-    _cspec_write_assert();
-  }
-}
-static inline void
-nassert_that_charptr(const char *actual, const char *expected) {
-  _cspec_construct_actual_expected("%s", actual, expected);
-  if(!_cspec_charptr_comparison(actual, expected)) {
-    _cspec_write_nassert();
-  }
-}
-static inline void
-assert_that_charptr_array(char **actual, char **expected, size_t len) {
-  _cspec_assert_that_array(
-    actual, expected, len, "%s", _cspec_charptr_comparison, _cspec_write_assert
+_assert_that_charptr(const char *actual, const char *expected) {
+  _cspec_assert_that(
+    actual, expected, "%s", _cspec_charptr_comparison, _cspec_write_assert
   );
 }
 static inline void
-nassert_that_charptr_array(char **actual, char **expected, size_t len) {
+_nassert_that_charptr(const char *actual, const char *expected) {
+  _cspec_assert_that(
+    actual, expected, "%s", !_cspec_charptr_comparison, _cspec_write_nassert
+  );
+}
+static inline void
+_assert_that_charptr_array(char **actual, char **expected, size_t len) {
   _cspec_assert_that_array(
     actual,
     expected,
     len,
-    "%s",
-    !_cspec_charptr_comparison,
+    "\"%s\"",
+    _cspec_charptr_comparison,
+    _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_charptr_array(char **actual, char **expected, size_t len) {
+  _cspec_nassert_that_array(
+    actual,
+    expected,
+    len,
+    "\"%s\"",
+    _cspec_charptr_comparison,
     _cspec_write_nassert
   );
 }
