@@ -1,5 +1,0 @@
-#!/bin/sh
-
-cd simple
-make clean
-make

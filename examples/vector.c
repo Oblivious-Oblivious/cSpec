@@ -1,7 +1,12 @@
 #include "vector.h"
 
+#include <stdlib.h> /* malloc, realloc */
+
+static const size_t vector_init_capacity = 32;
+
 static void vector_ensure_space(vector *v, size_t capacity) {
   int *items;
+
   if(v == NULL || capacity == 0) {
     return;
   }
@@ -16,11 +21,11 @@ static void vector_ensure_space(vector *v, size_t capacity) {
   }
 }
 
-vector *new_vector(void) {
-  vector *v  = (vector *)malloc(sizeof(vector));
+vector *vector_create(void) {
+  vector *v  = malloc(sizeof(vector));
   v->alloced = vector_init_capacity;
   v->len     = 0;
-  v->items   = (int *)malloc(sizeof(int) * v->alloced);
+  v->items   = malloc(sizeof(void *) * v->alloced);
   return v;
 }
 
@@ -38,7 +43,7 @@ void vector_set(vector *v, size_t index, int item) {
   if(v == NULL) {
     return;
   }
-  if(index < v->len) {
+  if(index >= 0 && index < v->len) {
     v->items[index] = item;
   }
 }
@@ -47,7 +52,7 @@ int vector_get(vector *v, size_t index) {
   if(v == NULL) {
     return 0;
   }
-  if(index < v->len) {
+  if(index >= 0 && index < v->len) {
     return v->items[index];
   }
   return 0;
@@ -55,10 +60,11 @@ int vector_get(vector *v, size_t index) {
 
 void vector_delete(vector *v, size_t index) {
   size_t i;
+
   if(v == NULL) {
     return;
   }
-  if(index >= v->len) {
+  if(index < 0 || index >= v->len) {
     return;
   }
 

@@ -1,5 +1,11 @@
 #include "string_base.h"
 
+#include <stdio.h>  /* snprintf */
+#include <stdlib.h> /* malloc, realloc */
+#include <string.h> /* memmove, strlen */
+
+static const size_t string_init_capacity = 32;
+
 static void string_ensure_space(string *sb, size_t add_len) {
   if(sb == NULL || add_len == 0) {
     return;

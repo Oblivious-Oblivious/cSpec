@@ -1,17 +1,17 @@
-NAME = stack
+NAME = examples
 
 CC = clang
-OPT = -O2
+OPT = -Og
 VERSION = -std=c99
 
-FLAGS =
+FLAGS = -fsanitize=address -g
 WARNINGS = -Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic
 UNUSED_WARNINGS = -Wno-unused-function
 LIBS =
 
-INPUT = $(NAME).c
+INPUT = ./*.c
 OUTPUT = $(NAME)
-COMPILE = $(INPUT) $(NAME).spec.c
+COMPILE = $(INPUT)
 
 all: compiler
 

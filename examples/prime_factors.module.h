@@ -1,7 +1,7 @@
 #ifndef _PRIMES_MODULE_H_
 #define _PRIMES_MODULE_H_
 
-#include "../../src/cSpec.h"
+#include "../src/cSpec.h"
 #include "prime_factors.h"
 
 module(primes, {
