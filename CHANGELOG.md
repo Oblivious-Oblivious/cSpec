@@ -1,3 +1,13 @@
+# Changes for cSpec 0.3.2 (17-08-2024)
+
+- Added xmodule and xdescribe blocks.
+
+# Changes for cSpec 0.3.1 (17-08-2024)
+
+- Revamped colors.
+- Refactored assertion internals to be more readable.
+- Added all data types to assertions.
+
 # Changes for cSpec 0.3.0 (16-08-2024)
 
 - Simplified codebase by removing exporting functionality.
