@@ -5,6 +5,8 @@
 #include "stack.module.spec.h"
 #include "string_base.module.spec.h"
 #include "vector.module.spec.h"
+#include "xdecribexcontext.module.spec.h"
+#include "xexample.module.spec.h"
 
 int main(void) {
   cspec_run_suite("all", {
@@ -13,6 +15,8 @@ int main(void) {
     second();
     stack_spec();
     string_spec();
+    xdescribexcontext();
+    xexample();
     vector_spec();
   });
 }

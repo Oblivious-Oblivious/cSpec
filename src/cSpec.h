@@ -53,7 +53,6 @@
 static size_t cspec_timer(void) {
   static size_t is_init = 0;
 
-/* Cross platform definition */
 #if defined(_WIN32)
   static LARGE_INTEGER win_frequency;
   if(0 == is_init) {
@@ -256,8 +255,8 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param ... -> The block to define
  */
 #define module(suite_name, ...)             \
-  /* Define a static method for a module */ \
   static void suite_name(void) {            \
+    cspec->in_skipped_module = cspec_false; \
     printf(                                 \
       "\n%s%sModule `%s`%s\n",              \
       cspec->BACK_PURPLE,                   \
@@ -266,7 +265,22 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
       cspec->RESET                          \
     );                                      \
     cspec_string_free(cspec->display_tab);  \
-    __VA_ARGS__; /* Run describes */        \
+    __VA_ARGS__;                            \
+  }
+
+/**
+ * @brief Temporarily disables a module and all its tests
+ * @param suite_name -> The name of the module to run
+ * @param ... -> The actual test code
+ */
+#define xmodule(suite_name, ...)                                         \
+  static void suite_name(void) {                                         \
+    cspec->in_skipped_module = cspec_true;                               \
+    printf(                                                              \
+      "\n%sModule `%s`%s\n", cspec->BACK_GRAY, #suite_name, cspec->RESET \
+    );                                                                   \
+    cspec_string_free(cspec->display_tab);                               \
+    __VA_ARGS__;                                                         \
   }
 
 /**
@@ -308,16 +322,34 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param object_name -> The name of the unit to describe
  * @param ... -> The proc to extend to
  */
-#define describe(object_name, ...) \
-  cspec_describe_context_block(object_name, cspec->PURPLE, __VA_ARGS__)
+#define describe(object_name, ...)                                           \
+  do {                                                                       \
+    if(cspec->in_skipped_module) {                                           \
+      xdescribe(object_name, __VA_ARGS__);                                   \
+    } else {                                                                 \
+      cspec->in_skipped_describe = cspec_false;                              \
+      cspec_describe_context_block(object_name, cspec->PURPLE, __VA_ARGS__); \
+    }                                                                        \
+  } while(0)
+
+#define xdescribe(object_name, ...)                                      \
+  do {                                                                   \
+    cspec->in_skipped_describe = cspec_true;                             \
+    cspec_describe_context_block(object_name, cspec->GRAY, __VA_ARGS__); \
+  } while(0)
 
 /**
  * @brief Aliasing for Describe
  * @param object_name -> The name of the unit to describe
  * @param ... -> The proc to extend to
  */
-#define context(object_name, ...) \
-  cspec_describe_context_block(object_name, cspec->YELLOW, __VA_ARGS__)
+#define context(object_name, ...)                                          \
+  do {                                                                     \
+    cspec->in_skipped_describe = cspec_false;                              \
+    cspec_describe_context_block(object_name, cspec->YELLOW, __VA_ARGS__); \
+  } while(0)
+
+#define xcontext(object_name, ...) xdescribe(object_name, __VA_ARGS__)
 
 /**
  * @brief Temporarily disables a test
@@ -356,63 +388,67 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param proc_name -> The name of test to run
  * @param proc -> The actual test code
  */
-#define it(proc_name, ...)                                                  \
-  do {                                                                      \
-    size_t start_test_timer;                                                \
-    size_t end_test_timer;                                                  \
-    if(cspec->before_func) {                                                \
-      (*cspec->before_func)();                                              \
-    }                                                                       \
-                                                                            \
-    cspec_string_add(cspec->display_tab, "    ");                           \
-    cspec->number_of_tests++;                                               \
-    cspec_string_free(cspec->test_result_message);                          \
-                                                                            \
-    /* Assume its a passing test */                                         \
-    cspec->status_of_test = CSPEC_PASSING;                                  \
-    cspec->current_line   = __LINE__;                                       \
-    cspec->current_file   = __FILE__;                                       \
-                                                                            \
-    start_test_timer = cspec_timer();                                       \
-    __VA_ARGS__;                                                            \
-    end_test_timer = cspec_timer();                                         \
-                                                                            \
-    if(cspec->status_of_test == CSPEC_PASSING) {                            \
-      cspec->number_of_passing_tests++;                                     \
-      if(!strncmp(cspec->type_of_tests, "all", 3) ||                        \
-         !strncmp(cspec->type_of_tests, "passing", 7)) {                    \
-        printf(                                                             \
-          "%s%s✓%s it %s%s\n",                                              \
-          cspec->display_tab,                                               \
-          cspec->GREEN,                                                     \
-          cspec->RESET,                                                     \
-          proc_name,                                                        \
-          cspec->RESET                                                      \
-        );                                                                  \
-      }                                                                     \
-    } else {                                                                \
-      /* Even if 1 of the asserts in the current it block fails, assume we  \
-       * have a failing test */                                             \
-      cspec->number_of_failing_tests++;                                     \
-      if(!strncmp(cspec->type_of_tests, "all", 3) ||                        \
-         !strncmp(cspec->type_of_tests, "failing", 7)) {                    \
-        printf(                                                             \
-          "%s%s✗%s it %s:\n%s%s\n",                                         \
-          cspec->display_tab,                                               \
-          cspec->RED,                                                       \
-          cspec->RESET,                                                     \
-          proc_name,                                                        \
-          cspec->test_result_message,                                       \
-          cspec->RESET                                                      \
-        );                                                                  \
-      }                                                                     \
-    }                                                                       \
-                                                                            \
-    cspec->total_time_taken_for_tests += end_test_timer - start_test_timer; \
-    cspec_string_skip_first(cspec->display_tab, 4);                         \
-    if(cspec->after_func) {                                                 \
-      (*cspec->after_func)();                                               \
-    }                                                                       \
+#define it(proc_name, ...)                                                    \
+  do {                                                                        \
+    size_t start_test_timer;                                                  \
+    size_t end_test_timer;                                                    \
+    if(cspec->in_skipped_describe) {                                          \
+      xit(proc_name, __VA_ARGS__);                                            \
+    } else {                                                                  \
+      if(cspec->before_func) {                                                \
+        (*cspec->before_func)();                                              \
+      }                                                                       \
+                                                                              \
+      cspec_string_add(cspec->display_tab, "    ");                           \
+      cspec->number_of_tests++;                                               \
+      cspec_string_free(cspec->test_result_message);                          \
+                                                                              \
+      /* Assume its a passing test */                                         \
+      cspec->status_of_test = CSPEC_PASSING;                                  \
+      cspec->current_line   = __LINE__;                                       \
+      cspec->current_file   = __FILE__;                                       \
+                                                                              \
+      start_test_timer = cspec_timer();                                       \
+      __VA_ARGS__;                                                            \
+      end_test_timer = cspec_timer();                                         \
+                                                                              \
+      if(cspec->status_of_test == CSPEC_PASSING) {                            \
+        cspec->number_of_passing_tests++;                                     \
+        if(!strncmp(cspec->type_of_tests, "all", 3) ||                        \
+           !strncmp(cspec->type_of_tests, "passing", 7)) {                    \
+          printf(                                                             \
+            "%s%s✓%s it %s%s\n",                                              \
+            cspec->display_tab,                                               \
+            cspec->GREEN,                                                     \
+            cspec->RESET,                                                     \
+            proc_name,                                                        \
+            cspec->RESET                                                      \
+          );                                                                  \
+        }                                                                     \
+      } else {                                                                \
+        /* Even if 1 of the asserts in the current it block fails, assume we  \
+         * have a failing test */                                             \
+        cspec->number_of_failing_tests++;                                     \
+        if(!strncmp(cspec->type_of_tests, "all", 3) ||                        \
+           !strncmp(cspec->type_of_tests, "failing", 7)) {                    \
+          printf(                                                             \
+            "%s%s✗%s it %s:\n%s%s\n",                                         \
+            cspec->display_tab,                                               \
+            cspec->RED,                                                       \
+            cspec->RESET,                                                     \
+            proc_name,                                                        \
+            cspec->test_result_message,                                       \
+            cspec->RESET                                                      \
+          );                                                                  \
+        }                                                                     \
+      }                                                                       \
+                                                                              \
+      cspec->total_time_taken_for_tests += end_test_timer - start_test_timer; \
+      cspec_string_skip_first(cspec->display_tab, 4);                         \
+      if(cspec->after_func) {                                                 \
+        (*cspec->after_func)();                                               \
+      }                                                                       \
+    }                                                                         \
   } while(0)
 
 /**
@@ -423,6 +459,8 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param number_of_skipped_tests -> Counts the skipped tests
  * @param total_time_taken_for_tests -> The total time taken for tests
  * @param status_of_test -> Either CSPEC_PASSING|CSPEC_FAILING
+ * @param in_skipped_module -> Flag that skips xmodule
+ * @param in_skipped_describe -> Flag that skips xdescribe and xcontext
  *
  * @param test_result_message -> The string builder we construct for assertions
  * @param display_tab -> 4 space overhead for a nicer display of test results
@@ -446,6 +484,8 @@ typedef struct cspec_data_struct {
   size_t number_of_skipped_tests;
   size_t total_time_taken_for_tests;
   cspec_bool status_of_test;
+  cspec_bool in_skipped_module;
+  cspec_bool in_skipped_describe;
 
   char *test_result_message;
   char *display_tab;
@@ -469,6 +509,7 @@ typedef struct cspec_data_struct {
   const char *WHITE;
   const char *RESET;
   const char *BACK_PURPLE;
+  const char *BACK_GRAY;
 } cspec_data_struct;
 
 static cspec_data_struct *cspec;
@@ -583,6 +624,7 @@ static cspec_data_struct *cspec;
     cspec->number_of_skipped_tests    = 0;                                 \
     cspec->total_time_taken_for_tests = 0;                                 \
     cspec->status_of_test             = CSPEC_PASSING;                     \
+    cspec->in_skipped_describe        = cspec_false;                       \
                                                                            \
     cspec->test_result_message = NULL;                                     \
                                                                            \
@@ -606,10 +648,12 @@ static cspec_data_struct *cspec;
     cspec->GRAY        = "\033[38;5;244m";                                 \
     cspec->RESET       = "\033[0m";                                        \
     cspec->BACK_PURPLE = "\033[48;5;96m";                                  \
+    cspec->BACK_GRAY   = "\033[48;5;240m\033[38;5;247m";                   \
   } while(0)
 
 
 /** Assertions */
+
 
 #define _cspec_clear_assertion_data()             \
   do {                                            \
