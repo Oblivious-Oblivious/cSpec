@@ -1,6 +1,6 @@
-# Changes for cSpec 0.3.2 (17-08-2024)
+# Changes for cSpec 0.3.2 (18-08-2024)
 
-- Added xmodule and xdescribe blocks.
+- Added xmodule, xdescribe and xcontext blocks.
 
 # Changes for cSpec 0.3.1 (17-08-2024)
 
