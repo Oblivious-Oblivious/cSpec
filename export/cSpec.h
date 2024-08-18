@@ -275,12 +275,15 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  */
 #define xmodule(suite_name, ...)                                         \
   static void suite_name(void) {                                         \
-    cspec->in_skipped_module = cspec_true;                               \
+    cspec->in_skipped_module   = cspec_true;                             \
+    cspec->in_skipped_describe = cspec_true;                             \
     printf(                                                              \
       "\n%sModule `%s`%s\n", cspec->BACK_GRAY, #suite_name, cspec->RESET \
     );                                                                   \
     cspec_string_free(cspec->display_tab);                               \
     __VA_ARGS__;                                                         \
+    cspec->in_skipped_module   = cspec_false;                            \
+    cspec->in_skipped_describe = cspec_false;                            \
   }
 
 /**
@@ -336,6 +339,7 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
   do {                                                                   \
     cspec->in_skipped_describe = cspec_true;                             \
     cspec_describe_context_block(object_name, cspec->GRAY, __VA_ARGS__); \
+    cspec->in_skipped_describe = cspec_false;                            \
   } while(0)
 
 /**
@@ -343,10 +347,14 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param object_name -> The name of the unit to describe
  * @param ... -> The proc to extend to
  */
-#define context(object_name, ...)                                          \
-  do {                                                                     \
-    cspec->in_skipped_describe = cspec_false;                              \
-    cspec_describe_context_block(object_name, cspec->YELLOW, __VA_ARGS__); \
+#define context(object_name, ...)                                            \
+  do {                                                                       \
+    if(cspec->in_skipped_module) {                                           \
+      xcontext(object_name, __VA_ARGS__);                                    \
+    } else {                                                                 \
+      cspec->in_skipped_describe = cspec_false;                              \
+      cspec_describe_context_block(object_name, cspec->YELLOW, __VA_ARGS__); \
+    }                                                                        \
   } while(0)
 
 #define xcontext(object_name, ...) xdescribe(object_name, __VA_ARGS__)
