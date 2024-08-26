@@ -1650,7 +1650,8 @@ static inline void _nassert_that_long_double_array(
 }
 
 #define _cspec_charptr_comparison(actual, expected) \
-  (strncmp(expected, actual, strlen(expected)))
+  (strlen(actual) != strlen(expected) ||            \
+   strncmp(expected, actual, strlen(expected)))
 #define assert_that_charptr(inner) \
   do {                             \
     _cspec_clear_assertion_data(); \
