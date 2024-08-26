@@ -98,7 +98,7 @@ typedef struct {
 } _cspec_vector_header;
 
 #define _cspec_vector_get_header(self)   ((_cspec_vector_header *)(self) - 1)
-#define _cspec_vector_selfptr_size(self) sizeof(*(self)) // NOLINT
+#define _cspec_vector_selfptr_size(self) sizeof(*(self)) /* NOLINT */
 #define _cspec_vector_grow(self, n) \
   (*(void **)&(self) =              \
      _cspec_vector_growf((self), _cspec_vector_selfptr_size(self), (n), 0))
@@ -107,7 +107,11 @@ typedef struct {
                  _cspec_vector_get_header(self)->capacity)  \
      ? (_cspec_vector_grow(self, n), 0)                     \
      : 0)
-#define cspec_vector_initialize(self) _cspec_vector_maybegrow(self, 1)
+#define cspec_vector_initialize(self) \
+  do {                                \
+    (self) = NULL;                    \
+    _cspec_vector_maybegrow(self, 1); \
+  } while(0)
 #define cspec_vector_add_n(self, item, n)             \
   ((item) != NULL ? _cspec_vector_maybegrow(self, n), \
    memmove(                                           \
@@ -217,6 +221,7 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
       } else if(len > 0) {                                      \
         _cspec_vector_get_header(self)->size -= len;            \
         memmove((self), (self) + len, cspec_string_size(self)); \
+        (self)[cspec_string_size(self)] = '\0';                 \
       }                                                         \
     }                                                           \
   } while(0)
