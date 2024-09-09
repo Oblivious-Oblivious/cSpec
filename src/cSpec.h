@@ -88,114 +88,114 @@ static size_t cspec_timer(void) {
 }
 
 /** @brief -> A 'big' enough size to hold both 1 and 0 */
-#define cspec_bool  unsigned char
-#define cspec_true  1
-#define cspec_false 0
+#define cspec_bool   unsigned char
+#define _cspec_true  1
+#define _cspec_false 0
 
 typedef struct {
   size_t size;
   size_t capacity;
 } _cspec_vector_header;
 
-#define _cspec_vector_get_header(self)   ((_cspec_vector_header *)(self) - 1)
-#define _cspec_vector_selfptr_size(self) sizeof(*(self)) /* NOLINT */
-#define _cspec_vector_grow(self, n) \
-  (*(void **)&(self) =              \
-     _cspec_vector_growf((self), _cspec_vector_selfptr_size(self), (n), 0))
-#define _cspec_vector_maybegrow(self, n)                    \
-  ((!(self) || _cspec_vector_get_header(self)->size + (n) > \
-                 _cspec_vector_get_header(self)->capacity)  \
-     ? (_cspec_vector_grow(self, n), 0)                     \
+#define __cspec_vector_get_header(self)   ((_cspec_vector_header *)(self) - 1)
+#define __cspec_vector_selfptr_size(self) sizeof(*(self)) /* NOLINT */
+#define __cspec_vector_grow(self, n) \
+  (*(void **)&(self) =               \
+     __cspec_vector_growf((self), __cspec_vector_selfptr_size(self), (n), 0))
+#define __cspec_vector_maybegrow(self, n)                    \
+  ((!(self) || __cspec_vector_get_header(self)->size + (n) > \
+                 __cspec_vector_get_header(self)->capacity)  \
+     ? (__cspec_vector_grow(self, n), 0)                     \
      : 0)
-#define cspec_vector_initialize(self) \
-  do {                                \
-    (self) = NULL;                    \
-    _cspec_vector_maybegrow(self, 1); \
+#define _cspec_vector_initialize(self) \
+  do {                                 \
+    (self) = NULL;                     \
+    __cspec_vector_maybegrow(self, 1); \
   } while(0)
-#define cspec_vector_add_n(self, item, n)             \
-  ((item) != NULL ? _cspec_vector_maybegrow(self, n), \
-   memmove(                                           \
-     (self) + cspec_vector_size(self),                \
-     (item),                                          \
-     (n) * ((item) != NULL ? sizeof((self)[0]) : 0)   \
-   ),                                                 \
-   _cspec_vector_get_header(self)->size += (n)        \
+#define _cspec_vector_add_n(self, item, n)             \
+  ((item) != NULL ? __cspec_vector_maybegrow(self, n), \
+   memmove(                                            \
+     (self) + _cspec_vector_size(self),                \
+     (item),                                           \
+     (n) * ((item) != NULL ? sizeof((self)[0]) : 0)    \
+   ),                                                  \
+   __cspec_vector_get_header(self)->size += (n)        \
                   : 0)
-#define cspec_vector_size(self) \
-  ((self) ? (size_t)_cspec_vector_get_header(self)->size : 0)
-#define cspec_vector_size_signed(self) \
-  ((self) ? (ptrdiff_t)_cspec_vector_get_header(self)->size : 0)
-#define cspec_vector_capacity(self) \
-  ((self) ? (size_t)_cspec_vector_get_header(self)->capacity : 0)
-static void *_cspec_vector_growf(
+#define _cspec_vector_size(self) \
+  ((self) ? (size_t)__cspec_vector_get_header(self)->size : 0)
+#define _cspec_vector_size_signed(self) \
+  ((self) ? (ptrdiff_t)__cspec_vector_get_header(self)->size : 0)
+#define _cspec_vector_capacity(self) \
+  ((self) ? (size_t)__cspec_vector_get_header(self)->capacity : 0)
+static void *__cspec_vector_growf(
   void *self, size_t elemsize, size_t addlen, size_t min_cap
 ) {
   void *b;
-  size_t min_len = cspec_vector_size_signed(self) + addlen;
+  size_t min_len = _cspec_vector_size_signed(self) + addlen;
 
   if(min_len > min_cap) {
     min_cap = min_len;
   }
 
-  if(min_cap <= cspec_vector_capacity(self)) {
+  if(min_cap <= _cspec_vector_capacity(self)) {
     return self;
   }
 
-  if(min_cap < 2 * cspec_vector_capacity(self)) {
-    min_cap = 2 * cspec_vector_capacity(self);
+  if(min_cap < 2 * _cspec_vector_capacity(self)) {
+    min_cap = 2 * _cspec_vector_capacity(self);
   } else if(min_cap < 4) {
     min_cap = 4;
   }
 
   b = realloc(
-    (self) ? _cspec_vector_get_header(self) : 0,
+    (self) ? __cspec_vector_get_header(self) : 0,
     elemsize * min_cap + sizeof(_cspec_vector_header)
   );
   b = (char *)b + sizeof(_cspec_vector_header);
 
   if(self == NULL) {
-    _cspec_vector_get_header(b)->size = 0;
+    __cspec_vector_get_header(b)->size = 0;
   }
 
-  _cspec_vector_get_header(b)->capacity = min_cap;
+  __cspec_vector_get_header(b)->capacity = min_cap;
 
   return b;
 }
-#define cspec_vector_free(self)                                     \
-  ((void)((self) ? realloc(_cspec_vector_get_header(self), 0) : 0), \
+#define _cspec_vector_free(self)                                     \
+  ((void)((self) ? realloc(__cspec_vector_get_header(self), 0) : 0), \
    (self) = NULL)
 
-#define cspec_string_add(self, other)                   \
-  do {                                                  \
-    if(self == NULL && other != NULL) {                 \
-      cspec_vector_initialize(self);                    \
-    }                                                   \
-    cspec_vector_add_n(self, other, strlen(other) + 1); \
-    if(other != NULL) {                                 \
-      cspec_string_ignore_last(self, 1);                \
-    }                                                   \
+#define _cspec_string_add(self, other)                   \
+  do {                                                   \
+    if(self == NULL && other != NULL) {                  \
+      _cspec_vector_initialize(self);                    \
+    }                                                    \
+    _cspec_vector_add_n(self, other, strlen(other) + 1); \
+    if(other != NULL) {                                  \
+      _cspec_string_ignore_last(self, 1);                \
+    }                                                    \
   } while(0)
-#define cspec_string_size(self) cspec_vector_size(self)
-#define cspec_string_shorten(self, _len)                \
-  do {                                                  \
-    ptrdiff_t len = (ptrdiff_t)(_len);                  \
-    if((self) != NULL) {                                \
-      if(len < 0) {                                     \
-        _cspec_vector_get_header(self)->size = 0;       \
-      } else if(len < cspec_vector_size_signed(self)) { \
-        _cspec_vector_get_header(self)->size = len;     \
-      }                                                 \
-      (self)[cspec_string_size(self)] = '\0';           \
-    }                                                   \
+#define _cspec_string_size(self) _cspec_vector_size(self)
+#define _cspec_string_shorten(self, _len)                \
+  do {                                                   \
+    ptrdiff_t len = (ptrdiff_t)(_len);                   \
+    if((self) != NULL) {                                 \
+      if(len < 0) {                                      \
+        __cspec_vector_get_header(self)->size = 0;       \
+      } else if(len < _cspec_vector_size_signed(self)) { \
+        __cspec_vector_get_header(self)->size = len;     \
+      }                                                  \
+      (self)[_cspec_string_size(self)] = '\0';           \
+    }                                                    \
   } while(0)
-#define cspec_string_ignore_last(self, len) \
-  cspec_string_shorten(self, cspec_string_size(self) - len)
+#define _cspec_string_ignore_last(self, len) \
+  _cspec_string_shorten(self, _cspec_string_size(self) - len)
 static char *cspec_string_new(const char *initial_string) {
   char *self = NULL;
-  cspec_string_add(self, initial_string);
+  _cspec_string_add(self, initial_string);
   return self;
 }
-static void _cspec_string_internal_addf(char **self, const char *f, ...) {
+static void __cspec_string_internal_addf(char **self, const char *f, ...) {
   signed int result = 0;
   char buf[4096];
   va_list args;
@@ -206,26 +206,26 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
   va_end(args);
 
   if(result >= 0) {
-    cspec_string_add(*self, buf);
+    _cspec_string_add(*self, buf);
   }
 }
-#define cspec_string_addf(self, f, ...) \
-  _cspec_string_internal_addf(&self, f, __VA_ARGS__)
-#define cspec_string_delete(self) cspec_string_shorten(self, 0)
-#define cspec_string_skip_first(self, _len)                     \
-  do {                                                          \
-    ptrdiff_t len = (ptrdiff_t)(_len);                          \
-    if((self) != NULL) {                                        \
-      if(len >= cspec_vector_size_signed(self)) {               \
-        cspec_string_delete(self);                              \
-      } else if(len > 0) {                                      \
-        _cspec_vector_get_header(self)->size -= len;            \
-        memmove((self), (self) + len, cspec_string_size(self)); \
-        (self)[cspec_string_size(self)] = '\0';                 \
-      }                                                         \
-    }                                                           \
+#define _cspec_string_addf(self, f, ...) \
+  __cspec_string_internal_addf(&self, f, __VA_ARGS__)
+#define _cspec_string_delete(self) _cspec_string_shorten(self, 0)
+#define _cspec_string_skip_first(self, _len)                     \
+  do {                                                           \
+    ptrdiff_t len = (ptrdiff_t)(_len);                           \
+    if((self) != NULL) {                                         \
+      if(len >= _cspec_vector_size_signed(self)) {               \
+        _cspec_string_delete(self);                              \
+      } else if(len > 0) {                                       \
+        __cspec_vector_get_header(self)->size -= len;            \
+        memmove((self), (self) + len, _cspec_string_size(self)); \
+        (self)[_cspec_string_size(self)] = '\0';                 \
+      }                                                          \
+    }                                                            \
   } while(0)
-#define cspec_string_free(self) cspec_vector_free(self)
+#define _cspec_string_free(self) _cspec_vector_free(self)
 
 /**
  * @brief Abs for floats
@@ -248,9 +248,9 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
       printf("\n\033[1;31mInput a type of test to log " \
              "passing|failing|skipped|all\033[0m\n\n"); \
     } else {                                            \
-      cspec_setup_test_data(type_of_tests);             \
+      _cspec_setup_test_data(type_of_tests);            \
       __VA_ARGS__;                                      \
-      cspec_report_time_taken_for_tests();              \
+      _cspec_report_time_taken_for_tests();             \
     }                                                   \
   } while(0)
 
@@ -259,18 +259,18 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param suite_name -> The name for the new module of tests
  * @param ... -> The block to define
  */
-#define module(suite_name, ...)             \
-  static void suite_name(void) {            \
-    cspec->in_skipped_module = cspec_false; \
-    printf(                                 \
-      "\n%s%sModule `%s`%s\n",              \
-      cspec->BACK_PURPLE,                   \
-      cspec->YELLOW,                        \
-      #suite_name,                          \
-      cspec->RESET                          \
-    );                                      \
-    cspec_string_free(cspec->display_tab);  \
-    __VA_ARGS__;                            \
+#define module(suite_name, ...)              \
+  static void suite_name(void) {             \
+    cspec->in_skipped_module = _cspec_false; \
+    printf(                                  \
+      "\n%s%sModule `%s`%s\n",               \
+      cspec->BACK_PURPLE,                    \
+      cspec->YELLOW,                         \
+      #suite_name,                           \
+      cspec->RESET                           \
+    );                                       \
+    _cspec_string_free(cspec->display_tab);  \
+    __VA_ARGS__;                             \
   }
 
 /**
@@ -280,15 +280,15 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  */
 #define xmodule(suite_name, ...)                                         \
   static void suite_name(void) {                                         \
-    cspec->in_skipped_module   = cspec_true;                             \
-    cspec->in_skipped_describe = cspec_true;                             \
+    cspec->in_skipped_module   = _cspec_true;                            \
+    cspec->in_skipped_describe = _cspec_true;                            \
     printf(                                                              \
       "\n%sModule `%s`%s\n", cspec->BACK_GRAY, #suite_name, cspec->RESET \
     );                                                                   \
-    cspec_string_free(cspec->display_tab);                               \
+    _cspec_string_free(cspec->display_tab);                              \
     __VA_ARGS__;                                                         \
-    cspec->in_skipped_module   = cspec_false;                            \
-    cspec->in_skipped_describe = cspec_false;                            \
+    cspec->in_skipped_module   = _cspec_false;                           \
+    cspec->in_skipped_describe = _cspec_false;                           \
   }
 
 /**
@@ -315,14 +315,14 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  */
 #define after_each(func) cspec->after_func = func
 
-#define cspec_describe_context_block(object_name, color, ...)              \
+#define _cspec_describe_context_block(object_name, color, ...)             \
   do {                                                                     \
-    cspec_string_add(cspec->display_tab, "    ");                          \
+    _cspec_string_add(cspec->display_tab, "    ");                         \
     printf(                                                                \
       "%s%s`%s`%s\n", cspec->display_tab, color, object_name, cspec->RESET \
     );                                                                     \
     __VA_ARGS__;                                                           \
-    cspec_string_skip_first(cspec->display_tab, 4);                        \
+    _cspec_string_skip_first(cspec->display_tab, 4);                       \
   } while(0)
 
 /**
@@ -330,21 +330,21 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param object_name -> The name of the unit to describe
  * @param ... -> The proc to extend to
  */
-#define describe(object_name, ...)                                           \
-  do {                                                                       \
-    if(cspec->in_skipped_module) {                                           \
-      xdescribe(object_name, __VA_ARGS__);                                   \
-    } else {                                                                 \
-      cspec->in_skipped_describe = cspec_false;                              \
-      cspec_describe_context_block(object_name, cspec->PURPLE, __VA_ARGS__); \
-    }                                                                        \
+#define describe(object_name, ...)                                            \
+  do {                                                                        \
+    if(cspec->in_skipped_module) {                                            \
+      xdescribe(object_name, __VA_ARGS__);                                    \
+    } else {                                                                  \
+      cspec->in_skipped_describe = _cspec_false;                              \
+      _cspec_describe_context_block(object_name, cspec->PURPLE, __VA_ARGS__); \
+    }                                                                         \
   } while(0)
 
-#define xdescribe(object_name, ...)                                      \
-  do {                                                                   \
-    cspec->in_skipped_describe = cspec_true;                             \
-    cspec_describe_context_block(object_name, cspec->GRAY, __VA_ARGS__); \
-    cspec->in_skipped_describe = cspec_false;                            \
+#define xdescribe(object_name, ...)                                       \
+  do {                                                                    \
+    cspec->in_skipped_describe = _cspec_true;                             \
+    _cspec_describe_context_block(object_name, cspec->GRAY, __VA_ARGS__); \
+    cspec->in_skipped_describe = _cspec_false;                            \
   } while(0)
 
 /**
@@ -352,14 +352,14 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param object_name -> The name of the unit to describe
  * @param ... -> The proc to extend to
  */
-#define context(object_name, ...)                                            \
-  do {                                                                       \
-    if(cspec->in_skipped_module) {                                           \
-      xcontext(object_name, __VA_ARGS__);                                    \
-    } else {                                                                 \
-      cspec->in_skipped_describe = cspec_false;                              \
-      cspec_describe_context_block(object_name, cspec->YELLOW, __VA_ARGS__); \
-    }                                                                        \
+#define context(object_name, ...)                                             \
+  do {                                                                        \
+    if(cspec->in_skipped_module) {                                            \
+      xcontext(object_name, __VA_ARGS__);                                     \
+    } else {                                                                  \
+      cspec->in_skipped_describe = _cspec_false;                              \
+      _cspec_describe_context_block(object_name, cspec->YELLOW, __VA_ARGS__); \
+    }                                                                         \
   } while(0)
 
 #define xcontext(object_name, ...) xdescribe(object_name, __VA_ARGS__)
@@ -374,11 +374,11 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
     if(cspec->before_func) {                           \
       (*cspec->before_func)();                         \
     }                                                  \
-    cspec_string_add(cspec->display_tab, "    ");      \
+    _cspec_string_add(cspec->display_tab, "    ");     \
                                                        \
     cspec->number_of_tests++;                          \
     cspec->number_of_skipped_tests++;                  \
-    cspec_string_free(cspec->test_result_message);     \
+    _cspec_string_free(cspec->test_result_message);    \
     if(!strncmp(cspec->type_of_tests, "all", 3) ||     \
        !strncmp(cspec->type_of_tests, "skipped", 7)) { \
       printf(                                          \
@@ -390,7 +390,7 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
       );                                               \
     }                                                  \
                                                        \
-    cspec_string_skip_first(cspec->display_tab, 4);    \
+    _cspec_string_skip_first(cspec->display_tab, 4);   \
     if(cspec->after_func) {                            \
       (*cspec->after_func)();                          \
     }                                                  \
@@ -412,9 +412,9 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
         (*cspec->before_func)();                                              \
       }                                                                       \
                                                                               \
-      cspec_string_add(cspec->display_tab, "    ");                           \
+      _cspec_string_add(cspec->display_tab, "    ");                          \
       cspec->number_of_tests++;                                               \
-      cspec_string_free(cspec->test_result_message);                          \
+      _cspec_string_free(cspec->test_result_message);                         \
                                                                               \
       /* Assume its a passing test */                                         \
       cspec->status_of_test = CSPEC_PASSING;                                  \
@@ -457,7 +457,7 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
       }                                                                       \
                                                                               \
       cspec->total_time_taken_for_tests += end_test_timer - start_test_timer; \
-      cspec_string_skip_first(cspec->display_tab, 4);                         \
+      _cspec_string_skip_first(cspec->display_tab, 4);                        \
       if(cspec->after_func) {                                                 \
         (*cspec->after_func)();                                               \
       }                                                                       \
@@ -490,7 +490,7 @@ static void _cspec_string_internal_addf(char **self, const char *f, ...) {
  *
  * @param COLORS -> Terminal string color codes
  */
-typedef struct cspec_data_struct {
+typedef struct _cspec_data_struct {
   size_t number_of_tests;
   size_t number_of_passing_tests;
   size_t number_of_failing_tests;
@@ -523,16 +523,16 @@ typedef struct cspec_data_struct {
   const char *RESET;
   const char *BACK_PURPLE;
   const char *BACK_GRAY;
-} cspec_data_struct;
+} _cspec_data_struct;
 
-static cspec_data_struct *cspec;
+static _cspec_data_struct *cspec;
 
 /**
  * @param CSPEC_PASSING -> Set for passing tests
  * @param CSPEC_FAILING -> Set for failing tests
  */
-#define CSPEC_PASSING cspec_true
-#define CSPEC_FAILING cspec_false
+#define CSPEC_PASSING _cspec_true
+#define CSPEC_FAILING _cspec_false
 
 #define is    ==
 #define isnot !=
@@ -543,45 +543,9 @@ static cspec_data_struct *cspec;
 #define array_size ,
 
 /**
- * @brief Defines a compile time assertion for extended data types
- * @param name_of_assert -> The name of the new assertion
- * @param data_type_token -> The data type of the input variables
- * @param to_string_method -> Custom way to write data type as a string
- * @param comparison_method -> Custom way of comparing new data types for
- *asserts
- */
-#define cspec_define_assert(                                           \
-  name_of_assert, data_type_token, to_string_method, comparison_method \
-)                                                                      \
-  static void name_of_assert(                                          \
-    data_type_token actual, data_type_token expected                   \
-  ) {                                                                  \
-    to_string_method(actual, expected);                                \
-    if(comparison_method(actual, expected)) {                          \
-      cspec->status_of_test = CSPEC_FAILING;                           \
-      _cspec_write_position_in_file();                                 \
-      _cspec_write_assert();                                           \
-    }                                                                  \
-  }
-
-#define cspec_define_assert_array(                                          \
-  name_of_assert, data_type_token, to_string_method, comparison_method, len \
-)                                                                           \
-  static void name_of_assert(                                               \
-    data_type_token actual, data_type_token expected, size_t len            \
-  ) {                                                                       \
-    to_string_method(actual, expected, len);                                \
-    if(comparison_method(actual, expected, len)) {                          \
-      cspec->status_of_test = CSPEC_FAILING;                                \
-      _cspec_write_position_in_file();                                      \
-      _cspec_write_assert();                                                \
-    }                                                                       \
-  }
-
-/**
  * @brief Report the number of tests and time taken while testing
  */
-#define cspec_report_time_taken_for_tests()                               \
+#define _cspec_report_time_taken_for_tests()                              \
   do {                                                                    \
     printf(                                                               \
       "\n%s● %zu tests\n%s✓ %zu passing\n%s✗ %zu failing\n%s- %zu " \
@@ -619,7 +583,7 @@ static cspec_data_struct *cspec;
 /**
  * @brief Allocates memory for vectors to save test results in
  */
-#define cspec_setup_test_data(type)                                        \
+#define _cspec_setup_test_data(type)                                       \
   do {                                                                     \
     printf("\033[38;5;95m/######## ########/\n");                          \
     printf(                                                                \
@@ -629,7 +593,7 @@ static cspec_data_struct *cspec;
     );                                                                     \
     printf("/######## ########/\033[0m\n");                                \
                                                                            \
-    cspec = (cspec_data_struct *)malloc(sizeof(cspec_data_struct));        \
+    cspec = (_cspec_data_struct *)malloc(sizeof(_cspec_data_struct));      \
                                                                            \
     cspec->number_of_tests            = 0;                                 \
     cspec->number_of_passing_tests    = 0;                                 \
@@ -637,7 +601,7 @@ static cspec_data_struct *cspec;
     cspec->number_of_skipped_tests    = 0;                                 \
     cspec->total_time_taken_for_tests = 0;                                 \
     cspec->status_of_test             = CSPEC_PASSING;                     \
-    cspec->in_skipped_describe        = cspec_false;                       \
+    cspec->in_skipped_describe        = _cspec_false;                      \
                                                                            \
     cspec->test_result_message = NULL;                                     \
                                                                            \
@@ -668,31 +632,31 @@ static cspec_data_struct *cspec;
 /** Assertions */
 
 
-#define _cspec_clear_assertion_data()             \
-  do {                                            \
-    cspec->current_file = __FILE__;               \
-    cspec->current_line = __LINE__;               \
-    cspec_string_delete(cspec->position_in_file); \
-    cspec_string_delete(cspec->current_actual);   \
-    cspec_string_delete(cspec->current_expected); \
+#define _cspec_clear_assertion_data()              \
+  do {                                             \
+    cspec->current_file = __FILE__;                \
+    cspec->current_line = __LINE__;                \
+    _cspec_string_delete(cspec->position_in_file); \
+    _cspec_string_delete(cspec->current_actual);   \
+    _cspec_string_delete(cspec->current_expected); \
   } while(0)
 
-#define _cspec_write_position_in_file()         \
-  do {                                          \
-    cspec_string_free(cspec->position_in_file); \
-    cspec_string_addf(                          \
-      cspec->position_in_file,                  \
-      "%s:%zu:",                                \
-      cspec->current_file,                      \
-      cspec->current_line                       \
-    );                                          \
+#define _cspec_write_position_in_file()          \
+  do {                                           \
+    _cspec_string_free(cspec->position_in_file); \
+    _cspec_string_addf(                          \
+      cspec->position_in_file,                   \
+      "%s:%zu:",                                 \
+      cspec->current_file,                       \
+      cspec->current_line                        \
+    );                                           \
   } while(0)
 
 #define _cspec_write_assert()                                      \
   do {                                                             \
     cspec->status_of_test = CSPEC_FAILING;                         \
     _cspec_write_position_in_file();                               \
-    cspec_string_addf(                                             \
+    _cspec_string_addf(                                            \
       cspec->test_result_message,                                  \
       "%s%s    %s\n%s        |> `%s` expected but got %s`%s`%s\n", \
       cspec->display_tab,                                          \
@@ -710,7 +674,7 @@ static cspec_data_struct *cspec;
   do {                                                                 \
     cspec->status_of_test = CSPEC_FAILING;                             \
     _cspec_write_position_in_file();                                   \
-    cspec_string_addf(                                                 \
+    _cspec_string_addf(                                                \
       cspec->test_result_message,                                      \
       "%s%s    %s\n%s        |> expected that `%s` would differ from " \
       "%s`%s`%s but they are the same\n",                              \
@@ -725,15 +689,15 @@ static cspec_data_struct *cspec;
     );                                                                 \
   } while(0)
 
-#define _cspec_assert_that(                                         \
-  actual, expected, format, comparison, output_function             \
-)                                                                   \
-  do {                                                              \
-    cspec_string_addf(cspec->current_actual, format, (actual));     \
-    cspec_string_addf(cspec->current_expected, format, (expected)); \
-    if(comparison(actual, expected)) {                              \
-      output_function();                                            \
-    }                                                               \
+#define _cspec_assert_that(                                          \
+  actual, expected, format, comparison, output_function              \
+)                                                                    \
+  do {                                                               \
+    _cspec_string_addf(cspec->current_actual, format, (actual));     \
+    _cspec_string_addf(cspec->current_expected, format, (expected)); \
+    if(comparison(actual, expected)) {                               \
+      output_function();                                             \
+    }                                                                \
   } while(0)
 
 #define _cspec_assert_array_body(actual, expected, len_of_array, _format) \
@@ -742,17 +706,17 @@ static cspec_data_struct *cspec;
     cspec->current_expected = cspec_string_new("[");                      \
                                                                           \
     char *format = cspec_string_new(_format);                             \
-    cspec_string_add(format, ", ");                                       \
+    _cspec_string_add(format, ", ");                                      \
     for(size_t i = 0; i < (len_of_array) - 1; i++) {                      \
-      cspec_string_addf(cspec->current_actual, format, (actual)[i]);      \
-      cspec_string_addf(cspec->current_expected, format, (expected)[i]);  \
+      _cspec_string_addf(cspec->current_actual, format, (actual)[i]);     \
+      _cspec_string_addf(cspec->current_expected, format, (expected)[i]); \
     }                                                                     \
-    cspec_string_ignore_last(format, 2);                                  \
-    cspec_string_add(format, "]");                                        \
-    cspec_string_addf(                                                    \
+    _cspec_string_ignore_last(format, 2);                                 \
+    _cspec_string_add(format, "]");                                       \
+    _cspec_string_addf(                                                   \
       cspec->current_actual, format, (actual)[(len_of_array) - 1]         \
     );                                                                    \
-    cspec_string_addf(                                                    \
+    _cspec_string_addf(                                                   \
       cspec->current_expected, format, (expected)[(len_of_array) - 1]     \
     );                                                                    \
   } while(0)
@@ -794,7 +758,7 @@ static cspec_data_struct *cspec;
     if(!(test)) {                                             \
       cspec->status_of_test = CSPEC_FAILING;                  \
       _cspec_write_position_in_file();                        \
-      cspec_string_addf(                                      \
+      _cspec_string_addf(                                     \
         cspec->test_result_message,                           \
         "%s%s    %s\n%s        |> %s`%s`%s should be true\n", \
         cspec->display_tab,                                   \
@@ -818,7 +782,7 @@ static cspec_data_struct *cspec;
     if((test)) {                                               \
       cspec->status_of_test = CSPEC_FAILING;                   \
       _cspec_write_position_in_file();                         \
-      cspec_string_addf(                                       \
+      _cspec_string_addf(                                      \
         cspec->test_result_message,                            \
         "%s%s    %s\n%s        |> %s`%s`%s should be false\n", \
         cspec->display_tab,                                    \
