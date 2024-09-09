@@ -9,14 +9,19 @@ module(simple, {
     before({ debug_msg(); });
     before_each(&initializer);
 
+    it("just fails", { fail("This is a failure"); });
+
     it("succeeds `assert_that`", { assert_that(1 is 1); });
     it("fails `assert_that`", { assert_that(1 isnot 1); });
+
+    it("fails again", { fail("This is a second failure"); });
 
     it("succeeds `nassert_that`", { nassert_that(2 isnot 2); });
     it("fails `nassert_that`", { nassert_that(2 is 2); });
 
-    it("succeeds `assert_that_char`", { assert_that_char('a' equals to 'a'); });
+    it("fails a third time", { fail("This is a third failure"); });
 
+    it("succeeds `assert_that_char`", { assert_that_char('a' equals to 'a'); });
     it("fails `assert_that_char`", { assert_that_char('a' equals to 'b'); });
 
     it("succeeds `nassert_that_char`", {

@@ -749,6 +749,28 @@ static _cspec_data_struct *cspec;
   } while(0)
 
 /**
+ * @brief Fails every time (used when failure is implicit)
+ * @param error_message -> The error message to display
+ */
+#define fail(error_message)                  \
+  do {                                       \
+    _cspec_clear_assertion_data();           \
+    cspec->status_of_test = CSPEC_FAILING;   \
+    _cspec_write_position_in_file();         \
+    _cspec_string_addf(                      \
+      cspec->test_result_message,            \
+      "%s%s    %s\n%s        |> %s`%s`%s\n", \
+      cspec->display_tab,                    \
+      cspec->RESET,                          \
+      cspec->position_in_file,               \
+      cspec->display_tab,                    \
+      cspec->RED,                            \
+      error_message,                         \
+      cspec->RESET                           \
+    );                                       \
+  } while(0)
+
+/**
  * @brief Asserts that a proc returns true
  * @param test -> The test proc to run
  */
