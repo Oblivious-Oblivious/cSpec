@@ -2,7 +2,7 @@
  * A lightweight, compile time unit testing library for TDD and BDD models,
  * heavily inspired by ruby's RSpec.
  *
- * Copyright (C) 2024 Athanasios Papapostolou (oblivious)
+ * Copyright (C) 2020-2025 Athanasios Papapostolou (oblivious)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,14 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * As a special exception, this library may be used in programs licensed
+ * under any terms.  Modifications to the library itself must be licensed
+ * under the GNU General Public License version 3, with the inclusion of
+ * this special exception, while modifications to programs using this
+ * library may continue to be licensed under any terms.  This exception
+ * does not impose any additional licensing requirements, modify or
+ * transform the licensing terms of programs using this library.
  */
 
 #ifndef __CSPEC_H_
@@ -545,39 +553,39 @@ static _cspec_data_struct *cspec;
 /**
  * @brief Report the number of tests and time taken while testing
  */
-#define _cspec_report_time_taken_for_tests()                              \
-  do {                                                                    \
-    printf(                                                               \
+#define _cspec_report_time_taken_for_tests()                        \
+  do {                                                              \
+    printf(                                                         \
       "\n%s● %zu tests\n%s✓ %zu passing\n%s✗ %zu failing\n%s- %zu " \
-      "skipped%s\n",                                                      \
-      cspec->YELLOW,                                                      \
-      cspec->number_of_tests,                                             \
-      cspec->GREEN,                                                       \
-      cspec->number_of_passing_tests,                                     \
-      cspec->RED,                                                         \
-      cspec->number_of_failing_tests,                                     \
-      cspec->GRAY,                                                        \
-      cspec->number_of_skipped_tests,                                     \
-      cspec->RESET                                                        \
-    );                                                                    \
-                                                                          \
-    /* Print in seconds if the time is more than 100ms */                 \
-    if(cspec->total_time_taken_for_tests > 100000000) {                   \
-      printf(                                                             \
-        "%s★ Finished in %.5f seconds%s\n",                               \
-        cspec->CYAN,                                                      \
-        cspec->total_time_taken_for_tests / 1000000000.0,                 \
-        cspec->RESET                                                      \
-      );                                                                  \
-    } /* Else print in miliseconds */                                     \
-    else {                                                                \
-      printf(                                                             \
-        "%s★ Finished in %.5f ms%s\n",                                    \
-        cspec->CYAN,                                                      \
-        cspec->total_time_taken_for_tests / 1000000.0,                    \
-        cspec->RESET                                                      \
-      );                                                                  \
-    }                                                                     \
+      "skipped%s\n",                                                \
+      cspec->YELLOW,                                                \
+      cspec->number_of_tests,                                       \
+      cspec->GREEN,                                                 \
+      cspec->number_of_passing_tests,                               \
+      cspec->RED,                                                   \
+      cspec->number_of_failing_tests,                               \
+      cspec->GRAY,                                                  \
+      cspec->number_of_skipped_tests,                               \
+      cspec->RESET                                                  \
+    );                                                              \
+                                                                    \
+    /* Print in seconds if the time is more than 100ms */           \
+    if(cspec->total_time_taken_for_tests > 100000000) {             \
+      printf(                                                       \
+        "%s★ Finished in %.5f seconds%s\n",                         \
+        cspec->CYAN,                                                \
+        cspec->total_time_taken_for_tests / 1000000000.0,           \
+        cspec->RESET                                                \
+      );                                                            \
+    } /* Else print in miliseconds */                               \
+    else {                                                          \
+      printf(                                                       \
+        "%s★ Finished in %.5f ms%s\n",                              \
+        cspec->CYAN,                                                \
+        cspec->total_time_taken_for_tests / 1000000.0,              \
+        cspec->RESET                                                \
+      );                                                            \
+    }                                                               \
   } while(0)
 
 /**

@@ -22,12 +22,6 @@
       "version": "-std=c2x",
       "flags": "",
       "warnings": ""
-    },
-    "test": {
-      "opt": "-Og",
-      "version": "-std=c99",
-      "flags": "-g",
-      "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic"
     }
   },
 
