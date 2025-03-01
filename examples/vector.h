@@ -23,5 +23,6 @@ void vector_set(vector *v, size_t index, int item);
 int vector_get(vector *v, size_t index);
 void vector_delete(vector *v, size_t index);
 size_t vector_length(vector *v);
+void vector_free(vector *v);
 
 #endif

@@ -17,3 +17,5 @@ int stack_pop(stack *st) {
   }
   return st->elements[--st->size];
 }
+
+void stack_free(stack *st) { free(st); }

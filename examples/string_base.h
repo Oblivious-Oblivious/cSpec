@@ -28,5 +28,6 @@ void string_shorten(string *sb, size_t len);
 void string_delete(string *sb);
 void string_skip(string *sb, size_t len);
 size_t string_length(string *sb);
+void string_free(string *sb);
 
 #endif

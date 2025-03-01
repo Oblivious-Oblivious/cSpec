@@ -36,6 +36,8 @@ module(vector_spec, {
       vector_delete(v, 1);
       assert_that_int(vector_get(v, 1) equals to c);
     });
+
+    after({ vector_free(v); });
   });
 })
 

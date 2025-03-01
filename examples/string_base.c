@@ -36,8 +36,8 @@ string *string_create(char *initial_string) {
   string *sb;
 
   /* If a persitence flag is passed do not store on the garbage collector */
-  sb      = calloc(1, sizeof(*sb));
-  sb->str = malloc(string_init_capacity);
+  sb      = (string *)malloc(sizeof(*sb));
+  sb->str = (char *)malloc(sizeof(char) * string_init_capacity);
 
   /* NULL terminate the string */
   *sb->str = '\0';
@@ -110,7 +110,7 @@ char *string_get(string *sb) {
 }
 
 char string_get_char_at_index(string *sb, size_t index) {
-  if(sb == NULL || index < 0) {
+  if(sb == NULL) {
     return '\0';
   }
   return sb->str[index];
@@ -159,4 +159,9 @@ size_t string_length(string *sb) {
     return 0;
   }
   return sb->len;
+}
+
+void string_free(string *sb) {
+  free(sb->str);
+  free(sb);
 }

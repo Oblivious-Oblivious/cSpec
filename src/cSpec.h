@@ -29,6 +29,7 @@
 #ifndef __CSPEC_H_
 #define __CSPEC_H_
 
+#include <stdarg.h> /* va_start, va_end, va_arg */
 #include <stddef.h> /* size_t, ptrdiff_t */
 #include <stdio.h>  /* printf, snprintf */
 #include <stdlib.h> /* malloc, realloc */
@@ -36,15 +37,19 @@
 
 #if defined(_WIN32)
   #include <Windows.h>
-#elif defined(__unix__)
+#elif defined(__unix__) || defined(__linux__)
   #if defined(__clang__)
     #define CSPEC_CLOCKID 0
   #endif
 
-  #include <time.h>
+  #include <sys/time.h>
 
-  #ifdef CLOCK_MONOTONIC
-    #define CSPEC_CLOCKID CLOCK_MONOTONIC
+  #if !defined(CSPEC_CLOCKID)
+    #if defined(CLOCK_MONOTONIC)
+      #define CSPEC_CLOCKID CLOCK_MONOTONIC
+    #else
+      #define CSPEC_CLOCKID 1
+    #endif
   #endif
 #elif defined(__MACH__) && defined(__APPLE__)
   #include <mach/mach.h>
@@ -82,16 +87,12 @@ static size_t cspec_timer(void) {
   now /= info.denom;
   return now;
 #elif defined(__linux)
-  static struct timespec linux_rate;
-  size_t now;
-  struct timespec spec;
+  struct timeval tv;
   if(0 == is_init) {
-    clock_getres(CSPEC_CLOCKID, &linux_rate);
     is_init = 1;
   }
-  clock_gettime(CSPEC_CLOCKID, &spec);
-  now = spec.tv_sec * 1.0e9 + spec.tv_nsec;
-  return now;
+  gettimeofday(&tv, NULL);
+  return (size_t)(tv.tv_sec * 1000000000LL + tv.tv_usec * 1000LL);
 #endif
 }
 

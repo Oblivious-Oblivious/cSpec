@@ -7,9 +7,11 @@
 static stack *st;
 
 static void setup(void) { st = new_stack(); }
+static void defer(void) { stack_free(st); }
 
 module(stack_spec, {
   before_each(&setup);
+  after_each(&defer);
 
   it("asserts that a new stack is empty", { assert_that(stack_is_empty(st)); });
 

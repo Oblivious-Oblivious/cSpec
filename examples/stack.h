@@ -18,5 +18,6 @@ stack *new_stack(void);
 bool stack_is_empty(stack *st);
 void stack_push(stack *st, int element);
 int stack_pop(stack *st);
+void stack_free(stack *st);
 
 #endif

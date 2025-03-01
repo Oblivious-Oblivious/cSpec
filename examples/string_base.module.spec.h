@@ -31,7 +31,7 @@ module(string_spec, {
       });
     });
 
-    after({});
+    after({ string_free(str); });
   });
 })
 

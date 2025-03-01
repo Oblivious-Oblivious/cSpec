@@ -2,7 +2,7 @@
  * A lightweight, compile time unit testing library for TDD and BDD models,
  * heavily inspired by ruby's RSpec.
  *
- * Copyright (C) 2024 Athanasios Papapostolou (oblivious)
+ * Copyright (C) 2020-2025 Athanasios Papapostolou (oblivious)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,20 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * As a special exception, this library may be used in programs licensed
+ * under any terms.  Modifications to the library itself must be licensed
+ * under the GNU General Public License version 3, with the inclusion of
+ * this special exception, while modifications to programs using this
+ * library may continue to be licensed under any terms.  This exception
+ * does not impose any additional licensing requirements, modify or
+ * transform the licensing terms of programs using this library.
  */
 
 #ifndef __CSPEC_H_
 #define __CSPEC_H_
 
+#include <stdarg.h> /* va_start, va_end, va_arg */
 #include <stddef.h> /* size_t, ptrdiff_t */
 #include <stdio.h>  /* printf, snprintf */
 #include <stdlib.h> /* malloc, realloc */
@@ -28,15 +37,19 @@
 
 #if defined(_WIN32)
   #include <Windows.h>
-#elif defined(__unix__)
+#elif defined(__unix__) || defined(__linux__)
   #if defined(__clang__)
     #define CSPEC_CLOCKID 0
   #endif
 
-  #include <time.h>
+  #include <sys/time.h>
 
-  #ifdef CLOCK_MONOTONIC
-    #define CSPEC_CLOCKID CLOCK_MONOTONIC
+  #if !defined(CSPEC_CLOCKID)
+    #if defined(CLOCK_MONOTONIC)
+      #define CSPEC_CLOCKID CLOCK_MONOTONIC
+    #else
+      #define CSPEC_CLOCKID 1
+    #endif
   #endif
 #elif defined(__MACH__) && defined(__APPLE__)
   #include <mach/mach.h>
@@ -74,16 +87,12 @@ static size_t cspec_timer(void) {
   now /= info.denom;
   return now;
 #elif defined(__linux)
-  static struct timespec linux_rate;
-  size_t now;
-  struct timespec spec;
+  struct timeval tv;
   if(0 == is_init) {
-    clock_getres(CSPEC_CLOCKID, &linux_rate);
     is_init = 1;
   }
-  clock_gettime(CSPEC_CLOCKID, &spec);
-  now = spec.tv_sec * 1.0e9 + spec.tv_nsec;
-  return now;
+  gettimeofday(&tv, NULL);
+  return (size_t)(tv.tv_sec * 1000000000LL + tv.tv_usec * 1000LL);
 #endif
 }
 
@@ -545,39 +554,39 @@ static _cspec_data_struct *cspec;
 /**
  * @brief Report the number of tests and time taken while testing
  */
-#define _cspec_report_time_taken_for_tests()                              \
-  do {                                                                    \
-    printf(                                                               \
+#define _cspec_report_time_taken_for_tests()                        \
+  do {                                                              \
+    printf(                                                         \
       "\n%s● %zu tests\n%s✓ %zu passing\n%s✗ %zu failing\n%s- %zu " \
-      "skipped%s\n",                                                      \
-      cspec->YELLOW,                                                      \
-      cspec->number_of_tests,                                             \
-      cspec->GREEN,                                                       \
-      cspec->number_of_passing_tests,                                     \
-      cspec->RED,                                                         \
-      cspec->number_of_failing_tests,                                     \
-      cspec->GRAY,                                                        \
-      cspec->number_of_skipped_tests,                                     \
-      cspec->RESET                                                        \
-    );                                                                    \
-                                                                          \
-    /* Print in seconds if the time is more than 100ms */                 \
-    if(cspec->total_time_taken_for_tests > 100000000) {                   \
-      printf(                                                             \
-        "%s★ Finished in %.5f seconds%s\n",                               \
-        cspec->CYAN,                                                      \
-        cspec->total_time_taken_for_tests / 1000000000.0,                 \
-        cspec->RESET                                                      \
-      );                                                                  \
-    } /* Else print in miliseconds */                                     \
-    else {                                                                \
-      printf(                                                             \
-        "%s★ Finished in %.5f ms%s\n",                                    \
-        cspec->CYAN,                                                      \
-        cspec->total_time_taken_for_tests / 1000000.0,                    \
-        cspec->RESET                                                      \
-      );                                                                  \
-    }                                                                     \
+      "skipped%s\n",                                                \
+      cspec->YELLOW,                                                \
+      cspec->number_of_tests,                                       \
+      cspec->GREEN,                                                 \
+      cspec->number_of_passing_tests,                               \
+      cspec->RED,                                                   \
+      cspec->number_of_failing_tests,                               \
+      cspec->GRAY,                                                  \
+      cspec->number_of_skipped_tests,                               \
+      cspec->RESET                                                  \
+    );                                                              \
+                                                                    \
+    /* Print in seconds if the time is more than 100ms */           \
+    if(cspec->total_time_taken_for_tests > 100000000) {             \
+      printf(                                                       \
+        "%s★ Finished in %.5f seconds%s\n",                         \
+        cspec->CYAN,                                                \
+        cspec->total_time_taken_for_tests / 1000000000.0,           \
+        cspec->RESET                                                \
+      );                                                            \
+    } /* Else print in miliseconds */                               \
+    else {                                                          \
+      printf(                                                       \
+        "%s★ Finished in %.5f ms%s\n",                              \
+        cspec->CYAN,                                                \
+        cspec->total_time_taken_for_tests / 1000000.0,              \
+        cspec->RESET                                                \
+      );                                                            \
+    }                                                               \
   } while(0)
 
 /**
