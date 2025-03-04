@@ -170,8 +170,9 @@ static void *__cspec_vector_growf(
 
   return b;
 }
-#define _cspec_vector_free(self)                                     \
-  ((void)((self) ? realloc(__cspec_vector_get_header(self), 0) : 0), \
+#define _cspec_vector_free(self)                                              \
+  ((self) ? (*(void **)&(self) = realloc(__cspec_vector_get_header(self), 0)) \
+          : 0,                                                                \
    (self) = NULL)
 
 #define _cspec_string_add(self, other)                   \
