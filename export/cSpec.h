@@ -648,6 +648,8 @@ static _cspec_data_struct *cspec;
     _cspec_string_delete(cspec->position_in_file); \
     _cspec_string_delete(cspec->current_actual);   \
     _cspec_string_delete(cspec->current_expected); \
+    _cspec_string_free(cspec->current_actual);     \
+    _cspec_string_free(cspec->current_expected);   \
   } while(0)
 
 #define _cspec_write_position_in_file()          \
@@ -728,6 +730,7 @@ static _cspec_data_struct *cspec;
     _cspec_string_addf(                                                   \
       cspec->current_expected, format, (expected)[(len_of_array) - 1]     \
     );                                                                    \
+    _cspec_string_free(format);                                           \
   } while(0)
 
 #define _cspec_assert_that_array(                                      \
