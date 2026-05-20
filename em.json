@@ -1,29 +1,62 @@
 {
+  "$schema": "https://raw.githubusercontent.com/Oblivious-Oblivious/Emeralds/master/schema/em.schema.json",
   "name": "cSpec",
-
   "version": "0.3.2",
-
-  "dependencies": {},
-
-  "dev-dependencies": {},
-
-  "build": "make",
-
+  "license": "gpl-v3",
+  "locignore": {
+    "extensions": [],
+    "directories": []
+  },
+  "scripts": {
+    "build": "make"
+  },
   "compile-flags": {
-    "cc": "clang",
-    "debug": {
-      "opt": "-Og",
-      "version": "-std=c99",
-      "flags": "-g",
-      "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic"
+    "darwin": {
+      "cc": "clang",
+      "debug": {
+        "opt": "-O2",
+        "version": "-std=c89",
+        "flags": "",
+        "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic"
+      },
+      "release": {
+        "opt": "-O2",
+        "version": "-std=c89",
+        "flags": "",
+        "warnings": ""
+      }
     },
-    "release": {
-      "opt": "-O2",
-      "version": "-std=c2x",
-      "flags": "",
-      "warnings": ""
+    "linux": {
+      "cc": "gcc",
+      "debug": {
+        "opt": "-O2",
+        "version": "-std=c89",
+        "flags": "-g",
+        "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic"
+      },
+      "release": {
+        "opt": "-O3",
+        "version": "",
+        "flags": "",
+        "warnings": ""
+      }
+    },
+    "win32": {
+      "cc": "gcc",
+      "debug": {
+        "opt": "-O2",
+        "version": "-std=c89",
+        "flags": "-g",
+        "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic"
+      },
+      "release": {
+        "opt": "-O2",
+        "version": "-std=c89",
+        "flags": "",
+        "warnings": ""
+      }
     }
   },
-
-  "license": "gpl-v3"
+  "dependencies": {},
+  "dev-dependencies": {}
 }
