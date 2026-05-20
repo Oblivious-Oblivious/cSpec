@@ -2,7 +2,7 @@
  * A lightweight, compile time unit testing library for TDD and BDD models,
  * heavily inspired by ruby's RSpec.
  *
- * Copyright (C) 2020-2025 Athanasios Papapostolou (oblivious)
+ * Copyright (C) 2020-2026 Athanasios Papapostolou (oblivious)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
