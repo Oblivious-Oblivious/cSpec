@@ -37,6 +37,7 @@
 
 #if defined(_WIN32)
   #include <Windows.h>
+  #include <time.h>
 #elif defined(__unix__) || defined(__linux__)
   #if defined(__clang__)
     #define CSPEC_CLOCKID 0
