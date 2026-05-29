@@ -1,14 +1,19 @@
 {
   "$schema": "https://raw.githubusercontent.com/Oblivious-Oblivious/Emeralds/master/schema/em.schema.json",
+  "author": "",
   "name": "cSpec",
   "version": "0.3.2",
   "license": "gpl-v3",
   "locignore": {
     "extensions": [],
-    "directories": []
+    "directories": ["libs"]
+  },
+  "lintignore": {
+    "extensions": [],
+    "directories": ["libs"]
   },
   "scripts": {
-    "build": "make"
+    "build": ["rm -rf export", "mkdir export", "cp src/cSpec.h export/"]
   },
   "compile-flags": {
     "darwin": {
@@ -16,14 +21,16 @@
       "debug": {
         "opt": "-O2",
         "version": "-std=c89",
-        "flags": "",
-        "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic"
+        "flags": "-g -fsanitize=address",
+        "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic",
+        "libs": ""
       },
       "release": {
         "opt": "-O2",
         "version": "-std=c89",
         "flags": "",
-        "warnings": ""
+        "warnings": "",
+        "libs": ""
       }
     },
     "linux": {
@@ -32,13 +39,15 @@
         "opt": "-O2",
         "version": "-std=c89",
         "flags": "-g",
-        "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic"
+        "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic",
+        "libs": ""
       },
       "release": {
         "opt": "-O3",
         "version": "",
         "flags": "",
-        "warnings": ""
+        "warnings": "",
+        "libs": ""
       }
     },
     "win32": {
@@ -47,13 +56,15 @@
         "opt": "-O2",
         "version": "-std=c89",
         "flags": "-g",
-        "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic"
+        "warnings": "-Wall -Wextra -Werror -pedantic -pedantic-errors -Wpedantic",
+        "libs": ""
       },
       "release": {
         "opt": "-O2",
         "version": "-std=c89",
         "flags": "",
-        "warnings": ""
+        "warnings": "",
+        "libs": ""
       }
     }
   },
