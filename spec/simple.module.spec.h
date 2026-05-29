@@ -2,9 +2,18 @@
 #define __SIMPLE_MODULE_SPEC_H_
 
 #include "../src/cSpec.h"
-#include "simple.h"
 
-module(simple, {
+#include <stdio.h>
+
+static void debug_msg(void) { printf("This is called before all tests\n"); }
+
+static void teardown_msg(void) { printf("This is called after all tests\n"); }
+
+static void initializer(void) {}
+
+static void destructor(void) {}
+
+module(T_simple, {
   describe("cSpec functions", {
     before({ debug_msg(); });
     before_each(&initializer);

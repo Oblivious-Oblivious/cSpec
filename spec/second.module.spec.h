@@ -3,7 +3,7 @@
 
 #include "../src/cSpec.h"
 
-module(second, {
+module(T_second, {
   describe("DESC 1", {
     it("before on desc 1", { assert_that(42 isnot 69); });
 

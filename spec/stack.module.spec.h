@@ -2,14 +2,39 @@
 #define __STACK_MODULE_SPEC_H_
 
 #include "../src/cSpec.h"
-#include "stack.h"
+
+typedef struct stack {
+  size_t size;
+  int elements[2];
+} stack;
+
+static stack *new_stack(void) {
+  stack *st = (stack *)malloc(sizeof(stack) + 1);
+  st->size  = 0;
+  return st;
+}
+
+static bool stack_is_empty(stack *st) { return st->size == 0; }
+
+static void stack_push(stack *st, int element) {
+  st->elements[st->size++] = element;
+}
+
+static int stack_pop(stack *st) {
+  if(stack_is_empty(st)) {
+    return 0;
+  }
+  return st->elements[--st->size];
+}
+
+static void stack_free(stack *st) { free(st); }
 
 static stack *st;
 
 static void setup(void) { st = new_stack(); }
 static void defer(void) { stack_free(st); }
 
-module(stack_spec, {
+module(T_stack, {
   before_each(&setup);
   after_each(&defer);
 

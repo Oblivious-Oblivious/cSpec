@@ -3,7 +3,7 @@
 
 #include "../src/cSpec.h"
 
-xmodule(xexample, {
+xmodule(T_xexample, {
   describe("xExample", {
     it("does on 1", { assert_that(1 is 1); });
     it("does on 2", { assert_that(2 is 2); });
