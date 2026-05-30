@@ -1442,6 +1442,22 @@ _nassert_that_size_t_array(size_t *actual, size_t *expected, size_t len) {
   );
 }
 
+#define _cspec_void_ptr_comparison(actual, expected) \
+  ((const void *)(actual) != (const void *)(expected))
+#define assert_that_void_ptr(inner) \
+  do {                              \
+    _cspec_clear_assertion_data();  \
+    _assert_that_void_ptr(inner);   \
+  } while(0)
+static inline void
+_assert_that_void_ptr(const void *actual, const void *expected) {
+  _cspec_string_addf(cspec->current_actual, "%p", (void *)actual);
+  _cspec_string_addf(cspec->current_expected, "%p", (void *)expected);
+  if(_cspec_void_ptr_comparison(actual, expected)) {
+    _cspec_write_assert();
+  }
+}
+
 #define _cspec_ptrdiff_t_comparison(actual, expected) \
   ((ptrdiff_t)(actual) != (expected))
 #define assert_that_ptrdiff_t(inner) \
