@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/Oblivious-Oblivious/Emeralds/master/schema/em.schema.json",
   "author": "",
   "name": "cSpec",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "license": "gpl-v3",
   "locignore": {
     "extensions": [],

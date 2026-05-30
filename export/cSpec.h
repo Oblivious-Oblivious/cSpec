@@ -36,8 +36,8 @@
 #include <string.h> /* strlen, strncmp, memmove */
 
 #if defined(_WIN32)
-  #include <Windows.h>
   #include <time.h>
+  #include <Windows.h>
 #elif defined(__unix__) || defined(__linux__)
   #if defined(__clang__)
     #define CSPEC_CLOCKID 0
@@ -250,19 +250,23 @@ static void __cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param type_of_tests -> passing|failing|skipped|all
  * @param ... -> The block of modules to run
  */
-#define cspec_run_suite(type_of_tests, ...)             \
-  do {                                                  \
-    if(strncmp((type_of_tests), "passing", 7) &&        \
-       strncmp((type_of_tests), "failing", 7) &&        \
-       strncmp((type_of_tests), "skipped", 7) &&        \
-       strncmp((type_of_tests), "all", 3)) {            \
-      printf("\n\033[1;31mInput a type of test to log " \
-             "passing|failing|skipped|all\033[0m\n\n"); \
-    } else {                                            \
-      _cspec_setup_test_data(type_of_tests);            \
-      __VA_ARGS__;                                      \
-      _cspec_report_time_taken_for_tests();             \
-    }                                                   \
+#define cspec_run_suite(type_of_tests, ...)        \
+  do {                                             \
+    if(                                            \
+      strncmp((type_of_tests), "passing", 7) &&    \
+      strncmp((type_of_tests), "failing", 7) &&    \
+      strncmp((type_of_tests), "skipped", 7) &&    \
+      strncmp((type_of_tests), "all", 3)           \
+    ) {                                            \
+      printf(                                      \
+        "\n\033[1;31mInput a type of test to log " \
+        "passing|failing|skipped|all\033[0m\n\n"   \
+      );                                           \
+    } else {                                       \
+      _cspec_setup_test_data(type_of_tests);       \
+      __VA_ARGS__;                                 \
+      _cspec_report_time_taken_for_tests();        \
+    }                                              \
   } while(0)
 
 /**
@@ -380,31 +384,33 @@ static void __cspec_string_internal_addf(char **self, const char *f, ...) {
  * @param proc_name -> The name of test to run
  * @param ... -> The actual test code
  */
-#define xit(proc_name, ...)                            \
-  do {                                                 \
-    if(cspec->before_func) {                           \
-      (*cspec->before_func)();                         \
-    }                                                  \
-    _cspec_string_add(cspec->display_tab, "    ");     \
-                                                       \
-    cspec->number_of_tests++;                          \
-    cspec->number_of_skipped_tests++;                  \
-    _cspec_string_free(cspec->test_result_message);    \
-    if(!strncmp(cspec->type_of_tests, "all", 3) ||     \
-       !strncmp(cspec->type_of_tests, "skipped", 7)) { \
-      printf(                                          \
-        "%s%s- %s%s\n",                                \
-        cspec->display_tab,                            \
-        cspec->GRAY,                                   \
-        proc_name,                                     \
-        cspec->RESET                                   \
-      );                                               \
-    }                                                  \
-                                                       \
-    _cspec_string_skip_first(cspec->display_tab, 4);   \
-    if(cspec->after_func) {                            \
-      (*cspec->after_func)();                          \
-    }                                                  \
+#define xit(proc_name, ...)                          \
+  do {                                               \
+    if(cspec->before_func) {                         \
+      (*cspec->before_func)();                       \
+    }                                                \
+    _cspec_string_add(cspec->display_tab, "    ");   \
+                                                     \
+    cspec->number_of_tests++;                        \
+    cspec->number_of_skipped_tests++;                \
+    _cspec_string_free(cspec->test_result_message);  \
+    if(                                              \
+      !strncmp(cspec->type_of_tests, "all", 3) ||    \
+      !strncmp(cspec->type_of_tests, "skipped", 7)   \
+    ) {                                              \
+      printf(                                        \
+        "%s%s- %s%s\n",                              \
+        cspec->display_tab,                          \
+        cspec->GRAY,                                 \
+        proc_name,                                   \
+        cspec->RESET                                 \
+      );                                             \
+    }                                                \
+                                                     \
+    _cspec_string_skip_first(cspec->display_tab, 4); \
+    if(cspec->after_func) {                          \
+      (*cspec->after_func)();                        \
+    }                                                \
   } while(0)
 
 /**
@@ -438,8 +444,10 @@ static void __cspec_string_internal_addf(char **self, const char *f, ...) {
                                                                               \
       if(cspec->status_of_test == CSPEC_PASSING) {                            \
         cspec->number_of_passing_tests++;                                     \
-        if(!strncmp(cspec->type_of_tests, "all", 3) ||                        \
-           !strncmp(cspec->type_of_tests, "passing", 7)) {                    \
+        if(                                                                   \
+          !strncmp(cspec->type_of_tests, "all", 3) ||                         \
+          !strncmp(cspec->type_of_tests, "passing", 7)                        \
+        ) {                                                                   \
           printf(                                                             \
             "%s%s✓%s it %s%s\n",                                              \
             cspec->display_tab,                                               \
@@ -453,8 +461,10 @@ static void __cspec_string_internal_addf(char **self, const char *f, ...) {
         /* Even if 1 of the asserts in the current it block fails, assume we  \
          * have a failing test */                                             \
         cspec->number_of_failing_tests++;                                     \
-        if(!strncmp(cspec->type_of_tests, "all", 3) ||                        \
-           !strncmp(cspec->type_of_tests, "failing", 7)) {                    \
+        if(                                                                   \
+          !strncmp(cspec->type_of_tests, "all", 3) ||                         \
+          !strncmp(cspec->type_of_tests, "failing", 7)                        \
+        ) {                                                                   \
           printf(                                                             \
             "%s%s✗%s it %s:\n%s%s\n",                                         \
             cspec->display_tab,                                               \
@@ -1440,6 +1450,22 @@ _nassert_that_size_t_array(size_t *actual, size_t *expected, size_t len) {
   _cspec_nassert_that_array(
     actual, expected, len, "%zu", _cspec_size_t_comparison, _cspec_write_nassert
   );
+}
+
+#define _cspec_void_ptr_comparison(actual, expected) \
+  ((const void *)(actual) != (const void *)(expected))
+#define assert_that_void_ptr(inner) \
+  do {                              \
+    _cspec_clear_assertion_data();  \
+    _assert_that_void_ptr(inner);   \
+  } while(0)
+static inline void
+_assert_that_void_ptr(const void *actual, const void *expected) {
+  _cspec_string_addf(cspec->current_actual, "%p", (void *)actual);
+  _cspec_string_addf(cspec->current_expected, "%p", (void *)expected);
+  if(_cspec_void_ptr_comparison(actual, expected)) {
+    _cspec_write_assert();
+  }
 }
 
 #define _cspec_ptrdiff_t_comparison(actual, expected) \
