@@ -12,9 +12,6 @@
     "extensions": [],
     "directories": ["libs"]
   },
-  "scripts": {
-    "build": ["rm -rf export", "mkdir export", "cp src/cSpec.h export/"]
-  },
   "compile-flags": {
     "darwin": {
       "cc": "clang",

@@ -4,6 +4,7 @@
 - Added a `fail` assert.
 - Updated to the new version of emeralds.
 - Added test tests and updated dependencies.
+- Added a void pointer assertion.
 
 # Changes for cSpec 0.3.2 (Aug 18, 2024)
 

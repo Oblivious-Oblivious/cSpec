@@ -1459,13 +1459,51 @@ _nassert_that_size_t_array(size_t *actual, size_t *expected, size_t len) {
     _cspec_clear_assertion_data();  \
     _assert_that_void_ptr(inner);   \
   } while(0)
+#define nassert_that_void_ptr(inner) \
+  do {                               \
+    _cspec_clear_assertion_data();   \
+    _nassert_that_void_ptr(inner);   \
+  } while(0)
+#define assert_that_void_ptr_array(inner) \
+  do {                                    \
+    _cspec_clear_assertion_data();        \
+    _assert_that_void_ptr_array(inner);   \
+  } while(0)
+#define nassert_that_void_ptr_array(inner) \
+  do {                                     \
+    _cspec_clear_assertion_data();         \
+    _nassert_that_void_ptr_array(inner);   \
+  } while(0)
 static inline void
 _assert_that_void_ptr(const void *actual, const void *expected) {
-  _cspec_string_addf(cspec->current_actual, "%p", (void *)actual);
-  _cspec_string_addf(cspec->current_expected, "%p", (void *)expected);
-  if(_cspec_void_ptr_comparison(actual, expected)) {
-    _cspec_write_assert();
-  }
+  _cspec_assert_that(
+    actual, expected, "%p", _cspec_void_ptr_comparison, _cspec_write_assert
+  );
+}
+static inline void
+_nassert_that_void_ptr(const void *actual, const void *expected) {
+  _cspec_assert_that(
+    actual, expected, "%p", !_cspec_void_ptr_comparison, _cspec_write_nassert
+  );
+}
+static inline void _assert_that_void_ptr_array(
+  const void **actual, const void **expected, size_t len
+) {
+  _cspec_assert_that_array(
+    actual, expected, len, "%p", _cspec_void_ptr_comparison, _cspec_write_assert
+  );
+}
+static inline void _nassert_that_void_ptr_array(
+  const void **actual, const void **expected, size_t len
+) {
+  _cspec_nassert_that_array(
+    actual,
+    expected,
+    len,
+    "%p",
+    _cspec_void_ptr_comparison,
+    _cspec_write_nassert
+  );
 }
 
 #define _cspec_ptrdiff_t_comparison(actual, expected) \
