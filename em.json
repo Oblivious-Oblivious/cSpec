@@ -19,7 +19,7 @@
     },
     "linux": {
       "debug": ["gcc", "-O2", "-std=c89", "-g", "-Wall", "-Wextra", "-Werror", "-pedantic", "-pedantic-errors", "-Wpedantic"],
-      "release": ["gcc", "-O3"]
+      "release": ["gcc", "-O2", "-std=c89"]
     },
     "win32": {
       "debug": ["gcc", "-O2", "-std=c89", "-g", "-Wall", "-Wextra", "-Werror", "-pedantic", "-pedantic-errors", "-Wpedantic"],
